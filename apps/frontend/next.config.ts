@@ -39,6 +39,7 @@ const pwaConfig = withPWA({
 
 /** @type {NextConfig} */
 const nextConfig: NextConfig = {
+  transpilePackages: ['@nocena/indexer', '@nocena/data'], // Add this line
   images: {
     domains: [
       'gateway.pinata.cloud',
