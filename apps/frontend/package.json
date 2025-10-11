@@ -24,8 +24,6 @@
     "challenge:monthly": "tsx src/scripts/generateMonthlyChallenge.ts"
   },
   "dependencies": {
-    "@nocena/indexer": "workspace:*",
-    "@nocena/data": "workspace:*",
     "@apollo/client": "^3.12.11",
     "@chaingpt/nft": "^0.1.1",
     "@filoz/synapse-sdk": "^0.16.1",
@@ -37,6 +35,8 @@
     "@lens-protocol/graphql": "0.0.0-canary-20241127131427",
     "@lens-protocol/metadata": "^2.0.0",
     "@lens-protocol/types": "0.0.0-canary-20241127131427",
+    "@nocena/data": "workspace:*",
+    "@nocena/indexer": "workspace:*",
     "@onflow/fcl": "^1.19.0",
     "@onflow/types": "^1.4.1",
     "@svgr/webpack": "^8.1.0",
@@ -86,15 +86,16 @@
     "wagmi": "^2.14.1",
     "web-push": "^3.6.7",
     "xss": "^1.0.15",
-    "yup": "^1.6.1"
+    "yup": "^1.6.1",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@types/react-dom": "^19.0.2",
     "@types/form-data": "^2.5.2",
     "@types/formidable": "^3.4.5",
     "@types/node": "^22.10.5",
     "@types/node-fetch": "^2.6.12",
     "@types/react": "^19.0.5",
+    "@types/react-dom": "^19.0.2",
     "@types/web-push": "^3.6.4",
     "@types/webpack": "^5.28.5",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
@@ -112,4 +113,3 @@
     "typescript": "^5.7.3"
   }
 }
-

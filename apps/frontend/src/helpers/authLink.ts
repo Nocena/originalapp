@@ -2,7 +2,7 @@ import {
   hydrateAuthTokens,
   signIn,
   signOut
-} from "@/store/persisted/useAuthStore";
+} from "../store/persisted/useAuthStore";
 import { ApolloLink, fromPromise, toPromise } from "@apollo/client";
 import { LENS_API_URL } from "@nocena/data/constants";
 import parseJwt from './parseJwt';
