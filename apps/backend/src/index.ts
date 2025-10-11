@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { greet } from '@nocena/indexer';
 
 dotenv.config();
 
@@ -22,9 +21,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 app.get('/api/greet/:name', (req: Request, res: Response) => {
   const { name } = req.params;
-  const greeting = greet(name);
   res.json({
-    greeting,
     source: 'Using @nocena/indexer package',
   });
 });
@@ -40,6 +37,5 @@ app.get('/api/status', (req: Request, res: Response) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Backend server is running on http://localhost:${PORT}`);
-  console.log(`📦 Using shared package: ${greet('Monorepo')}`);
 });
 

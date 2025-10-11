@@ -15,14 +15,18 @@ import { default as AndroidPWAPrompt } from '../components/PWA/AndroidPWAPrompt'
 import UpdateNotification from '../components/PWA/UpdateNotification';
 import CacheDebugger from '../components/PWA/CacheDebugger';
 import { BackgroundTaskProvider, useBackgroundTasks } from '../contexts/BackgroundTaskContext';
-import { permissionManager } from '../lib/utils/permissionManager';
+import { permissionManager } from '@utils/permissionManager';
+import { LoadingIndicator } from '@components/LoadingIndicator';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import apolloClient from '@nocena/indexer/apollo/client';
+import authLink from '../helpers/authLink';
+import { ApolloProvider } from '@apollo/client';
 
-// Simple loading indicator component for route changes
-const LoadingIndicator = () => (
-  <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-transparent">
-    <div className="h-full bg-blue-500 animate-progressBar"></div>
-  </div>
-);
+export const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
+});
+
+const lensApolloClient = apolloClient(authLink);
 
 function MyAppContent({ Component, pageProps }: AppProps) {
   const { user, loading, logout } = useAuth();
@@ -273,20 +277,6 @@ function MyAppContent({ Component, pageProps }: AppProps) {
     );
   }
 
-  // Get page title for special pages
-  const getSpecialPageTitle = () => {
-    switch (currentPathname) {
-      case '/completing':
-        return 'Complete Challenge';
-      case '/createchallenge':
-        return 'Create Challenge';
-      case '/browsing':
-        return 'Browse';
-      default:
-        return 'Nocena';
-    }
-  };
-
   return (
     <>
       <Head>
@@ -325,13 +315,17 @@ function MyAppContent({ Component, pageProps }: AppProps) {
 
 function MyApp(props: AppProps) {
   return (
-    <ThirdwebProvider>
-      <AuthProvider>
-        <BackgroundTaskProvider>
-          <MyAppContent {...props} />
-        </BackgroundTaskProvider>
-      </AuthProvider>
-    </ThirdwebProvider>
+    <QueryClientProvider client={queryClient}>
+      <ApolloProvider client={lensApolloClient}>
+        <ThirdwebProvider>
+          <AuthProvider>
+            <BackgroundTaskProvider>
+              <MyAppContent {...props} />
+            </BackgroundTaskProvider>
+          </AuthProvider>
+        </ThirdwebProvider>
+      </ApolloProvider>
+    </QueryClientProvider>
   );
 }
 

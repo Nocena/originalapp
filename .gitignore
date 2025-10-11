@@ -10,6 +10,7 @@ coverage/
 .next/
 out/
 
+.idea/
 # Production
 build/
 dist/
@@ -39,3 +40,9 @@ next-env.d.ts
 # Turbo
 .turbo
 
+/.idea/codeStyles/codeStyleConfig.xml
+/.idea/modules.xml
+/.idea/nocena-app.iml
+/.idea/codeStyles/Project.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml
