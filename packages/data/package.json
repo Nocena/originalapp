@@ -1,0 +1,15 @@
+{
+  "name": "@nocena/data",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --pretty"
+  },
+  "dependencies": {
+    "@lens-chain/sdk": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "typescript": "^5.8.3"
+  }
+}

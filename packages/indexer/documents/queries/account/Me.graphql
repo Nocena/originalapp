@@ -1,0 +1,19 @@
+query Me($request: PostRequest!) {
+  me {
+    loggedInAs {
+      ... on AccountManaged {
+        account {
+          ...Account
+        }
+      }
+      ... on AccountOwned {
+        account {
+          ...Account
+        }
+      }
+    }
+  }
+  pro: post(request: $request) {
+    ...Pro
+  }
+}

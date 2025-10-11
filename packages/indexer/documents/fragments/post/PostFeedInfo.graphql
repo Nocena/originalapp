@@ -1,0 +1,6 @@
+fragment PostFeedInfo on PostFeedInfo {
+  address
+  group {
+    ...PostGroupInfo
+  }
+}
