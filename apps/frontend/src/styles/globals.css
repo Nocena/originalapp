@@ -1,0 +1,214 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply font-sans;
+}
+
+@font-face {
+  font-family: 'Montserrat Alt 1';
+  src: url('/fonts/MontserratAlt1-Light.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@keyframes progressBar {
+  0% {
+    width: 0%;
+  }
+  20% {
+    width: 25%;
+  }
+  50% {
+    width: 60%;
+  }
+  80% {
+    width: 85%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-progressBar {
+  animation: progressBar 0.6s ease-in-out forwards;
+  width: 0%;
+}
+
+/* Base popup styles */
+.maplibregl-popup-content {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Hide the popup triangle/tip */
+.maplibregl-popup-tip {
+  display: none !important;
+}
+
+/* Ensure proper stacking order */
+.maplibregl-marker {
+  z-index: 1;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.maplibregl-popup {
+  z-index: 200;
+}
+
+.react-tel-input .selected-flag {
+  background-color: #1f2937 !important;
+}
+
+.react-tel-input .selected-flag:hover,
+.react-tel-input .selected-flag:focus {
+  background-color: #1f2937 !important;
+}
+
+.react-tel-input .country-list .country.highlight,
+.react-tel-input .country-list .country:hover {
+  background-color: #374151 !important;
+}
+
+.react-tel-input .country-list .country {
+  background-color: #111827 !important;
+  color: white !important;
+}
+
+.react-tel-input .country-list {
+  background-color: #111827 !important;
+  color: white !important;
+  border: 1px solid #374151 !important;
+}
+
+@layer utilities {
+  /* Video background utilities */
+  .bg-nocenaBg {
+    @apply bg-transparent !important;
+  }
+
+  /* Fix for iOS height issues */
+  .min-h-screen-ios {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  /* Content z-indexing */
+  .z-content {
+    @apply relative z-10;
+  }
+
+  /* Video overlay for better text readability */
+  .video-overlay {
+    @apply after:absolute after:inset-0 after:bg-black/20 after:pointer-events-none;
+  }
+}
+
+/* Global fixes */
+body {
+  @apply bg-black font-sans;
+}
+
+/* Ensure app container is always transparent to show video */
+.app-container {
+  @apply bg-transparent !important;
+}
+
+/* Recording circle to square animation */
+@keyframes circle-to-square {
+  0% {
+    border-radius: 50%;
+    background: #6b7280;
+  }
+  100% {
+    border-radius: 20%;
+    background: #ff15c9;
+  }
+}
+
+.animate-circle-to-square {
+  animation: circle-to-square 0.8s ease-out forwards;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #1f2937;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+/* Hide scrollbar for webkit browsers (Chrome, Safari, Edge) */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for IE and Edge Legacy */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+}
+
+/* Only apply hover effects on devices that actually support hover */
+@media (hover: hover) and (pointer: fine) {
+  /* Desktop hover effects */
+  .menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .menu-item:hover .menu-icon {
+    color: white;
+  }
+  
+  .menu-item:hover .menu-arrow {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* Touch-specific styles - no hover effects */
+@media (hover: none) and (pointer: coarse) {
+  .menu-item {
+    /* Remove any hover-specific styling */
+    transition: transform 0.15s ease;
+  }
+  
+  .menu-item:active {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.98);
+  }
+}
+
+/* iOS-specific optimizations */
+.ios-touch-fix {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* Remove group hover effects on touch devices */
+@media (hover: none) {
+  .group:hover > * {
+    /* Reset any group hover effects */
+    color: inherit;
+    background-color: inherit;
+  }
+}
