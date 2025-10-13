@@ -493,6 +493,3 @@ export class PWAPermissionManager {
     await this.checkAllPermissions();
   }
 }
-
-// Export singleton instance
-export const permissionManager = PWAPermissionManager.getInstance();
