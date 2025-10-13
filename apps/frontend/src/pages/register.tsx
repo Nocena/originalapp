@@ -41,7 +41,7 @@ enum RegisterStep {
 }
 
 const RegisterPage = () => {
-  const [currentStep, setCurrentStep] = useState(RegisterStep.INVITE_CODE);
+  const [currentStep, setCurrentStep] = useState(RegisterStep.WALLET_CONNECT);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 

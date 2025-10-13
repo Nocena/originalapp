@@ -2,6 +2,9 @@
 import { Control, useWatch, useFormContext } from 'react-hook-form';
 import { useEffect, useState, useCallback } from 'react';
 import { NocenaInput } from '@components/form';
+import {
+  useAccountQuery,
+} from "@nocena/indexer";
 import PrimaryButton from '../../ui/PrimaryButton';
 import ThematicContainer from '../../ui/ThematicContainer';
 
@@ -25,8 +28,8 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
   // Database username checking state
   const [isCheckingDbUsername, setIsCheckingDbUsername] = useState(false);
   const [dbUsernameError, setDbUsernameError] = useState<string | null>(null);
+  const [lensUsernameError, setLensUsernameError] = useState<string | null>(null);
   const [dbCheckTimeout, setDbCheckTimeout] = useState<NodeJS.Timeout | null>(null);
-
   // Get form context for setValue
   const { setValue } = useFormContext<FormValues>();
 
@@ -35,6 +38,15 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
     control,
     name: 'username',
     defaultValue: '',
+  });
+
+  useAccountQuery({
+    fetchPolicy: "no-cache",
+    variables: {
+      request: { username: { localName: username?.trim()?.toLowerCase() } }
+    },
+    onCompleted: (data) => setLensUsernameError(data.account ? `Username "${username?.trim()}" is already taken. Please choose a different name.` : null),
+    skip: !(username && username.length > 2)
   });
 
   // Simple local username validation
@@ -161,7 +173,7 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
 
   // Check if form is valid
   const isFormValid = Boolean(
-    username && username.trim().length >= 3 && localValidation.isValid && !isCheckingDbUsername && !dbUsernameError,
+    username && username.trim().length >= 3 && localValidation.isValid && !isCheckingDbUsername && !dbUsernameError && !lensUsernameError,
   );
 
   // Simple continue function - just validate and move on
@@ -193,7 +205,7 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
             username={username}
             localValidation={localValidation}
             isCheckingDbUsername={isCheckingDbUsername}
-            dbUsernameError={dbUsernameError}
+            dbUsernameError={dbUsernameError || lensUsernameError}
           />
         </div>
 
