@@ -36,7 +36,6 @@ const PrimaryButton: React.FC<Props> = ({
         loading={loading}
         onClick={disabled ? undefined : onClick}
         className="w-full h-full bg-transparent text-base font-medium font-montserrat cursor-pointer flex items-center justify-center focus:outline-none"
-        outline
       >
         {text}
       </Button>

@@ -7,7 +7,7 @@ import { IS_MAINNET, NOCENA_APP } from '@nocena/data/constants';
 import { useActiveAccount } from 'thirdweb/react';
 import { toast } from 'react-hot-toast';
 import { useAuthenticateMutation, useChallengeMutation, useCreateAccountWithUsernameMutation } from '@nocena/indexer';
-import { signMessage } from 'thirdweb/dist/types/exports/utils';
+import { signMessage } from 'thirdweb/utils';
 import { uploadMetadataToGrove } from '@utils/groveUtils';
 import { account as accountMetadata } from '@lens-protocol/metadata';
 import { useSignupStore } from '../../../store/non-persisted/useSignupStore';
@@ -218,13 +218,14 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
           variables: {
             request: {
               username: { localName: username.toLowerCase() },
-              metadataUri
+              metadataUri: metadataUri.uri,
             }
           },
           onCompleted: ({ createAccountWithUsername }) => {
             if (
               createAccountWithUsername.__typename === "CreateAccountResponse"
             ) {
+              console.log("createAccountWithUsername", createAccountWithUsername)
               setTransactionHash(createAccountWithUsername.hash);
               setChoosedUsername(username);
               onNotificationsReady(pushSubscription);

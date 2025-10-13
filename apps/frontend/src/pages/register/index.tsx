@@ -12,12 +12,8 @@ import RegisterInviteCodeStep from '@components/register/components/RegisterInvi
 import RegisterWalletConnectStep from '@components/register/components/RegisterWalletConnectStep';
 import RegisterFormStep from '@components/register/components/RegisterFormStep';
 import RegisterNotificationsStep from '@components/register/components/RegisterNotificationsStep';
-import { IS_MAINNET, NOCENA_APP } from '@nocena/data/constants';
 import { useAuthenticateMutation, useChallengeMutation, useCreateAccountWithUsernameMutation } from '@nocena/indexer';
 import { toast } from 'react-hot-toast';
-import { signMessage } from 'thirdweb/utils';
-import { uploadMetadataToGrove } from '@utils/groveUtils';
-import { account as accountMetadata } from '@lens-protocol/metadata';
 import { getStepInfo, validateInviteCode } from '@pages/register/utils';
 import { schema } from '@pages/register/values';
 import Minting from '@pages/register/Minting';
