@@ -123,19 +123,18 @@ const UpdateNotification: React.FC<UpdateNotificationProps> = ({ onUpdate }) => 
   // Listen for controller changes (when new SW takes over)
   useEffect(() => {
     if ('serviceWorker' in navigator) {
+      let hasReloaded = false;
+
       const handleControllerChange = () => {
-        console.log('🔄 Service worker controller changed, reloading...');
-        // Small delay to ensure the new SW is fully ready
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
+        if (hasReloaded) return; // ⛔ prevent multiple reloads
+        hasReloaded = true;
+
+        console.log('🔄 SW controller changed, reloading once...');
+        setTimeout(() => window.location.reload(), 500);
       };
 
       navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-
-      return () => {
-        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-      };
+      return () => navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     }
   }, []);
 

@@ -5,12 +5,12 @@ import withPWA from 'next-pwa';
 const pwaConfig = withPWA({
   dest: 'public',
   disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-  clientsClaim: true, // Take control immediately
-  sw: 'src/sw.js',
-  // Add proper cache cleanup
+  register: process.env.NODE_ENV === 'production',
+  skipWaiting: false,
+  clientsClaim: false,
+  sw: '/sw.js',
   cleanupOutdatedCaches: true,
+  publicExcludes: ['!robots.txt', '!sitemap.xml'],
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -106,10 +106,6 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
-          {
-            key: 'Feature-Policy',
-            value: 'camera *',
-          },
           {
             key: 'Permissions-Policy',
             value: 'camera=*, geolocation=*',

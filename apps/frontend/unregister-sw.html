@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unregister Service Worker - Nocena</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 { color: #333; margin-top: 0; }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    button:hover { background: #0056b3; }
+    .success { color: #28a745; }
+    .error { color: #dc3545; }
+    #status { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Service Worker Manager</h1>
+    <p>Use this page to unregister all service workers and clear caches if you're experiencing infinite refresh issues.</p>
+    
+    <button onclick="unregisterAll()">Unregister All Service Workers</button>
+    <button onclick="clearCaches()">Clear All Caches</button>
+    <button onclick="doAll()">Do Everything (Recommended)</button>
+    
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const status = document.getElementById('status');
+    
+    async function unregisterAll() {
+      status.innerHTML = 'Unregistering service workers...';
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        
+        if (registrations.length === 0) {
+          status.innerHTML = '<span class="success">✅ No service workers found</span>';
+          return;
+        }
+        
+        for (let registration of registrations) {
+          await registration.unregister();
+        }
+        
+        status.innerHTML = `<span class="success">✅ Unregistered ${registrations.length} service worker(s)</span>`;
+      } catch (error) {
+        status.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+      }
+    }
+    
+    async function clearCaches() {
+      status.innerHTML = 'Clearing caches...';
+      try {
+        const cacheNames = await caches.keys();
+        
+        if (cacheNames.length === 0) {
+          status.innerHTML = '<span class="success">✅ No caches found</span>';
+          return;
+        }
+        
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+        
+        status.innerHTML = `<span class="success">✅ Cleared ${cacheNames.length} cache(s)</span>`;
+      } catch (error) {
+        status.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+      }
+    }
+    
+    async function doAll() {
+      status.innerHTML = 'Processing...';
+      
+      try {
+        // Unregister service workers
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+          await registration.unregister();
+        }
+        
+        // Clear caches
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+        
+        // Clear local storage
+        localStorage.clear();
+        
+        // Clear session storage
+        sessionStorage.clear();
+        
+        status.innerHTML = `
+          <span class="success">✅ Complete!</span><br>
+          - Unregistered ${registrations.length} service worker(s)<br>
+          - Cleared ${cacheNames.length} cache(s)<br>
+          - Cleared localStorage and sessionStorage<br>
+          <br>
+          <strong>Now do a hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)</strong>
+        `;
+      } catch (error) {
+        status.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
+      }
+    }
+    
+    // Auto-detect current service workers
+    window.addEventListener('load', async () => {
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        if (registrations.length > 0) {
+          console.log('Found service workers:', registrations);
+        }
+      } catch (error) {
+        console.error('Error checking service workers:', error);
+      }
+    });
+  </script>
+</body>
+</html>
+
