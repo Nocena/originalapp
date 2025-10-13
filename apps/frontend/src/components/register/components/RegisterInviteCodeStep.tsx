@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Control, Controller, ControllerRenderProps, useWatch, UseFormReset } from 'react-hook-form';
+import {
+  Control,
+  Controller,
+  ControllerRenderProps,
+  useWatch,
+  UseFormReset,
+} from 'react-hook-form';
 import PrimaryButton from '../../ui/PrimaryButton';
 import ThematicContainer from '../../ui/ThematicContainer';
 import NocenaCodeInputs from '../../form/NocenaCodeInput';
@@ -107,7 +113,7 @@ const RegisterInviteCodeStep = ({ control, reset, onValidCode, loading, error }:
         JSON.stringify({
           attempts,
           blockUntil: blockUntil ? blockUntil.toISOString() : null,
-        }),
+        })
       );
     } catch (e) {
       console.error('Error saving rate limit data:', e);
@@ -139,7 +145,9 @@ const RegisterInviteCodeStep = ({ control, reset, onValidCode, loading, error }:
     } else {
       saveRateLimitData(newAttempts);
       const remaining = MAX_ATTEMPTS - newAttempts;
-      setLocalError(`Invalid invite code. You have ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`);
+      setLocalError(
+        `Invalid invite code. You have ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`
+      );
     }
   };
 
@@ -218,7 +226,13 @@ const RegisterInviteCodeStep = ({ control, reset, onValidCode, loading, error }:
           </div>
         </ThematicContainer>
       ) : (
-        <ThematicContainer color="nocenaBlue" glassmorphic={true} asButton={false} rounded="2xl" className="p-8">
+        <ThematicContainer
+          color="nocenaBlue"
+          glassmorphic={true}
+          asButton={false}
+          rounded="2xl"
+          className="p-8"
+        >
           <div className={`flex justify-center mb-6 ${shake ? 'animate-shake' : ''}`}>
             <Controller
               name="inviteCode"

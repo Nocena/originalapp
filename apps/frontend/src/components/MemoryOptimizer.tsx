@@ -94,7 +94,7 @@ const MemoryOptimizer: React.FC = () => {
             try {
               // Clear any large cached objects that aren't critical
               const cacheKeys = Object.keys(localStorage).filter(
-                (key) => key.startsWith('nocena_cache_') && !key.includes('critical'),
+                (key) => key.startsWith('nocena_cache_') && !key.includes('critical')
               );
 
               if (cacheKeys.length > 10) {

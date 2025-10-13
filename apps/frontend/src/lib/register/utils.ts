@@ -3,7 +3,7 @@ import { RegisterStep } from '@pages/register/index';
 export const getStepInfo = (
   currentStep: RegisterStep,
   registrationInProgress: boolean,
-  registrationCompleted: boolean,
+  registrationCompleted: boolean
 ) => {
   switch (currentStep) {
     case RegisterStep.INVITE_CODE:
@@ -46,5 +46,4 @@ export const validateInviteCode = async (code: string): Promise<any> => {
   });
 
   return await response.json();
-
 };

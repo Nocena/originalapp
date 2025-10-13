@@ -15,7 +15,7 @@ const openai = new OpenAI({
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT || 'mailto:lustykjakub@gmail.com',
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || '',
+  process.env.VAPID_PRIVATE_KEY || ''
 );
 
 const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
@@ -62,7 +62,7 @@ export const getAllUserPushSubscriptions = async (): Promise<string[]> => {
       },
       {
         headers,
-      },
+      }
     );
 
     console.log('🔔 BULK: Push subscriptions query response status:', response.status);
@@ -78,7 +78,7 @@ export const getAllUserPushSubscriptions = async (): Promise<string[]> => {
       .filter((sub: string) => sub && sub.length > 0 && sub !== 'null' && sub.trim() !== ''); // Filter out any null/empty subscriptions
 
     console.log(
-      `🔔 BULK: Found ${users.length} total users, ${pushSubscriptions.length} with valid push subscriptions`,
+      `🔔 BULK: Found ${users.length} total users, ${pushSubscriptions.length} with valid push subscriptions`
     );
     return pushSubscriptions;
   } catch (error) {
@@ -119,7 +119,7 @@ const getUsersWithPushSubscriptions = async (): Promise<
       },
       {
         headers,
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -129,10 +129,15 @@ const getUsersWithPushSubscriptions = async (): Promise<
 
     const users = response.data.data.queryUser || [];
     const validUsers = users.filter(
-      (user: any) => user.pushSubscription && user.pushSubscription.trim() !== '' && user.pushSubscription !== 'null',
+      (user: any) =>
+        user.pushSubscription &&
+        user.pushSubscription.trim() !== '' &&
+        user.pushSubscription !== 'null'
     );
 
-    console.log(`🔔 USERS: Found ${users.length} total users, ${validUsers.length} with valid push subscriptions`);
+    console.log(
+      `🔔 USERS: Found ${users.length} total users, ${validUsers.length} with valid push subscriptions`
+    );
     return validUsers;
   } catch (error) {
     console.error('🔔 USERS: Error fetching users:', error);
@@ -177,7 +182,7 @@ class DailyChallengeGenerator {
         },
         {
           headers,
-        },
+        }
       );
 
       if (response.data.errors) {
@@ -228,7 +233,7 @@ class DailyChallengeGenerator {
         },
         {
           headers,
-        },
+        }
       );
 
       if (response.data.errors) {
@@ -311,7 +316,8 @@ IMPORTANT: Look at the recent challenges above and generate something DIFFERENT.
           },
           {
             role: 'user',
-            content: 'Generate one daily challenge. Format: Title: [codename]\nDescription: [challenge description]',
+            content:
+              'Generate one daily challenge. Format: Title: [codename]\nDescription: [challenge description]',
           },
         ],
         max_tokens: 200,
@@ -348,7 +354,9 @@ IMPORTANT: Look at the recent challenges above and generate something DIFFERENT.
     const randomIndex = Math.floor(Math.random() * dailyChallenges.length);
     const selectedChallenge = dailyChallenges[randomIndex];
 
-    console.log(`🎯 Selected challenge ${randomIndex + 1} of ${dailyChallenges.length}: ${selectedChallenge.title}`);
+    console.log(
+      `🎯 Selected challenge ${randomIndex + 1} of ${dailyChallenges.length}: ${selectedChallenge.title}`
+    );
 
     return {
       title: selectedChallenge.title,
@@ -368,7 +376,9 @@ IMPORTANT: Look at the recent challenges above and generate something DIFFERENT.
         return !usedChallengeIds.includes(challengeId);
       });
 
-      console.log(`📊 Available challenges: ${availableChallenges.length} of ${dailyChallenges.length} total`);
+      console.log(
+        `📊 Available challenges: ${availableChallenges.length} of ${dailyChallenges.length} total`
+      );
 
       // If no unused challenges, reset and use all challenges
       if (availableChallenges.length === 0) {
@@ -387,7 +397,10 @@ IMPORTANT: Look at the recent challenges above and generate something DIFFERENT.
         description: selectedChallenge.description,
       };
     } catch (error) {
-      console.error('⚠️ Error selecting unused challenge, falling back to random selection:', error);
+      console.error(
+        '⚠️ Error selecting unused challenge, falling back to random selection:',
+        error
+      );
       return this.selectDailyChallenge();
     }
   }
@@ -398,7 +411,10 @@ IMPORTANT: Look at the recent challenges above and generate something DIFFERENT.
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   }
 
-  async generateChallengeForDate(date: Date = new Date(), useAI: boolean = false): Promise<AIChallenge> {
+  async generateChallengeForDate(
+    date: Date = new Date(),
+    useAI: boolean = false
+  ): Promise<AIChallenge> {
     let title: string;
     let description: string;
 
@@ -516,7 +532,7 @@ const sendPushNotifications = async (challenge: AIChallenge): Promise<void> => {
       const batch = pushSubscriptions.slice(i, i + batchSize);
 
       console.log(
-        `🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(pushSubscriptions.length / batchSize)}`,
+        `🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(pushSubscriptions.length / batchSize)}`
       );
 
       const batchPromises = batch.map(async (pushSubscription, index) => {
@@ -528,10 +544,18 @@ const sendPushNotifications = async (challenge: AIChallenge): Promise<void> => {
           console.log(`✅ Sent notification ${i + index + 1}/${pushSubscriptions.length}`);
         } catch (error: any) {
           failureCount++;
-          console.error(`❌ Failed to send notification ${i + index + 1}:`, error?.message || error);
+          console.error(
+            `❌ Failed to send notification ${i + index + 1}:`,
+            error?.message || error
+          );
 
           // If the subscription is invalid (410 Gone), mark it for removal
-          if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 410) {
+          if (
+            error &&
+            typeof error === 'object' &&
+            'statusCode' in error &&
+            error.statusCode === 410
+          ) {
             console.log(`🗑️ Invalid subscription detected, marking for cleanup`);
             invalidSubscriptions.push(pushSubscription);
           }
@@ -614,13 +638,15 @@ const cleanupInvalidSubscriptions = async (invalidSubscriptions: string[]): Prom
       },
       {
         headers,
-      },
+      }
     );
 
     if (response.data.errors) {
       console.error('❌ Error cleaning up invalid subscriptions:', response.data.errors);
     } else {
-      console.log(`✅ Cleaned up ${response.data.data?.updateUser?.numUids || 0} invalid subscriptions`);
+      console.log(
+        `✅ Cleaned up ${response.data.data?.updateUser?.numUids || 0} invalid subscriptions`
+      );
     }
   } catch (error) {
     console.error('❌ Network error cleaning up subscriptions:', error);
@@ -671,7 +697,7 @@ export const saveDailyChallengeToDatabase = async (challenge: AIChallenge): Prom
       },
       {
         headers,
-      },
+      }
     );
 
     if (response.data.errors) {

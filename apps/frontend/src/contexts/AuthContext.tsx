@@ -1,5 +1,13 @@
 import type { Account } from '@nocena/indexer';
-import React, { createContext, useState, useContext, useEffect, ReactNode, useRef, useCallback } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+  useRef,
+  useCallback,
+} from 'react';
 import { useActiveAccount, useDisconnect, useActiveWallet } from 'thirdweb/react';
 
 // Updated User interface - matches Dgraph schema exactly
@@ -242,7 +250,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const activeWallet = useActiveWallet();
   const { disconnect } = useDisconnect();
 
-  console.log("account", account)
+  console.log('account', account);
 
   // Check if we're in browser environment
   const isBrowser = typeof window !== 'undefined';
@@ -353,7 +361,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('Failed to store user data:', error);
       }
     },
-    [isBrowser],
+    [isBrowser]
   );
 
   // Track mounting state
@@ -482,7 +490,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           user.wallet.toLowerCase() !== currentAddress.toLowerCase()
         ) {
           // Wallet changed to different address
-          console.log('[AuthContext] Wallet changed to different address, logging out current user');
+          console.log(
+            '[AuthContext] Wallet changed to different address, logging out current user'
+          );
           setUser(null);
           setIsAuthenticated(false);
           setStoredUser(null);
@@ -516,7 +526,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
 
         // For wallet-authenticated users, validate wallet address matches
-        if (userData.wallet && account?.address && userData.wallet.toLowerCase() !== account.address.toLowerCase()) {
+        if (
+          userData.wallet &&
+          account?.address &&
+          userData.wallet.toLowerCase() !== account.address.toLowerCase()
+        ) {
           throw new Error('User wallet does not match connected wallet');
         }
 
@@ -539,7 +553,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
     },
-    [account?.address, setStoredUser],
+    [account?.address, setStoredUser]
   );
 
   const logout = useCallback(async (): Promise<void> => {
@@ -595,7 +609,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
       }
     },
-    [user, setStoredUser],
+    [user, setStoredUser]
   );
 
   return (

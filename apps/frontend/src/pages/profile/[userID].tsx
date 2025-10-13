@@ -45,7 +45,9 @@ const OtherProfileView: React.FC = () => {
   const [showFollowersPopup, setShowFollowersPopup] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
-  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>('trailer');
+  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
+    'trailer'
+  );
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -110,7 +112,11 @@ const OtherProfileView: React.FC = () => {
       const profileCacheKey = `other_profile_${userId}`;
 
       // Check if we have fresh data in PageManager
-      if (pageState && pageState[profileCacheKey] && Date.now() - pageState[profileCacheKey].lastFetched < 300000) {
+      if (
+        pageState &&
+        pageState[profileCacheKey] &&
+        Date.now() - pageState[profileCacheKey].lastFetched < 300000
+      ) {
         const cachedUser = pageState[profileCacheKey].data;
         if (cachedUser && cachedUser.id) {
           setUser(cachedUser as ProfileUser);
@@ -164,7 +170,7 @@ const OtherProfileView: React.FC = () => {
           JSON.stringify({
             data: profileUser,
             timestamp: Date.now(),
-          }),
+          })
         );
       } else {
         setError(new Error('User not found'));
@@ -227,7 +233,9 @@ const OtherProfileView: React.FC = () => {
       const currentMonthIndex = new Date().getMonth();
       const elementWidth = scrollContainerRef.current.scrollWidth / 12;
       scrollContainerRef.current.scrollLeft =
-        elementWidth * currentMonthIndex - scrollContainerRef.current.clientWidth / 2 + elementWidth / 2;
+        elementWidth * currentMonthIndex -
+        scrollContainerRef.current.clientWidth / 2 +
+        elementWidth / 2;
     }
   }, [user]);
 
@@ -289,13 +297,14 @@ const OtherProfileView: React.FC = () => {
         JSON.stringify({
           data: updatedUser,
           timestamp: Date.now(),
-        }),
+        })
       );
     }
 
     try {
       // Make API call
-      const success = await toggleFollowUser(currentUser.id, user.id, currentUser.username);
+      const wasFollowing = user.followers.includes(currentUser.id);
+      const success = await toggleFollowUser(currentUser.id, user.id, wasFollowing);
 
       // If API call fails, revert the UI change
       if (!success) {
@@ -335,7 +344,7 @@ const OtherProfileView: React.FC = () => {
             JSON.stringify({
               data: updatedUser,
               timestamp: Date.now(),
-            }),
+            })
           );
         }
       }
@@ -463,7 +472,9 @@ const OtherProfileView: React.FC = () => {
           height: '100vh',
         }}
       >
-        <div className="flex items-center justify-center min-h-screen">Error loading profile: {error.message}</div>
+        <div className="flex items-center justify-center min-h-screen">
+          Error loading profile: {error.message}
+        </div>
       </div>
     );
   }
@@ -626,7 +637,9 @@ const OtherProfileView: React.FC = () => {
                   onClick={() => setActiveSection(key as any)}
                   className="flex-1 min-w-0 px-2 py-1" // Added min-w-0 to prevent flex shrinking issues
                 >
-                  <span className="text-sm font-medium whitespace-nowrap text-center w-full">{label}</span>
+                  <span className="text-sm font-medium whitespace-nowrap text-center w-full">
+                    {label}
+                  </span>
                 </ThematicContainer>
               ))}
             </div>

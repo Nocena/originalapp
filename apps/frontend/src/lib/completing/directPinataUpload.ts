@@ -18,7 +18,7 @@ export class DirectPinataUploadService {
     fileName: string,
     fileType: 'image' | 'video',
     userId: string,
-    maxRetries: number = 3,
+    maxRetries: number = 3
   ): Promise<string> {
     const timestamp = Date.now();
     const safeUserId = userId.replace(/[^a-zA-Z0-9]/g, '_');
@@ -83,7 +83,11 @@ export class DirectPinataUploadService {
 
         // Don't retry on certain errors
         if (error instanceof Error) {
-          if (error.message.includes('400') || error.message.includes('401') || error.message.includes('403')) {
+          if (
+            error.message.includes('400') ||
+            error.message.includes('401') ||
+            error.message.includes('403')
+          ) {
             throw error;
           }
         }
@@ -108,7 +112,7 @@ export class DirectPinataUploadService {
   async uploadChallengeMedia(
     videoBlob: Blob,
     photoBlob: Blob,
-    userId: string,
+    userId: string
   ): Promise<{ videoCID: string; selfieCID: string }> {
     console.log('Starting direct challenge media upload...');
     console.log('Video blob size:', videoBlob.size, 'Photo blob size:', photoBlob.size);
@@ -132,7 +136,9 @@ export class DirectPinataUploadService {
       return { videoCID, selfieCID };
     } catch (error) {
       console.error('Direct challenge media upload failed:', error);
-      throw new Error(`Media upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Media upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 }

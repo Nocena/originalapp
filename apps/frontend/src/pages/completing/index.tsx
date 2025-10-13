@@ -251,7 +251,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
     window.dispatchEvent(
       new CustomEvent('nocena_register_custom_back', {
         detail: { hasCustomBack: true },
-      }),
+      })
     );
 
     return () => {
@@ -259,7 +259,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
       window.dispatchEvent(
         new CustomEvent('nocena_register_custom_back', {
           detail: { hasCustomBack: false },
-        }),
+        })
       );
     };
   }, [currentStep]);
@@ -331,7 +331,9 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
     if (videoBlob && challenge) {
       try {
         // Start verification analysis in background with model dependency
-        const dependencies = backgroundTaskIds.modelPreloadId ? [backgroundTaskIds.modelPreloadId] : [];
+        const dependencies = backgroundTaskIds.modelPreloadId
+          ? [backgroundTaskIds.modelPreloadId]
+          : [];
 
         const verificationId = backgroundTasks.startVerification({
           videoBlob,
@@ -416,7 +418,13 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
 
   // Step 2: Video Recording
   if (currentStep === 'recording') {
-    return <VideoRecordingScreen challenge={challenge} onVideoRecorded={handleVideoRecorded} onBack={handleStepBack} />;
+    return (
+      <VideoRecordingScreen
+        challenge={challenge}
+        onVideoRecorded={handleVideoRecorded}
+        onBack={handleStepBack}
+      />
+    );
   }
 
   // Step 3: Video Review
@@ -531,8 +539,18 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
             rounded="full"
             className="w-12 h-12 flex items-center justify-center"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </ThematicContainer>
         </button>
@@ -548,14 +566,21 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
       >
         {/* Challenge Type Badge */}
         <div className="flex justify-center mb-6">
-          <ThematicContainer asButton={false} color={challenge.color as any} className="px-6 py-2" rounded="xl">
+          <ThematicContainer
+            asButton={false}
+            color={challenge.color as any}
+            className="px-6 py-2"
+            rounded="xl"
+          >
             <span className="text-sm font-medium tracking-wider uppercase">{typeInfo.badge}</span>
           </ThematicContainer>
         </div>
 
         {/* Subtitle - Clean and Mysterious */}
         <div className="text-center mb-8">
-          <div className="text-xl font-light text-nocenaPink tracking-wide opacity-90">{typeInfo.subtitle}</div>
+          <div className="text-xl font-light text-nocenaPink tracking-wide opacity-90">
+            {typeInfo.subtitle}
+          </div>
         </div>
 
         {/* Main Challenge Card - Flexible height */}
@@ -570,7 +595,9 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
             {/* Content */}
             <div className="relative z-10 h-full flex flex-col">
               {/* Challenge Title - Clean and Bold */}
-              <div className="text-2xl font-light mb-4 text-center leading-tight tracking-wide">{challenge.title}</div>
+              <div className="text-2xl font-light mb-4 text-center leading-tight tracking-wide">
+                {challenge.title}
+              </div>
 
               {/* Challenge Description */}
               <div className="text-base text-gray-200 mb-6 text-center leading-relaxed font-light opacity-90">

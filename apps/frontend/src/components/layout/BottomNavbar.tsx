@@ -49,7 +49,11 @@ const NAV_ITEMS = [
   },
 ];
 
-const BottomNavbar: React.FC<BottomNavbarProps> = ({ currentIndex, handleNavClick, unreadCount }) => {
+const BottomNavbar: React.FC<BottomNavbarProps> = ({
+  currentIndex,
+  handleNavClick,
+  unreadCount,
+}) => {
   const [isMobile, setIsMobile] = useState(false);
 
   // Handle responsive behavior
@@ -109,7 +113,9 @@ const BottomNavbar: React.FC<BottomNavbarProps> = ({ currentIndex, handleNavClic
                         ${item.gradientClass}
                       `}
                     >
-                      <div className="font-medium text-lg text-white absolute left-14 truncate">{item.label}</div>
+                      <div className="font-medium text-lg text-white absolute left-14 truncate">
+                        {item.label}
+                      </div>
                     </div>
                   )}
 
@@ -142,7 +148,13 @@ function renderIcon(item: (typeof NAV_ITEMS)[0], unreadCount: number) {
     case 'home':
       return (
         <div className="relative w-8 h-8">
-          <Image src="/nocena_dark.ico" alt="Home" width={32} height={32} className="object-contain scale-150" />
+          <Image
+            src="/nocena_dark.ico"
+            alt="Home"
+            width={32}
+            height={32}
+            className="object-contain scale-150"
+          />
         </div>
       );
 
@@ -153,7 +165,9 @@ function renderIcon(item: (typeof NAV_ITEMS)[0], unreadCount: number) {
       return (
         <div className="relative">
           <InboxIcon />
-          {unreadCount > 0 && <div className="absolute top-0 -right-0.5 w-2 h-2 bg-pink-500 rounded-full" />}
+          {unreadCount > 0 && (
+            <div className="absolute top-0 -right-0.5 w-2 h-2 bg-pink-500 rounded-full" />
+          )}
         </div>
       );
 

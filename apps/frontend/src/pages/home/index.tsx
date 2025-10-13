@@ -42,7 +42,9 @@ function hasCompletedWeekly(user: any): boolean {
 
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const daysSinceStart = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+  const daysSinceStart = Math.floor(
+    (now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)
+  );
   const weekOfYear = Math.floor(daysSinceStart / 7) + 1;
 
   console.log('Weekly check:', {
@@ -98,7 +100,7 @@ const createMockVideoBlob = (): Blob => {
         else resolve(new Blob(['mock video'], { type: 'video/mp4' }));
       },
       'image/jpeg',
-      0.8,
+      0.8
     );
   }) as any;
 };
@@ -125,7 +127,7 @@ const createMockPhotoBlob = (): Blob => {
         else resolve(new Blob(['mock photo'], { type: 'image/jpeg' }));
       },
       'image/jpeg',
-      0.8,
+      0.8
     );
   }) as any;
 };
@@ -383,7 +385,7 @@ const HomeView = () => {
           ...claimingData,
           // Note: Can't store blobs in sessionStorage, so we'll recreate them
           mockBlobsNeeded: true,
-        }),
+        })
       );
 
       // Navigate to claiming test route

@@ -3,9 +3,9 @@ import Link from 'next/link';
 import React from 'react';
 
 export interface NetworkErrorProps {
-  onRetryConnection: () => void
+  onRetryConnection: () => void;
 }
-const NetworkError = ({onRetryConnection}: NetworkErrorProps) => {
+const NetworkError = ({ onRetryConnection }: NetworkErrorProps) => {
   return (
     <ThematicContainer
       color="nocenaPink"
@@ -23,7 +23,7 @@ const NetworkError = ({onRetryConnection}: NetworkErrorProps) => {
         Retry Connection
       </button>
     </ThematicContainer>
-  )
-}
+  );
+};
 
-export default NetworkError
+export default NetworkError;

@@ -50,7 +50,7 @@ export const DEFAULT_AVATAR_CONFIG: AvatarGenerationConfig = {
 export function generateTemplateBasedPrompt(
   basePrompt: string,
   config: Partial<AvatarGenerationConfig> = {},
-  hasProfilePicture: boolean = false,
+  hasProfilePicture: boolean = false
 ): string {
   const fullConfig = { ...DEFAULT_AVATAR_CONFIG, ...config };
 
@@ -83,7 +83,9 @@ export function generateTemplateBasedPrompt(
 /**
  * Validates if the avatar template exists and is accessible
  */
-export async function validateAvatarTemplate(templatePath: string = '/nft/avatar.png'): Promise<boolean> {
+export async function validateAvatarTemplate(
+  templatePath: string = '/nft/avatar.png'
+): Promise<boolean> {
   try {
     const response = await fetch(templatePath, { method: 'HEAD' });
     return response.ok;
@@ -100,7 +102,7 @@ export function prepareAvatarGenerationParams(
   userID: string,
   prompt: string,
   profilePicture?: string,
-  customConfig?: Partial<AvatarGenerationConfig>,
+  customConfig?: Partial<AvatarGenerationConfig>
 ) {
   const config = { ...DEFAULT_AVATAR_CONFIG, ...customConfig };
 
@@ -157,13 +159,15 @@ export const CLOTHING_CATEGORIES = {
  */
 export function generateClothingIntegrationPrompt(
   clothingTypes: (keyof typeof CLOTHING_CATEGORIES)[],
-  baseAvatarDescription: string = 'futuristic low-poly avatar',
+  baseAvatarDescription: string = 'futuristic low-poly avatar'
 ): string {
   if (clothingTypes.length === 0) {
     return baseAvatarDescription;
   }
 
-  const clothingDescriptions = clothingTypes.map((type) => CLOTHING_CATEGORIES[type].prompt).join(', ');
+  const clothingDescriptions = clothingTypes
+    .map((type) => CLOTHING_CATEGORIES[type].prompt)
+    .join(', ');
 
   return `${baseAvatarDescription} wearing ${clothingDescriptions}. Integrate the clothing items seamlessly while maintaining the avatar's original style, proportions, and color scheme. Ensure the clothing enhances the futuristic aesthetic.`;
 }
@@ -199,7 +203,11 @@ export interface AvatarGenerationError {
   suggestions?: string[];
 }
 
-export function createAvatarError(code: string, message: string, details?: any): AvatarGenerationError {
+export function createAvatarError(
+  code: string,
+  message: string,
+  details?: any
+): AvatarGenerationError {
   const suggestions: string[] = [];
 
   switch (code) {
@@ -241,7 +249,10 @@ export interface AvatarQualityMetrics {
   renderQuality: number; // 0-1 score
 }
 
-export function assessAvatarQuality(avatarUrl: string, generationParams: any): Promise<AvatarQualityMetrics> {
+export function assessAvatarQuality(
+  avatarUrl: string,
+  generationParams: any
+): Promise<AvatarQualityMetrics> {
   // This would be implemented with actual image analysis
   // For now, return mock data based on generation parameters
   return Promise.resolve({

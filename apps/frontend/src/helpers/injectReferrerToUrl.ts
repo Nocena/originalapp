@@ -1,7 +1,7 @@
-import { HEY_TREASURY } from "@nocena/data/constants";
+import { HEY_TREASURY } from '@nocena/data/constants';
 
 const DOMAIN_PARAM_MAP: Record<string, { name: string; value: string }> = {
-  "zora.co": { name: "referrer", value: HEY_TREASURY }
+  'zora.co': { name: 'referrer', value: HEY_TREASURY },
 };
 
 const injectReferrerToUrl = (url: string) => {

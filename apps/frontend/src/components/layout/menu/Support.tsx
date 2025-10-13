@@ -118,7 +118,8 @@ const SupportMenu: React.FC<SupportMenuProps> = ({ onBack }) => {
             Alternative Contact
           </h3>
           <p className="text-white/70 text-sm leading-relaxed mb-4">
-            If you're having trouble accessing the group, feel free to reach out via alternative channels.
+            If you're having trouble accessing the group, feel free to reach out via alternative
+            channels.
           </p>
 
           <div className="space-y-3">
@@ -163,21 +164,22 @@ const SupportMenu: React.FC<SupportMenuProps> = ({ onBack }) => {
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaPink rounded-full mt-2 flex-shrink-0"></div>
               <p className="text-white/70 text-sm">
-                <strong className="text-white">Be specific:</strong> Include details about what you were doing when the
-                issue occurred
+                <strong className="text-white">Be specific:</strong> Include details about what you
+                were doing when the issue occurred
               </p>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaBlue rounded-full mt-2 flex-shrink-0"></div>
               <p className="text-white/70 text-sm">
-                <strong className="text-white">Screenshots help:</strong> Visual examples make it easier to understand
-                your issue
+                <strong className="text-white">Screenshots help:</strong> Visual examples make it
+                easier to understand your issue
               </p>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaPurple rounded-full mt-2 flex-shrink-0"></div>
               <p className="text-white/70 text-sm">
-                <strong className="text-white">Device info:</strong> Mention your device type and browser if relevant
+                <strong className="text-white">Device info:</strong> Mention your device type and
+                browser if relevant
               </p>
             </div>
           </div>
@@ -189,15 +191,21 @@ const SupportMenu: React.FC<SupportMenuProps> = ({ onBack }) => {
           <div className="space-y-3">
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaPink rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-white/70 text-sm">Try refreshing the page if something isn't loading</p>
+              <p className="text-white/70 text-sm">
+                Try refreshing the page if something isn't loading
+              </p>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaBlue rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-white/70 text-sm">Check your internet connection for upload issues</p>
+              <p className="text-white/70 text-sm">
+                Check your internet connection for upload issues
+              </p>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaPurple rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-white/70 text-sm">Clear browser cache if app is acting strangely</p>
+              <p className="text-white/70 text-sm">
+                Clear browser cache if app is acting strangely
+              </p>
             </div>
           </div>
         </div>

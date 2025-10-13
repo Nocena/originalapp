@@ -126,7 +126,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     console.log('📋 Request details:', {
-      challenge: challengeDescription.substring(0, 100) + (challengeDescription.length > 100 ? '...' : ''),
+      challenge:
+        challengeDescription.substring(0, 100) + (challengeDescription.length > 100 ? '...' : ''),
       frameCount: frames.length,
       avgFrameSize: `${(frames.reduce((sum, f) => sum + f.length, 0) / frames.length / 1024).toFixed(1)}KB`,
       totalDataSize: `${(frames.reduce((sum, f) => sum + f.length, 0) / 1024 / 1024).toFixed(2)}MB`,
@@ -158,7 +159,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (validFrames.length < frames.length) {
-      console.warn(`⚠️ Some frames were invalid. Using ${validFrames.length}/${frames.length} frames`);
+      console.warn(
+        `⚠️ Some frames were invalid. Using ${validFrames.length}/${frames.length} frames`
+      );
     }
 
     // Create vision messages
@@ -206,7 +209,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       1.0,
       ((creativity + authenticity + effort) / 30) * 0.4 + // Quality factors (40%)
         (score / 100) * 0.4 + // Score factor (40%)
-        (validFrames.length / 20) * 0.2, // Frame count factor (20%)
+        (validFrames.length / 20) * 0.2 // Frame count factor (20%)
     );
 
     const result: AIChallengeResponse = {
@@ -248,7 +251,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    if (errorMessage.includes('tokens') || errorMessage.includes('limit') || errorMessage.includes('too large')) {
+    if (
+      errorMessage.includes('tokens') ||
+      errorMessage.includes('limit') ||
+      errorMessage.includes('too large')
+    ) {
       return res.status(400).json({
         success: false,
         score: 0,

@@ -123,7 +123,9 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
 }) => {
   const { user, updateUser } = useAuth();
   const backgroundTasks = useBackgroundTasks();
-  const [claimingStage, setClaimingStage] = useState<'ready' | 'claiming' | 'success' | 'failed'>('ready');
+  const [claimingStage, setClaimingStage] = useState<'ready' | 'claiming' | 'success' | 'failed'>(
+    'ready'
+  );
   const [challengeDescription, setChallengeDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [videoUrl, setVideoUrl] = useState<string>('');
@@ -211,7 +213,10 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
           error: 'Background NFT generation failed - will retry',
         }));
       } else if (nftTask.status === 'running') {
-        console.log('[NFT Progress DEBUG] Background NFT still generating...', nftTask.progress + '%');
+        console.log(
+          '[NFT Progress DEBUG] Background NFT still generating...',
+          nftTask.progress + '%'
+        );
         setNftState((prev) => ({
           ...prev,
           status: 'generating',
@@ -254,7 +259,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
               }
             },
             'image/jpeg',
-            0.9,
+            0.9
           );
         }
       } catch (error) {
@@ -282,7 +287,13 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
   };
 
   const saveCompletedNFTToDatabase = async (imageUrl: string) => {
-    if (!completionId || !user?.id || !nftState.collectionId || !nftState.templateType || !nftState.templateName) {
+    if (
+      !completionId ||
+      !user?.id ||
+      !nftState.collectionId ||
+      !nftState.templateType ||
+      !nftState.templateName
+    ) {
       console.warn('Missing data for NFT database save:', {
         completionId,
         userId: user?.id,
@@ -329,7 +340,9 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
     }
 
     if (nftState.status === 'generating') {
-      setErrorMessage(`Please wait for your NFT to finish generating (${nftState.progress}% complete)`);
+      setErrorMessage(
+        `Please wait for your NFT to finish generating (${nftState.progress}% complete)`
+      );
       return;
     }
 
@@ -355,7 +368,9 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
       };
 
       const existingNFTData =
-        (nftState.status === 'background-ready' || nftState.status === 'completed' || nftState.status === 'saved') &&
+        (nftState.status === 'background-ready' ||
+          nftState.status === 'completed' ||
+          nftState.status === 'saved') &&
         nftState.collectionId
           ? {
               collectionId: nftState.collectionId,
@@ -370,7 +385,12 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
             }
           : undefined;
 
-      const result = await completeChallengeWorkflow(user.id, completionData, updateUser, existingNFTData);
+      const result = await completeChallengeWorkflow(
+        user.id,
+        completionData,
+        updateUser,
+        existingNFTData
+      );
 
       if (result.success) {
         console.log('[Claim Success DEBUG] Challenge completion successful:', result);
@@ -425,7 +445,9 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
       }
     } catch (error) {
       console.error('[Claim Error DEBUG] Error claiming tokens:', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to claim tokens. Please try again.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Failed to claim tokens. Please try again.'
+      );
       setClaimingStage('failed');
     }
   };
@@ -435,7 +457,9 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
       case 'ready':
         return {
           title: 'Claim Reward',
-          subtitle: nftState.backgroundTaskUsed ? 'Optimized NFT ready!' : 'Time to collect your reward',
+          subtitle: nftState.backgroundTaskUsed
+            ? 'Optimized NFT ready!'
+            : 'Time to collect your reward',
         };
       case 'claiming':
         return {
@@ -468,7 +492,11 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
         }}
       >
         {/* Back Button */}
-        <button onClick={onBack} className="focus:outline-none pointer-events-auto" aria-label="Back">
+        <button
+          onClick={onBack}
+          className="focus:outline-none pointer-events-auto"
+          aria-label="Back"
+        >
           <ThematicContainer
             color="nocenaBlue"
             glassmorphic={true}
@@ -476,14 +504,28 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
             rounded="full"
             className="w-12 h-12 flex items-center justify-center"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </ThematicContainer>
         </button>
 
         {/* Cancel Button */}
-        <button onClick={onCancel} className="focus:outline-none pointer-events-auto" aria-label="Cancel">
+        <button
+          onClick={onCancel}
+          className="focus:outline-none pointer-events-auto"
+          aria-label="Cancel"
+        >
           <ThematicContainer
             color="nocenaBlue"
             glassmorphic={true}
@@ -491,8 +533,18 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
             rounded="full"
             className="w-12 h-12 flex items-center justify-center"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </ThematicContainer>
         </button>
@@ -537,7 +589,11 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
               />
 
               <div className="absolute top-4 right-4 w-20 h-24 rounded-xl overflow-hidden border-2 border-white shadow-lg">
-                <img src={photoUrl || undefined} alt="Verification selfie" className="w-full h-full object-cover" />
+                <img
+                  src={photoUrl || undefined}
+                  alt="Verification selfie"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               <div className="absolute bottom-4 left-4 right-4">
@@ -577,8 +633,18 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                 className="p-6 text-center"
               >
                 <div className="w-16 h-16 bg-nocenaPurple/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-nocenaPurple/30">
-                  <svg className="w-8 h-8 text-nocenaPurple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-8 h-8 text-nocenaPurple"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </div>
 
@@ -600,7 +666,9 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                     {nftState.status === 'generating' && (
                       <div className="space-y-2">
                         <div className="w-12 h-12 border-2 border-nocenaPink/50 border-t-nocenaPink rounded-full animate-spin mx-auto" />
-                        <p className="text-xs text-gray-400">Generating {nftState.templateName}...</p>
+                        <p className="text-xs text-gray-400">
+                          Generating {nftState.templateName}...
+                        </p>
                       </div>
                     )}
 
@@ -643,8 +711,16 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
               </ThematicContainer>
 
               {/* Description Input */}
-              <ThematicContainer color="nocenaBlue" glassmorphic={true} asButton={false} rounded="2xl" className="p-6">
-                <h4 className="text-lg font-bold text-white mb-4 text-center">Share Your Experience</h4>
+              <ThematicContainer
+                color="nocenaBlue"
+                glassmorphic={true}
+                asButton={false}
+                rounded="2xl"
+                className="p-6"
+              >
+                <h4 className="text-lg font-bold text-white mb-4 text-center">
+                  Share Your Experience
+                </h4>
                 <textarea
                   value={challengeDescription}
                   onChange={(e) => setChallengeDescription(e.target.value)}
@@ -652,14 +728,22 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                   rows={4}
                   className="w-full px-4 py-3 bg-black/30 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-nocenaPink focus:bg-black/50 transition-all resize-none"
                 />
-                <p className="text-xs text-gray-400 mt-2 text-center">This will be shared with your completion post</p>
+                <p className="text-xs text-gray-400 mt-2 text-center">
+                  This will be shared with your completion post
+                </p>
               </ThematicContainer>
             </div>
           )}
 
           {claimingStage === 'claiming' && (
             <div className="text-center">
-              <ThematicContainer color="nocenaPink" glassmorphic={true} asButton={false} rounded="2xl" className="p-8">
+              <ThematicContainer
+                color="nocenaPink"
+                glassmorphic={true}
+                asButton={false}
+                rounded="2xl"
+                className="p-8"
+              >
                 <div className="w-16 h-16 border-4 border-nocenaPink/20 border-t-nocenaPink rounded-full animate-spin mx-auto mb-6" />
                 <h3 className="text-xl font-bold text-white mb-4">Processing Claim</h3>
                 <div className="space-y-2 text-sm text-gray-300">
@@ -713,7 +797,9 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                           </div>
 
                           <div className="space-y-2">
-                            <div className={`text-sm font-bold ${rarityStyles.textColor}`}>{nftState.templateName}</div>
+                            <div className={`text-sm font-bold ${rarityStyles.textColor}`}>
+                              {nftState.templateName}
+                            </div>
 
                             {nftState.tokenBonus && (
                               <div className={`text-xs ${rarityStyles.textColor}`}>
@@ -734,10 +820,26 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
 
           {claimingStage === 'failed' && (
             <div className="text-center">
-              <ThematicContainer color="nocenaPink" glassmorphic={true} asButton={false} rounded="2xl" className="p-8">
+              <ThematicContainer
+                color="nocenaPink"
+                glassmorphic={true}
+                asButton={false}
+                rounded="2xl"
+                className="p-8"
+              >
                 <div className="w-16 h-16 bg-nocenaPink/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-nocenaPink/30">
-                  <svg className="w-8 h-8 text-nocenaPink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
+                  <svg
+                    className="w-8 h-8 text-nocenaPink"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01"
+                    />
                   </svg>
                 </div>
 
@@ -750,7 +852,10 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 mt-auto" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div
+          className="flex gap-4 mt-auto"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
           {claimingStage === 'ready' && (
             <PrimaryButton
               onClick={handleClaimTokens}
@@ -768,11 +873,21 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
           )}
 
           {claimingStage === 'claiming' && (
-            <PrimaryButton text="Processing..." className="flex-1" disabled={true} isActive={false} />
+            <PrimaryButton
+              text="Processing..."
+              className="flex-1"
+              disabled={true}
+              isActive={false}
+            />
           )}
 
           {claimingStage === 'failed' && (
-            <PrimaryButton onClick={handleClaimTokens} text="Retry Claim" className="flex-1" isActive={true} />
+            <PrimaryButton
+              onClick={handleClaimTokens}
+              text="Retry Claim"
+              className="flex-1"
+              isActive={true}
+            />
           )}
         </div>
       </div>
@@ -794,7 +909,12 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                 className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
 
@@ -808,11 +928,17 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                     <div
                       className={`aspect-square rounded-2xl overflow-hidden border-4 ${rarityStyles.borderColor} ${rarityStyles.animation || ''} mb-4 shadow-xl ${rarityStyles.glowColor}`}
                     >
-                      <img src={nftState.imageUrl} alt={nftState.templateName} className="w-full h-full object-cover" />
+                      <img
+                        src={nftState.imageUrl}
+                        alt={nftState.templateName}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
 
                     <div className="space-y-3">
-                      <h3 className={`text-lg font-bold ${rarityStyles.textColor}`}>{nftState.templateName}</h3>
+                      <h3 className={`text-lg font-bold ${rarityStyles.textColor}`}>
+                        {nftState.templateName}
+                      </h3>
 
                       <div
                         className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${rarityStyles.bgColor} ${rarityStyles.textColor} border ${rarityStyles.borderColor}`}
@@ -834,7 +960,8 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                       )}
 
                       <p className="text-sm text-gray-400">
-                        This {nftState.rarity} NFT provides a permanent bonus to your challenge rewards.
+                        This {nftState.rarity} NFT provides a permanent bonus to your challenge
+                        rewards.
                       </p>
                     </div>
                   </>

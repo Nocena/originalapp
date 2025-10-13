@@ -67,7 +67,10 @@ export function selectRandomClothingTemplate(): ClothingTemplateInfo {
 /**
  * Generates an enhanced prompt for clothing NFT creation
  */
-export function generateClothingNFTPrompt(templateInfo: ClothingTemplateInfo, userID: string): string {
+export function generateClothingNFTPrompt(
+  templateInfo: ClothingTemplateInfo,
+  userID: string
+): string {
   const basePrompt = `Create a single NFT clothing item: ${templateInfo.prompt}`;
 
   // Add Nocena universe styling
@@ -111,7 +114,11 @@ export async function validateClothingTemplate(templatePath: string): Promise<bo
 /**
  * Prepares clothing NFT generation parameters
  */
-export function prepareClothingNFTParams(userID: string, completionId: string, templateInfo: ClothingTemplateInfo) {
+export function prepareClothingNFTParams(
+  userID: string,
+  completionId: string,
+  templateInfo: ClothingTemplateInfo
+) {
   const enhancedPrompt = generateClothingNFTPrompt(templateInfo, userID);
 
   return {
@@ -148,7 +155,7 @@ export interface ClothingNFTProgress {
 
 export function createClothingNFTProgressTracker(
   collectionId: string,
-  templateType: ClothingTemplate,
+  templateType: ClothingTemplate
 ): ClothingNFTProgress {
   return {
     status: 'pending',
@@ -173,7 +180,7 @@ export function createClothingNFTError(
   code: string,
   message: string,
   templateType?: ClothingTemplate,
-  details?: any,
+  details?: any
 ): ClothingNFTError {
   const suggestions: string[] = [];
 
@@ -236,7 +243,7 @@ export interface ClothingNFTDisplay {
 export function formatClothingNFTForDisplay(
   templateInfo: ClothingTemplateInfo,
   imageUrl: string,
-  collectionId: string,
+  collectionId: string
 ): ClothingNFTDisplay {
   return {
     name: templateInfo.name,

@@ -13,7 +13,14 @@ interface ChallengeMarkerProps {
   onSelect: (index: number | null) => void;
 }
 
-const ChallengeMarker: React.FC<ChallengeMarkerProps> = ({ map, MapLibre, challenge, index, isSelected, onSelect }) => {
+const ChallengeMarker: React.FC<ChallengeMarkerProps> = ({
+  map,
+  MapLibre,
+  challenge,
+  index,
+  isSelected,
+  onSelect,
+}) => {
   const markerRef = useRef<any>(null);
   const popupRef = useRef<any>(null);
   const router = useRouter();

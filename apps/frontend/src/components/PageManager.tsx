@@ -54,7 +54,9 @@ const createPageState = (): GlobalPageState => {
       if (savedState) {
         const parsedState = JSON.parse(savedState);
         Object.assign(state, parsedState);
-        logPerf(`Loaded state from localStorage in ${(performance.now() - startTime).toFixed(2)}ms`);
+        logPerf(
+          `Loaded state from localStorage in ${(performance.now() - startTime).toFixed(2)}ms`
+        );
       }
     } catch (error) {
       console.error('Failed to load page state', error);
@@ -115,20 +117,23 @@ const lazyLoadWithTracking = (importFn: () => Promise<any>, pageName: string) =>
 // Lazy load the page components using their correct paths
 const HomePage = lazyLoadWithTracking(
   () => import(/* webpackChunkName: "home-page" */ '../pages/home/index'),
-  'HomePage',
+  'HomePage'
 );
-const MapPage = lazyLoadWithTracking(() => import(/* webpackChunkName: "map-page" */ '../pages/map/index'), 'MapPage');
+const MapPage = lazyLoadWithTracking(
+  () => import(/* webpackChunkName: "map-page" */ '../pages/map/index'),
+  'MapPage'
+);
 const InboxPage = lazyLoadWithTracking(
   () => import(/* webpackChunkName: "inbox-page" */ '../pages/inbox/index'),
-  'InboxPage',
+  'InboxPage'
 );
 const SearchPage = lazyLoadWithTracking(
   () => import(/* webpackChunkName: "search-page" */ '../pages/search/index'),
-  'SearchPage',
+  'SearchPage'
 );
 const ProfilePage = lazyLoadWithTracking(
   () => import(/* webpackChunkName: "profile-page" */ '../pages/profile/index'),
-  'ProfilePage',
+  'ProfilePage'
 );
 
 // Preload critical assets
@@ -253,7 +258,7 @@ const PageManager: React.FC = () => {
               from: prevRoute,
               to: currentPathname,
             } as RouteChangeEvent,
-          }),
+          })
         );
       }
     });
@@ -266,7 +271,9 @@ const PageManager: React.FC = () => {
 
     // Log complete transition time
     window.requestAnimationFrame(() => {
-      logPerf(`Route transition completed in ${(performance.now() - transitionStart).toFixed(2)}ms`);
+      logPerf(
+        `Route transition completed in ${(performance.now() - transitionStart).toFixed(2)}ms`
+      );
     });
   }, [isRouterReady, currentPathname, loadedPages]);
 
@@ -282,7 +289,7 @@ const PageManager: React.FC = () => {
       window.requestAnimationFrame(() => {
         const timer = setTimeout(() => {
           const pagesToPreload = ['/home', '/map', '/inbox', '/search', '/profile'].filter(
-            (page) => !loadedPages.includes(page),
+            (page) => !loadedPages.includes(page)
           );
 
           if (pagesToPreload.length > 0) {
@@ -311,7 +318,8 @@ const PageManager: React.FC = () => {
 
     routes.forEach((route) => {
       const isVisible =
-        route.path === activeRoute || (route.path === '/profile' && activeRoute.startsWith('/profile/'));
+        route.path === activeRoute ||
+        (route.path === '/profile' && activeRoute.startsWith('/profile/'));
 
       window.dispatchEvent(createVisibilityEvent(route.name, isVisible));
     });

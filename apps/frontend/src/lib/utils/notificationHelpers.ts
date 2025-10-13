@@ -21,7 +21,10 @@ interface NotificationOptions {
 /**
  * Send a push notification to a single user
  */
-export async function sendPushNotificationToUser(userId: string, notification: NotificationOptions): Promise<boolean> {
+export async function sendPushNotificationToUser(
+  userId: string,
+  notification: NotificationOptions
+): Promise<boolean> {
   try {
     const response = await fetch('/api/notifications/send-push', {
       method: 'POST',
@@ -49,7 +52,7 @@ export async function sendPushNotificationToUser(userId: string, notification: N
  */
 export async function sendPushNotificationToUsers(
   userIds: string[],
-  notification: NotificationOptions,
+  notification: NotificationOptions
 ): Promise<boolean> {
   try {
     const response = await fetch('/api/notifications/send-push', {
@@ -76,7 +79,10 @@ export async function sendPushNotificationToUsers(
 /**
  * Send daily challenge notification to a user
  */
-export async function sendDailyChallengeNotification(userId: string, challengeTitle: string): Promise<boolean> {
+export async function sendDailyChallengeNotification(
+  userId: string,
+  challengeTitle: string
+): Promise<boolean> {
   return sendPushNotificationToUser(userId, {
     title: '🎯 New Daily Challenge!',
     body: challengeTitle,
@@ -97,7 +103,10 @@ export async function sendDailyChallengeNotification(userId: string, challengeTi
 /**
  * Send follow notification to a user
  */
-export async function sendFollowNotification(targetUserId: string, followerUsername: string): Promise<boolean> {
+export async function sendFollowNotification(
+  targetUserId: string,
+  followerUsername: string
+): Promise<boolean> {
   return sendPushNotificationToUser(targetUserId, {
     title: '👥 New Follower!',
     body: `${followerUsername} started following you`,
@@ -121,7 +130,7 @@ export async function sendFollowNotification(targetUserId: string, followerUsern
 export async function sendPrivateChallengeNotification(
   targetUserId: string,
   challengerUsername: string,
-  challengeTitle: string,
+  challengeTitle: string
 ): Promise<boolean> {
   return sendPushNotificationToUser(targetUserId, {
     title: "🏆 You've Been Challenged!",
@@ -147,7 +156,7 @@ export async function sendPrivateChallengeNotification(
 export async function sendChallengeCompletionNotification(
   followerIds: string[],
   username: string,
-  challengeTitle: string,
+  challengeTitle: string
 ): Promise<boolean> {
   if (followerIds.length === 0) return true;
 
@@ -175,7 +184,7 @@ export async function sendChallengeCompletionNotification(
 export async function sendWeeklyReminderNotification(
   userIds: string[],
   completedChallenges: number,
-  totalChallenges: number,
+  totalChallenges: number
 ): Promise<boolean> {
   if (userIds.length === 0) return true;
 
@@ -203,7 +212,10 @@ export async function sendWeeklyReminderNotification(
 /**
  * Send streak milestone notification
  */
-export async function sendStreakMilestoneNotification(userId: string, streakDays: number): Promise<boolean> {
+export async function sendStreakMilestoneNotification(
+  userId: string,
+  streakDays: number
+): Promise<boolean> {
   const getStreakMessage = (days: number): string => {
     if (days === 7) return 'One week streak! 🔥';
     if (days === 30) return 'One month streak! 🔥🔥';
@@ -235,7 +247,7 @@ export async function sendStreakMilestoneNotification(userId: string, streakDays
 export async function sendTokenRewardNotification(
   userId: string,
   tokensEarned: number,
-  reason: string,
+  reason: string
 ): Promise<boolean> {
   return sendPushNotificationToUser(userId, {
     title: '💰 Tokens Earned!',

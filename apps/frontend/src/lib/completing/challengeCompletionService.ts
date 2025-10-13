@@ -60,7 +60,7 @@ export async function completeChallengeWorkflow(
     imageUrl?: string;
     generationPrompt?: string;
     status: 'generating' | 'completed' | 'failed';
-  },
+  }
 ): Promise<CompletionResult> {
   try {
     const { video, photo, verificationResult, description, challenge } = completionData;
@@ -71,7 +71,11 @@ export async function completeChallengeWorkflow(
     console.log('Existing NFT data:', existingNFTData);
 
     // Step 1: Upload media to IPFS
-    const { videoCID, selfieCID } = await directPinataUpload.uploadChallengeMedia(video, photo, userId);
+    const { videoCID, selfieCID } = await directPinataUpload.uploadChallengeMedia(
+      video,
+      photo,
+      userId
+    );
     console.log('Media uploaded successfully via direct upload:', { videoCID, selfieCID });
 
     const timestamp = Date.now();
@@ -97,7 +101,7 @@ export async function completeChallengeWorkflow(
         challenge.title,
         challenge.description,
         challenge.reward,
-        challenge.frequency || 'daily',
+        challenge.frequency || 'daily'
       );
     } else if (challenge.type === 'PRIVATE') {
       challengeType = 'private';
@@ -116,7 +120,7 @@ export async function completeChallengeWorkflow(
       userId,
       challengeId,
       challengeType,
-      JSON.stringify(mediaMetadata),
+      JSON.stringify(mediaMetadata)
     );
 
     console.log('✅ Challenge completion created with ID:', completionId);
@@ -127,7 +131,7 @@ export async function completeChallengeWorkflow(
     // Step 5: Update the AuthContext if needed (for AI challenges)
     if (challenge.type === 'AI' && challenge.frequency && updateAuthUser) {
       const updatedCompletionStrings = calculateUpdatedCompletionStrings(
-        challenge.frequency as 'daily' | 'weekly' | 'monthly',
+        challenge.frequency as 'daily' | 'weekly' | 'monthly'
       );
       console.log('Updating AuthContext with:', updatedCompletionStrings);
       updateAuthUser(updatedCompletionStrings);
@@ -231,7 +235,7 @@ export async function saveNFTRewardAfterCompletion(
     templateName: string;
     imageUrl: string;
     generationPrompt?: string;
-  },
+  }
 ): Promise<{ success: boolean; nftId?: string; error?: string }> {
   console.log('🎁 Saving NFT reward after completion for:', { completionId, userId });
 
@@ -273,7 +277,9 @@ function calculateUpdatedCompletionStrings(challengeType: 'daily' | 'weekly' | '
     };
   } else if (challengeType === 'weekly') {
     const startOfYear = new Date(now.getFullYear(), 0, 1);
-    const daysSinceStart = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceStart = Math.floor(
+      (now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)
+    );
     const weekOfYear = Math.floor(daysSinceStart / 7);
 
     const currentString = Array(52).fill('0');
@@ -300,7 +306,7 @@ async function getOrCreateSimpleAIChallenge(
   title: string,
   description: string,
   reward: number,
-  frequency: string,
+  frequency: string
 ): Promise<string> {
   const axios = (await import('axios')).default;
   const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
@@ -317,7 +323,7 @@ async function getOrCreateSimpleAIChallenge(
   const response = await axios.post(
     DGRAPH_ENDPOINT,
     { query, variables: { frequency } },
-    { headers: { 'Content-Type': 'application/json' } },
+    { headers: { 'Content-Type': 'application/json' } }
   );
 
   const existing = response.data.data?.queryAIChallenge?.[0];
@@ -326,8 +332,10 @@ async function getOrCreateSimpleAIChallenge(
   if (existing) {
     const created = new Date(existing.createdAt);
     const sameDay = created.toDateString() === today.toDateString();
-    const sameWeek = created.getFullYear() === today.getFullYear() && getWeek(created) === getWeek(today);
-    const sameMonth = created.getMonth() === today.getMonth() && created.getFullYear() === today.getFullYear();
+    const sameWeek =
+      created.getFullYear() === today.getFullYear() && getWeek(created) === getWeek(today);
+    const sameMonth =
+      created.getMonth() === today.getMonth() && created.getFullYear() === today.getFullYear();
 
     if (
       (frequency === 'daily' && sameDay) ||
@@ -351,7 +359,7 @@ async function createSimpleAIChallenge(
   title: string,
   description: string,
   reward: number,
-  frequency: string,
+  frequency: string
 ): Promise<string> {
   const axios = (await import('axios')).default;
   const { v4: uuidv4 } = await import('uuid');
@@ -368,8 +376,11 @@ async function createSimpleAIChallenge(
 
   const result = await axios.post(
     DGRAPH_ENDPOINT,
-    { query: mutation, variables: { id, title, description, reward, createdAt: new Date().toISOString(), frequency } },
-    { headers: { 'Content-Type': 'application/json' } },
+    {
+      query: mutation,
+      variables: { id, title, description, reward, createdAt: new Date().toISOString(), frequency },
+    },
+    { headers: { 'Content-Type': 'application/json' } }
   );
 
   return result.data.data.addAIChallenge.aIChallenge[0].id;
@@ -443,7 +454,7 @@ async function validatePublicChallenge(challengeId: string, userId: string): Pro
       query,
       variables: { challengeId },
     },
-    { headers },
+    { headers }
   );
 
   console.log('Public challenge validation response:', res.data);
@@ -474,7 +485,7 @@ async function validatePublicChallenge(challengeId: string, userId: string): Pro
         query: alternativeQuery,
         variables: { challengeId },
       },
-      { headers },
+      { headers }
     );
 
     console.log('Alternative query response:', altRes.data);
@@ -500,7 +511,7 @@ async function validateAndAutoJoinChallenge(
   challenge: any,
   challengeId: string,
   userId: string,
-  headers: any,
+  headers: any
 ): Promise<void> {
   if (!challenge) {
     console.error('Public challenge not found:', challengeId);
@@ -574,14 +585,16 @@ async function validateAndAutoJoinChallenge(
           newCount: challenge.participantCount + 1,
         },
       },
-      { headers },
+      { headers }
     );
 
     console.log('Auto-join response:', joinResponse.data);
 
     if (joinResponse.data.errors) {
       console.error('Error auto-joining challenge:', joinResponse.data.errors);
-      throw new Error(`Failed to join challenge: ${joinResponse.data.errors[0]?.message || 'Unknown error'}`);
+      throw new Error(
+        `Failed to join challenge: ${joinResponse.data.errors[0]?.message || 'Unknown error'}`
+      );
     }
 
     const updatedChallenge = joinResponse.data.data?.updatePublicChallenge?.publicChallenge?.[0];
@@ -605,12 +618,17 @@ async function handlePostCompletionActions(
   challengeId: string,
   challengeType: 'ai' | 'private' | 'public',
   challenge: CompletionData['challenge'],
-  completionId: string,
+  completionId: string
 ): Promise<void> {
   if (challengeType === 'private') {
     await markPrivateChallengeCompleted(challengeId);
     if (challenge.creatorId) {
-      await createNotification(challenge.creatorId, userId, `${challenge.title} was completed!`, 'challenge_completed');
+      await createNotification(
+        challenge.creatorId,
+        userId,
+        `${challenge.title} was completed!`,
+        'challenge_completed'
+      );
     }
   }
 
@@ -619,7 +637,7 @@ async function handlePostCompletionActions(
       challenge.creatorId,
       userId,
       `Someone completed your public challenge: ${challenge.title}`,
-      'challenge_completed',
+      'challenge_completed'
     );
   }
 }

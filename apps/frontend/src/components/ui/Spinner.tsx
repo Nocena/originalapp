@@ -1,13 +1,13 @@
-import cn from "../../helpers/cn"
-import { memo } from "react";
+import cn from '../../helpers/cn';
+import { memo } from 'react';
 
 interface SpinnerProps {
   className?: string;
-  size?: "xs" | "sm" | "md";
+  size?: 'xs' | 'sm' | 'md';
 }
 
-export const Spinner = ({ className, size = "md" }: SpinnerProps) => {
-  const sizeClasses = { xs: "size-4", sm: "size-5", md: "size-7" };
+export const Spinner = ({ className, size = 'md' }: SpinnerProps) => {
+  const sizeClasses = { xs: 'size-4', sm: 'size-5', md: 'size-7' };
 
   return (
     <svg

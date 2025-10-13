@@ -55,15 +55,20 @@ const FAQMenu: React.FC<FAQMenuProps> = ({ onBack }) => {
             What is this beta version?
           </h3>
           <p className="text-white/70 text-sm leading-relaxed">
-            You're using the private beta of Nocena! This version is for testing features and gathering feedback. Some
-            features may be incomplete or have bugs - your testing helps us improve the app.
+            You're using the private beta of Nocena! This version is for testing features and
+            gathering feedback. Some features may be incomplete or have bugs - your testing helps us
+            improve the app.
           </p>
         </div>
 
         {/* What should I expect */}
         <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-          <h3 className="text-white font-semibold mb-4 text-lg">What should I expect as a beta tester?</h3>
-          <p className="text-white/70 text-sm leading-relaxed mb-4">As a beta tester, you might experience:</p>
+          <h3 className="text-white font-semibold mb-4 text-lg">
+            What should I expect as a beta tester?
+          </h3>
+          <p className="text-white/70 text-sm leading-relaxed mb-4">
+            As a beta tester, you might experience:
+          </p>
           <div className="space-y-3">
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-white/5">
               <div className="w-2 h-2 bg-nocenaPink rounded-full flex-shrink-0"></div>
@@ -71,11 +76,15 @@ const FAQMenu: React.FC<FAQMenuProps> = ({ onBack }) => {
             </div>
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-white/5">
               <div className="w-2 h-2 bg-nocenaBlue rounded-full flex-shrink-0"></div>
-              <span className="text-white/70 text-sm">Features that change or get updated frequently</span>
+              <span className="text-white/70 text-sm">
+                Features that change or get updated frequently
+              </span>
             </div>
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-white/5">
               <div className="w-2 h-2 bg-nocenaPurple rounded-full flex-shrink-0"></div>
-              <span className="text-white/70 text-sm">Some missing features that will be added later</span>
+              <span className="text-white/70 text-sm">
+                Some missing features that will be added later
+              </span>
             </div>
           </div>
         </div>
@@ -99,7 +108,8 @@ const FAQMenu: React.FC<FAQMenuProps> = ({ onBack }) => {
           <div className="space-y-4">
             <div className="bg-red-500/20 rounded-lg p-4 border border-red-500/30">
               <p className="text-red-200 text-sm leading-relaxed">
-                Nocena tokens in private beta are <span className="text-red-300 font-semibold">TESTNET ONLY</span>.
+                Nocena tokens in private beta are{' '}
+                <span className="text-red-300 font-semibold">TESTNET ONLY</span>.
               </p>
             </div>
             <p className="text-white/70 text-sm leading-relaxed">
@@ -114,7 +124,9 @@ const FAQMenu: React.FC<FAQMenuProps> = ({ onBack }) => {
             <Bug className="w-5 h-5 mr-3 text-nocenaBlue" />
             What feedback is most helpful?
           </h3>
-          <p className="text-white/70 text-sm leading-relaxed mb-4">We especially want to know about:</p>
+          <p className="text-white/70 text-sm leading-relaxed mb-4">
+            We especially want to know about:
+          </p>
           <div className="space-y-3 mb-4">
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-white/5">
               <div className="w-2 h-2 bg-red-400 rounded-full flex-shrink-0"></div>
@@ -122,7 +134,9 @@ const FAQMenu: React.FC<FAQMenuProps> = ({ onBack }) => {
             </div>
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-white/5">
               <div className="w-2 h-2 bg-nocenaPink rounded-full flex-shrink-0"></div>
-              <span className="text-white/70 text-sm">Features that are confusing or hard to use</span>
+              <span className="text-white/70 text-sm">
+                Features that are confusing or hard to use
+              </span>
             </div>
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-white/5">
               <div className="w-2 h-2 bg-nocenaBlue rounded-full flex-shrink-0"></div>
@@ -135,8 +149,10 @@ const FAQMenu: React.FC<FAQMenuProps> = ({ onBack }) => {
           </div>
           <div className="bg-nocenaBlue/20 rounded-lg p-4 border border-nocenaBlue/30">
             <p className="text-nocenaBlue text-sm leading-relaxed">
-              If you're reporting an issue, please include <span className="font-semibold">steps to reproduce</span>,{' '}
-              <span className="font-semibold">screenshots</span>, or any other helpful material, if possible.
+              If you're reporting an issue, please include{' '}
+              <span className="font-semibold">steps to reproduce</span>,{' '}
+              <span className="font-semibold">screenshots</span>, or any other helpful material, if
+              possible.
             </p>
           </div>
         </div>
@@ -148,14 +164,16 @@ const FAQMenu: React.FC<FAQMenuProps> = ({ onBack }) => {
             The camera isn't working - what do I do?
           </h3>
           <p className="text-white/70 text-sm leading-relaxed mb-4">
-            <span className="text-nocenaBlue font-semibold">Check permissions</span> - Make sure you allowed camera
-            access. For detialed debugging of camera, microphone and notifications issues you can.
+            <span className="text-nocenaBlue font-semibold">Check permissions</span> - Make sure you
+            allowed camera access. For detialed debugging of camera, microphone and notifications
+            issues you can.
           </p>
           <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-4">
             <h4 className="text-yellow-200 font-semibold mb-2">On Android devices</h4>
             <p className="text-yellow-200 text-sm leading-relaxed">
-              Ensure that camera access is granted to Google Chrome or your default browser. Since Nocena is a PWA, it
-              runs through your browser in the background - even when installed as an app.
+              Ensure that camera access is granted to Google Chrome or your default browser. Since
+              Nocena is a PWA, it runs through your browser in the background - even when installed
+              as an app.
             </p>
           </div>
         </div>

@@ -25,10 +25,18 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
   // Handle case where challenge is null or loading
   if (!challenge) {
     return (
-      <ThematicContainer asButton={false} glassmorphic={true} color="nocenaBlue" rounded="xl" className="px-12 py-8">
+      <ThematicContainer
+        asButton={false}
+        glassmorphic={true}
+        color="nocenaBlue"
+        rounded="xl"
+        className="px-12 py-8"
+      >
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-4">No Challenge Available</h2>
-          <p className="text-lg text-gray-300 mb-8 font-light">Please check back later for new challenges.</p>
+          <p className="text-lg text-gray-300 mb-8 font-light">
+            Please check back later for new challenges.
+          </p>
         </div>
       </ThematicContainer>
     );
@@ -37,7 +45,13 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
   // Show completion state
   if (hasCompleted) {
     return (
-      <ThematicContainer asButton={false} glassmorphic={true} color="nocenaPink" rounded="xl" className="px-12 py-8">
+      <ThematicContainer
+        asButton={false}
+        glassmorphic={true}
+        color="nocenaPink"
+        rounded="xl"
+        className="px-12 py-8"
+      >
         <div className="text-center">
           <h2 className="text-xl font-bold mb-4 text-green-300">{challenge.title}</h2>
           <div className="flex flex-col items-center space-y-6">
@@ -61,7 +75,13 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
   // Show offline state for inactive challenges
   if (!challenge.isActive) {
     return (
-      <ThematicContainer asButton={false} glassmorphic={true} color="nocenaPurple" rounded="xl" className="px-12 py-8">
+      <ThematicContainer
+        asButton={false}
+        glassmorphic={true}
+        color="nocenaPurple"
+        rounded="xl"
+        className="px-12 py-8"
+      >
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-4 text-gray-400">{challenge.title}</h2>
           <p className="text-lg text-gray-400 mb-8 font-light">{challenge.description}</p>
@@ -71,7 +91,11 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
               ⚠️ Challenge Offline - Check Connection
             </div>
 
-            <ThematicContainer asButton={false} color="nocenaPurple" className="px-4 py-1 opacity-50">
+            <ThematicContainer
+              asButton={false}
+              color="nocenaPurple"
+              className="px-4 py-1 opacity-50"
+            >
               <div className="flex items-center space-x-1">
                 <span className="text-xl font-semibold">{reward}</span>
                 <Image src={nocenixIcon} alt="Nocenix" width={32} height={32} />
@@ -85,13 +109,22 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
 
   // Show active challenge (not completed)
   return (
-    <ThematicContainer asButton={false} glassmorphic={true} color="nocenaBlue" rounded="xl" className="px-12 py-8">
+    <ThematicContainer
+      asButton={false}
+      glassmorphic={true}
+      color="nocenaBlue"
+      rounded="xl"
+      className="px-12 py-8"
+    >
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-4">{challenge.title}</h2>
         <p className="text-lg text-gray-300 mb-8 font-light">{challenge.description}</p>
 
         <div className="flex flex-col items-center space-y-6">
-          <PrimaryButton text="Complete Challenge" onClick={() => onCompleteChallenge('AI', selectedTab)} />
+          <PrimaryButton
+            text="Complete Challenge"
+            onClick={() => onCompleteChallenge('AI', selectedTab)}
+          />
 
           <ThematicContainer asButton={false} color="nocenaPink" className="px-4 py-1">
             <div className="flex items-center space-x-1">

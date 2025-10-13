@@ -183,13 +183,17 @@ export class SimpleVerificationService {
     });
 
     try {
-      const result = await runAIChallengeCheck(videoBlob, challengeDescription, (progress, message) => {
-        this.updateStep('ai-challenge-check', {
-          status: 'running',
-          progress,
-          message,
-        });
-      });
+      const result = await runAIChallengeCheck(
+        videoBlob,
+        challengeDescription,
+        (progress, message) => {
+          this.updateStep('ai-challenge-check', {
+            status: 'running',
+            progress,
+            message,
+          });
+        }
+      );
 
       this.updateStep('ai-challenge-check', {
         status: result.passed ? 'completed' : 'failed',
@@ -215,7 +219,7 @@ export class SimpleVerificationService {
   async runFullVerification(
     videoBlob: Blob,
     photoBlob: Blob,
-    challengeDescription: string,
+    challengeDescription: string
   ): Promise<VerificationResult> {
     try {
       // Step 1: Basic file check (handles placeholders gracefully)

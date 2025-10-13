@@ -1,5 +1,5 @@
-import cn from "../../helpers/cn"
-import { type ElementType, type MouseEvent, type ReactNode, memo } from "react";
+import cn from '../../helpers/cn';
+import { type ElementType, type MouseEvent, type ReactNode, memo } from 'react';
 import ThematicContainer from '@components/ui/ThematicContainer';
 
 interface CardProps {
@@ -11,11 +11,11 @@ interface CardProps {
 }
 
 const Card = ({
-  as: Tag = "div",
+  as: Tag = 'div',
   children,
-  className = "",
+  className = '',
   forceRounded = false,
-  onClick
+  onClick,
 }: CardProps) => {
   return (
     <ThematicContainer

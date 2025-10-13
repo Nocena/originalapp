@@ -134,7 +134,8 @@ const UpdateNotification: React.FC<UpdateNotificationProps> = ({ onUpdate }) => 
       };
 
       navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-      return () => navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+      return () =>
+        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     }
   }, []);
 
@@ -171,7 +172,7 @@ const UpdateNotification: React.FC<UpdateNotificationProps> = ({ onUpdate }) => 
           setUpdateAvailable(true);
         }
       },
-      30 * 60 * 1000,
+      30 * 60 * 1000
     );
   };
 
@@ -179,7 +180,13 @@ const UpdateNotification: React.FC<UpdateNotificationProps> = ({ onUpdate }) => 
 
   return (
     <div className="fixed bottom-24 left-4 right-4 z-50 mx-auto max-w-sm">
-      <ThematicContainer color="nocenaPurple" glassmorphic={true} asButton={false} rounded="2xl" className="p-6">
+      <ThematicContainer
+        color="nocenaPurple"
+        glassmorphic={true}
+        asButton={false}
+        rounded="2xl"
+        className="p-6"
+      >
         {/* Icon */}
         <div className="flex justify-center mb-4">
           <div className="w-12 h-12 bg-nocenaPurple/20 rounded-full flex items-center justify-center border border-nocenaPurple/30">
@@ -191,13 +198,20 @@ const UpdateNotification: React.FC<UpdateNotificationProps> = ({ onUpdate }) => 
         <div className="text-center mb-6">
           <h3 className="text-lg font-bold text-white mb-2">App Update Ready</h3>
           <p className="text-gray-300 text-sm">
-            {newVersion ? `Version ${newVersion} is available` : 'Get the latest features and improvements'}
+            {newVersion
+              ? `Version ${newVersion} is available`
+              : 'Get the latest features and improvements'}
           </p>
         </div>
 
         {/* Buttons */}
         <div className="space-y-3">
-          <PrimaryButton text="Update Now" onClick={handleUpdate} className="w-full" isActive={true} />
+          <PrimaryButton
+            text="Update Now"
+            onClick={handleUpdate}
+            className="w-full"
+            isActive={true}
+          />
 
           <button
             onClick={handleDismiss}

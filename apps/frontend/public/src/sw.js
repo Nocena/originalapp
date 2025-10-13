@@ -994,12 +994,24 @@ define(['./workbox-ee5ddb69'], function (e) {
         { url: '/_next/static/chunks/d3794927.6970412548947dcb.js', revision: '6970412548947dcb' },
         { url: '/_next/static/chunks/framework-88c2811d5dadabe3.js', revision: '88c2811d5dadabe3' },
         { url: '/_next/static/chunks/home-page.e4d05f9370c02a04.js', revision: 'e4d05f9370c02a04' },
-        { url: '/_next/static/chunks/inbox-page.a35ba57ab7973087.js', revision: 'a35ba57ab7973087' },
+        {
+          url: '/_next/static/chunks/inbox-page.a35ba57ab7973087.js',
+          revision: 'a35ba57ab7973087',
+        },
         { url: '/_next/static/chunks/main-2879a97a02259626.js', revision: '2879a97a02259626' },
         { url: '/_next/static/chunks/map-page.5c1518b533575eca.js', revision: '5c1518b533575eca' },
-        { url: '/_next/static/chunks/pages/_error-96a876ecd6536b2e.js', revision: '96a876ecd6536b2e' },
-        { url: '/_next/static/chunks/pages/admin/seed-invites-02a4ebcbc5f080a9.js', revision: '02a4ebcbc5f080a9' },
-        { url: '/_next/static/chunks/pages/browsing-c9bc2a06ee32864f.js', revision: 'c9bc2a06ee32864f' },
+        {
+          url: '/_next/static/chunks/pages/_error-96a876ecd6536b2e.js',
+          revision: '96a876ecd6536b2e',
+        },
+        {
+          url: '/_next/static/chunks/pages/admin/seed-invites-02a4ebcbc5f080a9.js',
+          revision: '02a4ebcbc5f080a9',
+        },
+        {
+          url: '/_next/static/chunks/pages/browsing-c9bc2a06ee32864f.js',
+          revision: 'c9bc2a06ee32864f',
+        },
         {
           url: '/_next/static/chunks/pages/browsing/components/InteractionSidebar-c26073a70885baf1.js',
           revision: 'c26073a70885baf1',
@@ -1008,7 +1020,10 @@ define(['./workbox-ee5ddb69'], function (e) {
           url: '/_next/static/chunks/pages/browsing/components/RealMojiCapture-0e419dc28fd54346.js',
           revision: '0e419dc28fd54346',
         },
-        { url: '/_next/static/chunks/pages/completing-b70e0946daf704a4.js', revision: 'b70e0946daf704a4' },
+        {
+          url: '/_next/static/chunks/pages/completing-b70e0946daf704a4.js',
+          revision: 'b70e0946daf704a4',
+        },
         {
           url: '/_next/static/chunks/pages/completing/components/ClaimingScreen-3eb4450063602148.js',
           revision: '3eb4450063602148',
@@ -1029,8 +1044,14 @@ define(['./workbox-ee5ddb69'], function (e) {
           url: '/_next/static/chunks/pages/completing/components/VideoReviewScreen-f153d072340bd150.js',
           revision: 'f153d072340bd150',
         },
-        { url: '/_next/static/chunks/pages/createchallenge-6153e375dfb27dfa.js', revision: '6153e375dfb27dfa' },
-        { url: '/_next/static/chunks/pages/home-a4277c5ba4870ece.js', revision: 'a4277c5ba4870ece' },
+        {
+          url: '/_next/static/chunks/pages/createchallenge-6153e375dfb27dfa.js',
+          revision: '6153e375dfb27dfa',
+        },
+        {
+          url: '/_next/static/chunks/pages/home-a4277c5ba4870ece.js',
+          revision: 'a4277c5ba4870ece',
+        },
         {
           url: '/_next/static/chunks/pages/home/components/ChallengeForm-19015cd30c3d057a.js',
           revision: '19015cd30c3d057a',
@@ -1047,7 +1068,10 @@ define(['./workbox-ee5ddb69'], function (e) {
           url: '/_next/static/chunks/pages/home/components/CompletionItem-1ab700207cccde82.js',
           revision: '1ab700207cccde82',
         },
-        { url: '/_next/static/chunks/pages/inbox-af5016d8a4beb16d.js', revision: 'af5016d8a4beb16d' },
+        {
+          url: '/_next/static/chunks/pages/inbox-af5016d8a4beb16d.js',
+          revision: 'af5016d8a4beb16d',
+        },
         {
           url: '/_next/static/chunks/pages/inbox/notifications/NotificationChallenge-a478d526ff750198.js',
           revision: 'a478d526ff750198',
@@ -1060,8 +1084,14 @@ define(['./workbox-ee5ddb69'], function (e) {
           url: '/_next/static/chunks/pages/inbox/notifications/NotificationInviteReward-cb1ec3246f871bb5.js',
           revision: 'cb1ec3246f871bb5',
         },
-        { url: '/_next/static/chunks/pages/index-c3e91277d929c0d0.js', revision: 'c3e91277d929c0d0' },
-        { url: '/_next/static/chunks/pages/login-98f932702b9c5993.js', revision: '98f932702b9c5993' },
+        {
+          url: '/_next/static/chunks/pages/index-c3e91277d929c0d0.js',
+          revision: 'c3e91277d929c0d0',
+        },
+        {
+          url: '/_next/static/chunks/pages/login-98f932702b9c5993.js',
+          revision: '98f932702b9c5993',
+        },
         { url: '/_next/static/chunks/pages/map-611e3d0dcc5170b9.js', revision: '611e3d0dcc5170b9' },
         {
           url: '/_next/static/chunks/pages/map/components/ChallengeMarker-a3b0f40c82bf5918.js',
@@ -1083,9 +1113,18 @@ define(['./workbox-ee5ddb69'], function (e) {
           url: '/_next/static/chunks/pages/map/components/UserLocationMarker-70d8ff191f71f9fa.js',
           revision: '70d8ff191f71f9fa',
         },
-        { url: '/_next/static/chunks/pages/offline-3504c7d3b1c56c25.js', revision: '3504c7d3b1c56c25' },
-        { url: '/_next/static/chunks/pages/profile-ee9d92cfe391d6f9.js', revision: 'ee9d92cfe391d6f9' },
-        { url: '/_next/static/chunks/pages/profile/%5BuserID%5D-ce445d96e2c2ba9f.js', revision: 'ce445d96e2c2ba9f' },
+        {
+          url: '/_next/static/chunks/pages/offline-3504c7d3b1c56c25.js',
+          revision: '3504c7d3b1c56c25',
+        },
+        {
+          url: '/_next/static/chunks/pages/profile-ee9d92cfe391d6f9.js',
+          revision: 'ee9d92cfe391d6f9',
+        },
+        {
+          url: '/_next/static/chunks/pages/profile/%5BuserID%5D-ce445d96e2c2ba9f.js',
+          revision: 'ce445d96e2c2ba9f',
+        },
         {
           url: '/_next/static/chunks/pages/profile/components/AvatarSection-042ef65a11af93bb.js',
           revision: '042ef65a11af93bb',
@@ -1102,20 +1141,44 @@ define(['./workbox-ee5ddb69'], function (e) {
           url: '/_next/static/chunks/pages/profile/components/StatsSection-4d733f4172a3fc55.js',
           revision: '4d733f4172a3fc55',
         },
-        { url: '/_next/static/chunks/pages/register-7ecec7b08b1dc3b3.js', revision: '7ecec7b08b1dc3b3' },
-        { url: '/_next/static/chunks/pages/search-8866e38999b42f79.js', revision: '8866e38999b42f79' },
+        {
+          url: '/_next/static/chunks/pages/register-7ecec7b08b1dc3b3.js',
+          revision: '7ecec7b08b1dc3b3',
+        },
+        {
+          url: '/_next/static/chunks/pages/search-8866e38999b42f79.js',
+          revision: '8866e38999b42f79',
+        },
         {
           url: '/_next/static/chunks/pages/search/components/SearchBox-a60bfc6da1ff467e.js',
           revision: 'a60bfc6da1ff467e',
         },
-        { url: '/_next/static/chunks/polyfills-42372ed130431b0a.js', revision: '846118c33b2c0e922d7b3a7676f81f6f' },
-        { url: '/_next/static/chunks/profile-page-ac338d4c74517f92.js', revision: 'ac338d4c74517f92' },
-        { url: '/_next/static/chunks/search-page.cc4fac5aa54fd6a0.js', revision: 'cc4fac5aa54fd6a0' },
+        {
+          url: '/_next/static/chunks/polyfills-42372ed130431b0a.js',
+          revision: '846118c33b2c0e922d7b3a7676f81f6f',
+        },
+        {
+          url: '/_next/static/chunks/profile-page-ac338d4c74517f92.js',
+          revision: 'ac338d4c74517f92',
+        },
+        {
+          url: '/_next/static/chunks/search-page.cc4fac5aa54fd6a0.js',
+          revision: 'cc4fac5aa54fd6a0',
+        },
         { url: '/_next/static/chunks/webpack-8cbaf01aceee78df.js', revision: '8cbaf01aceee78df' },
         { url: '/_next/static/css/982a7d8ae9709f1c.css', revision: '982a7d8ae9709f1c' },
-        { url: '/_next/static/vBe0Zw3OK_GQaE-Mb_U-I/_buildManifest.js', revision: '672305ea143f5d0adcf4badc5a66be6d' },
-        { url: '/_next/static/vBe0Zw3OK_GQaE-Mb_U-I/_ssgManifest.js', revision: 'b6652df95db52feb4daf4eca35380933' },
-        { url: '/apple-touch-icon-120x120-precomposed.png', revision: 'ef0757805c3b33140cfcaef24d8528e6' },
+        {
+          url: '/_next/static/vBe0Zw3OK_GQaE-Mb_U-I/_buildManifest.js',
+          revision: '672305ea143f5d0adcf4badc5a66be6d',
+        },
+        {
+          url: '/_next/static/vBe0Zw3OK_GQaE-Mb_U-I/_ssgManifest.js',
+          revision: 'b6652df95db52feb4daf4eca35380933',
+        },
+        {
+          url: '/apple-touch-icon-120x120-precomposed.png',
+          revision: 'ef0757805c3b33140cfcaef24d8528e6',
+        },
         { url: '/apple-touch-icon-120x120.png', revision: 'ef0757805c3b33140cfcaef24d8528e6' },
         { url: '/apple-touch-icon-152x152.png', revision: '83254a9f497e38a2ee757eeab8bd1b8a' },
         { url: '/apple-touch-icon-167x167.png', revision: 'b66028409480de73ba29f33651eb19d4' },
@@ -1177,7 +1240,7 @@ define(['./workbox-ee5ddb69'], function (e) {
         { url: '/sw.js', revision: '63bf285d06546bec90a083f6cc4056e6' },
         { url: '/trailer.MP4', revision: '768eb9451b537029be869e1bce044639' },
       ],
-      { ignoreURLParametersMatching: [] },
+      { ignoreURLParametersMatching: [] }
     ),
     e.cleanupOutdatedCaches(),
     e.registerRoute(
@@ -1193,7 +1256,7 @@ define(['./workbox-ee5ddb69'], function (e) {
           },
         ],
       }),
-      'GET',
+      'GET'
     ),
     e.registerRoute(
       /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -1201,7 +1264,7 @@ define(['./workbox-ee5ddb69'], function (e) {
         cacheName: 'google-fonts-cache',
         plugins: [new e.ExpirationPlugin({ maxEntries: 10, maxAgeSeconds: 31536e3 })],
       }),
-      'GET',
+      'GET'
     ),
     e.registerRoute(
       /^https:\/\/gateway\.pinata\.cloud\/.*/i,
@@ -1209,6 +1272,6 @@ define(['./workbox-ee5ddb69'], function (e) {
         cacheName: 'pinata-cache',
         plugins: [new e.ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 2592e3 })],
       }),
-      'GET',
+      'GET'
     ));
 });

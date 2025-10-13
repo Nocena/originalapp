@@ -19,7 +19,9 @@ export const sanitizeObject = <T extends Record<string, any>>(obj: T): T => {
     if (typeof value === 'string') {
       acc[key as keyof T] = sanitizeInput(value) as any;
     } else if (Array.isArray(value)) {
-      acc[key as keyof T] = value.map((item) => (typeof item === 'string' ? sanitizeInput(item) : item)) as any;
+      acc[key as keyof T] = value.map((item) =>
+        typeof item === 'string' ? sanitizeInput(item) : item
+      ) as any;
     } else {
       acc[key as keyof T] = value;
     }

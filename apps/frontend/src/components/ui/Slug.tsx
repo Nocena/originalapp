@@ -1,4 +1,4 @@
-import cn from "../../helpers/cn";
+import cn from '../../helpers/cn';
 
 interface SlugProps {
   className?: string;
@@ -7,16 +7,11 @@ interface SlugProps {
   useBrandColor?: boolean;
 }
 
-const Slug = ({
-  className = "",
-  prefix = "",
-  slug,
-  useBrandColor = false
-}: SlugProps) => {
+const Slug = ({ className = '', prefix = '', slug, useBrandColor = false }: SlugProps) => {
   return (
     <span
       className={cn(
-        useBrandColor ? "text-brand-500" : "text-gray-500 dark:text-gray-200",
+        useBrandColor ? 'text-brand-500' : 'text-gray-500 dark:text-gray-200',
         className
       )}
     >

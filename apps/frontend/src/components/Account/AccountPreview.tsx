@@ -1,13 +1,13 @@
-import { Card, Image, Slug } from "../ui";
+import { Card, Image, Slug } from '../ui';
 import getMentions from '../../helpers/getMentions';
 import nFormatter from '../../helpers/nFormatter';
 import truncateByWords from '../../helpers/truncateByWords';
 import getAccount from '../../helpers/getAccount';
 import getAvatar from '../../helpers/getAvatar';
-import { type AccountStats, useFullAccountLazyQuery } from "@nocena/indexer";
-import * as HoverCard from "@radix-ui/react-hover-card";
-import plur from "plur";
-import type { ReactNode } from "react";
+import { type AccountStats, useFullAccountLazyQuery } from '@nocena/indexer';
+import * as HoverCard from '@radix-ui/react-hover-card';
+import plur from 'plur';
+import type { ReactNode } from 'react';
 import Markup from '@components/ui/Markup';
 
 interface AccountPreviewProps {
@@ -21,7 +21,7 @@ const AccountPreview = ({
   children,
   username,
   address,
-  showUserPreview = true
+  showUserPreview = true,
 }: AccountPreviewProps) => {
   const [loadAccount, { data, loading }] = useFullAccountLazyQuery();
   const account = data?.account;
@@ -35,12 +35,10 @@ const AccountPreview = ({
     await loadAccount({
       variables: {
         accountRequest: {
-          ...(address
-            ? { address }
-            : { username: { localName: username as string } })
+          ...(address ? { address } : { username: { localName: username as string } }),
         },
-        accountStatsRequest: { account: address }
-      }
+        accountStatsRequest: { account: address },
+      },
     });
   };
 
@@ -64,9 +62,7 @@ const AccountPreview = ({
     }
 
     if (!account) {
-      return (
-        <div className="flex h-12 items-center px-3">No account found</div>
-      );
+      return <div className="flex h-12 items-center px-3">No account found</div>;
     }
 
     const UserAvatar = () => (
@@ -84,10 +80,7 @@ const AccountPreview = ({
       <div>
         <div className="max-w-sm truncate">{getAccount(account).name}</div>
         <span>
-          <Slug
-            className="text-sm"
-            slug={getAccount(account).usernameWithPrefix}
-          />
+          <Slug className="text-sm" slug={getAccount(account).usernameWithPrefix} />
           {account.operations?.isFollowingMe && (
             <span className="ml-2 rounded-full bg-gray-200 px-2 py-0.5 text-xs dark:bg-gray-700">
               Follows you
@@ -113,19 +106,13 @@ const AccountPreview = ({
         )}
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1">
-            <div className="text-base">
-              {nFormatter(stats.graphFollowStats?.following)}
-            </div>
-            <div className="text-gray-500 text-sm dark:text-gray-200">
-              Following
-            </div>
+            <div className="text-base">{nFormatter(stats.graphFollowStats?.following)}</div>
+            <div className="text-gray-500 text-sm dark:text-gray-200">Following</div>
           </div>
           <div className="flex items-center space-x-1">
-            <div className="text-base">
-              {nFormatter(stats.graphFollowStats?.followers)}
-            </div>
+            <div className="text-base">{nFormatter(stats.graphFollowStats?.followers)}</div>
             <div className="text-gray-500 text-sm dark:text-gray-200">
-              {plur("Follower", stats.graphFollowStats?.followers)}
+              {plur('Follower', stats.graphFollowStats?.followers)}
             </div>
           </div>
         </div>
@@ -140,12 +127,7 @@ const AccountPreview = ({
           <span>{children}</span>
         </HoverCard.Trigger>
         <HoverCard.Portal>
-          <HoverCard.Content
-            asChild
-            className="z-10 w-72"
-            side="bottom"
-            sideOffset={5}
-          >
+          <HoverCard.Content asChild className="z-10 w-72" side="bottom" sideOffset={5}>
             <div>
               <Card forceRounded>
                 <Preview />

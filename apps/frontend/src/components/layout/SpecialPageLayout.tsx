@@ -128,7 +128,9 @@ const SpecialPageLayout: React.FC<SpecialPageLayoutProps> = ({ children, showHea
       <main
         className="flex-1 relative z-10 overflow-y-auto"
         style={{
-          marginTop: showHeader ? 'calc(env(safe-area-inset-top) + 64px)' : 'env(safe-area-inset-top)',
+          marginTop: showHeader
+            ? 'calc(env(safe-area-inset-top) + 64px)'
+            : 'env(safe-area-inset-top)',
           minHeight: showHeader
             ? 'calc(100vh - env(safe-area-inset-top) - 64px)'
             : 'calc(100vh - env(safe-area-inset-top))',

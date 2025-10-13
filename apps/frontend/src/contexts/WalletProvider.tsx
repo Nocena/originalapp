@@ -20,7 +20,7 @@ export const walletConfig = createConfig(
     appDescription: 'Challenge To Earn',
     appUrl: 'https://family.co', // your app's url
     appIcon: 'https://family.co/logo.png', // your app's icon, no bigger than 1024x1024px (max. 1MB)
-  }),
+  })
 );
 
 const queryClient = new QueryClient();

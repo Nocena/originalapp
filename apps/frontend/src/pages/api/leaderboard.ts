@@ -10,7 +10,9 @@ export default async function handler(req: any, res: any) {
     const { period = 'all-time', limit = 50 } = req.query;
 
     if (!['all-time', 'today', 'week', 'month'].includes(period)) {
-      return res.status(400).json({ message: 'Invalid period. Must be: all-time, today, week, or month' });
+      return res
+        .status(400)
+        .json({ message: 'Invalid period. Must be: all-time, today, week, or month' });
     }
 
     const limitNum = parseInt(limit);

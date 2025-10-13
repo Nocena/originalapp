@@ -21,7 +21,10 @@ interface CheckWalletResponse {
   error?: string;
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<CheckWalletResponse>) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<CheckWalletResponse>
+) {
   console.log('🚀 API /api/lens/checkWallet: Request received');
   console.log('📋 API: Method:', req.method);
   console.log('📋 API: Body:', req.body);

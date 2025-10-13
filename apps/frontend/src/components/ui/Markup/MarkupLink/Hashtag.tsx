@@ -1,6 +1,6 @@
 import stopEventPropagation from '../../../../helpers/stopEventPropagation';
 import type { MarkupLinkProps } from '@components/ui/Markup/MarkupLink/ExternalLink';
-import Link from "next/link";
+import Link from 'next/link';
 
 const Hashtag = ({ title }: MarkupLinkProps) => {
   if (!title) {

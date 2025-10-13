@@ -51,7 +51,9 @@ const NotificationInviteReward: React.FC<NotificationInviteRewardProps> = ({
       onClick={handleProfileRedirect}
     >
       {/* Invite Reward Text - smaller and less bold */}
-      <div className="text-lg font-light mb-2">You have earned a reward for inviting your friend</div>
+      <div className="text-lg font-light mb-2">
+        You have earned a reward for inviting your friend
+      </div>
 
       {/* User and Reward Info Row */}
       <div className="flex items-center justify-between">

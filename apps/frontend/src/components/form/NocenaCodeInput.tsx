@@ -4,14 +4,22 @@ import ThematicContainer from '../ui/ThematicContainer';
 import { FormValues } from '../register/types';
 
 interface Props {
-  field: ControllerRenderProps<FormValues, 'inviteCode'> | ControllerRenderProps<any, 'verificationCode'>;
+  field:
+    | ControllerRenderProps<FormValues, 'inviteCode'>
+    | ControllerRenderProps<any, 'verificationCode'>;
   loading?: boolean;
   onlyNumber?: boolean;
   onValidateInvite?: (code: string) => Promise<void>;
   validationError?: string;
 }
 
-const NocenaCodeInputs = ({ field, loading, onlyNumber, onValidateInvite, validationError }: Props) => {
+const NocenaCodeInputs = ({
+  field,
+  loading,
+  onlyNumber,
+  onValidateInvite,
+  validationError,
+}: Props) => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [isValidating, setIsValidating] = useState(false);
   const redexReplace = onlyNumber ? /[^0-9]/g : /[^a-zA-Z0-9]/g;

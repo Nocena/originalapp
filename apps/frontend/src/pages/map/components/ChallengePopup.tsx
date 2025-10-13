@@ -26,7 +26,11 @@ interface PopupContent {
  * It's not a React component that gets rendered directly -
  * instead it renders to an HTML string that MapLibre will use.
  */
-const ChallengePopup = ({ challenge, onComplete, currentUserId }: ChallengePopupProps): PopupContent => {
+const ChallengePopup = ({
+  challenge,
+  onComplete,
+  currentUserId,
+}: ChallengePopupProps): PopupContent => {
   // Define popup options
   const options: PopupOptions = {
     closeButton: false,
@@ -45,7 +49,8 @@ const ChallengePopup = ({ challenge, onComplete, currentUserId }: ChallengePopup
   const recentCompletions = challenge.recentCompletions || [];
 
   // Check if current user has completed this challenge
-  const hasUserCompleted = currentUserId && recentCompletions.some((completion) => completion.userId === currentUserId);
+  const hasUserCompleted =
+    currentUserId && recentCompletions.some((completion) => completion.userId === currentUserId);
 
   // Generate floating profile bubbles HTML
   const generateProfileBubbles = () => {

@@ -45,7 +45,10 @@ class ClothingNFTService {
   /**
    * Generate a random clothing NFT reward for challenge completion
    */
-  async generateClothingReward(userId: string, completionId: string): Promise<ClothingNFTGenerationResult> {
+  async generateClothingReward(
+    userId: string,
+    completionId: string
+  ): Promise<ClothingNFTGenerationResult> {
     try {
       console.log('🎁 Starting clothing NFT reward generation:', { userId, completionId });
 
@@ -110,7 +113,7 @@ class ClothingNFTService {
         'GENERATION_FAILED',
         `Failed to generate clothing NFT: ${error.message || 'Unknown error'}`,
         undefined,
-        error,
+        error
       );
 
       return {
@@ -128,7 +131,9 @@ class ClothingNFTService {
     try {
       console.log('🔍 Checking clothing NFT status:', collectionId);
 
-      const response = await fetch(`/api/chainGPT/check-clothing-reward-progress?collectionId=${collectionId}`);
+      const response = await fetch(
+        `/api/chainGPT/check-clothing-reward-progress?collectionId=${collectionId}`
+      );
 
       if (!response.ok) {
         throw new Error(`Status check failed: ${response.status}`);
@@ -179,7 +184,7 @@ class ClothingNFTService {
   async pollForCompletion(
     collectionId: string,
     onProgress?: (progress: ClothingNFTProgress) => void,
-    maxAttempts: number = 24, // 2 minutes with 5-second intervals
+    maxAttempts: number = 24 // 2 minutes with 5-second intervals
   ): Promise<string | null> {
     let attempts = 0;
 
@@ -253,7 +258,7 @@ export { clothingNFTService };
  */
 export const generateClothingReward = async (
   userId: string,
-  completionId: string,
+  completionId: string
 ): Promise<ClothingNFTGenerationResult> => {
   return clothingNFTService.generateClothingReward(userId, completionId);
 };
@@ -261,7 +266,9 @@ export const generateClothingReward = async (
 /**
  * Check clothing NFT status
  */
-export const checkClothingNFTStatus = async (collectionId: string): Promise<ClothingNFTStatusResult> => {
+export const checkClothingNFTStatus = async (
+  collectionId: string
+): Promise<ClothingNFTStatusResult> => {
   return clothingNFTService.checkClothingNFTStatus(collectionId);
 };
 
@@ -270,7 +277,7 @@ export const checkClothingNFTStatus = async (collectionId: string): Promise<Clot
  */
 export const pollForClothingNFTCompletion = async (
   collectionId: string,
-  onProgress?: (progress: ClothingNFTProgress) => void,
+  onProgress?: (progress: ClothingNFTProgress) => void
 ): Promise<string | null> => {
   return clothingNFTService.pollForCompletion(collectionId, onProgress);
 };

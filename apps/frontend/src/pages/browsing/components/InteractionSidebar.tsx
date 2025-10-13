@@ -102,7 +102,11 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
   };
 
   const handleRealMojiCaptured = async (imageBlob: Blob, reactionType: string) => {
-    console.log('🎭 [Sidebar] RealMoji captured:', { reactionType, completionId, blobSize: imageBlob.size });
+    console.log('🎭 [Sidebar] RealMoji captured:', {
+      reactionType,
+      completionId,
+      blobSize: imageBlob.size,
+    });
 
     setIsCreatingRealMoji(true);
 
@@ -155,7 +159,10 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
 
         {/* TikTok-style Like button */}
         <div className="flex flex-col items-center">
-          <div className="w-12 h-12 flex items-center justify-center cursor-pointer" onClick={onLikeClick}>
+          <div
+            className="w-12 h-12 flex items-center justify-center cursor-pointer"
+            onClick={onLikeClick}
+          >
             <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm border border-white/30 flex items-center justify-center">
               <svg
                 className={`w-6 h-6 drop-shadow-lg transition-colors duration-200 ${
@@ -172,7 +179,9 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
           </div>
           {/* Show like count */}
           {totalLikes !== undefined && (
-            <span className="text-white text-xs font-semibold drop-shadow-lg mt-1">{formatCount(totalLikes)}</span>
+            <span className="text-white text-xs font-semibold drop-shadow-lg mt-1">
+              {formatCount(totalLikes)}
+            </span>
           )}
         </div>
 
@@ -205,7 +214,9 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
           </div>
           {/* Show reaction count even if 0, but only if totalReactions is defined */}
           {totalReactions !== undefined && (
-            <span className="text-white text-xs font-semibold drop-shadow-lg mt-1">{formatCount(totalReactions)}</span>
+            <span className="text-white text-xs font-semibold drop-shadow-lg mt-1">
+              {formatCount(totalReactions)}
+            </span>
           )}
         </div>
 
@@ -215,7 +226,9 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
             <div className="w-10 h-10 rounded-full border-2 border-pink-500 bg-black/30 backdrop-blur-sm flex items-center justify-center">
               <img src="/nocenix.ico" alt="Nocenix" className="w-6 h-6" />
             </div>
-            <span className="text-pink-500 text-xs font-bold drop-shadow-lg mt-1">+{challenge.reward}</span>
+            <span className="text-pink-500 text-xs font-bold drop-shadow-lg mt-1">
+              +{challenge.reward}
+            </span>
           </div>
         )}
       </div>
@@ -231,8 +244,18 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
                 onClick={() => setShowReactionMenu(false)}
                 className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
               >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -260,7 +283,9 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
               <span className="text-sm font-medium text-gray-700">Instant RealMoji</span>
             </button>
 
-            <p className="text-xs text-gray-500 text-center mt-3">Take a photo of your reaction to create a RealMoji</p>
+            <p className="text-xs text-gray-500 text-center mt-3">
+              Take a photo of your reaction to create a RealMoji
+            </p>
           </div>
         </div>
       )}

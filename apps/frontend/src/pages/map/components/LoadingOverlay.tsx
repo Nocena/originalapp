@@ -14,7 +14,9 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ mapLoaded, locatingUser
       {(!mapLoaded || locatingUser) && !loadError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 bg-opacity-70">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-white">{!mapLoaded ? 'Loading map...' : 'Finding your location...'}</p>
+          <p className="mt-4 text-white">
+            {!mapLoaded ? 'Loading map...' : 'Finding your location...'}
+          </p>
         </div>
       )}
 

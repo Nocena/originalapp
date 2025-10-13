@@ -12,7 +12,11 @@ interface PhoneVerificationProps {
   onResend: () => void;
 }
 
-const PhoneVerification: React.FC<PhoneVerificationProps> = ({ phoneNumber, onVerify, onResend }) => {
+const PhoneVerification: React.FC<PhoneVerificationProps> = ({
+  phoneNumber,
+  onVerify,
+  onResend,
+}) => {
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
   const [shake, setShake] = useState(false);
   const [error, setError] = useState('');

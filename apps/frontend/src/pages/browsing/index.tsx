@@ -95,7 +95,9 @@ const BrowsingPage: React.FC = () => {
       setLoading(true);
 
       // Import the enhanced function from dgraph.ts
-      const { fetchChallengeCompletionsWithLikesAndReactions } = await import('../../../src/lib/api/dgraph');
+      const { fetchChallengeCompletionsWithLikesAndReactions } = await import(
+        '../../../src/lib/api/dgraph'
+      );
 
       // Get current user ID for like status
       const currentUserId = user?.id; // Use actual user ID from auth context
@@ -103,11 +105,13 @@ const BrowsingPage: React.FC = () => {
       // Fetch completions with like and reaction data
       const allCompletions = await fetchChallengeCompletionsWithLikesAndReactions(
         challengeId as string | undefined,
-        currentUserId,
+        currentUserId
       );
 
       if (allCompletions.length === 0) {
-        throw new Error(challengeId ? 'No completions found for this challenge' : 'No completions found');
+        throw new Error(
+          challengeId ? 'No completions found for this challenge' : 'No completions found'
+        );
       }
 
       // Process media URLs for each completion
@@ -150,11 +154,13 @@ const BrowsingPage: React.FC = () => {
             localLikes: completion.totalLikes || 0,
             localIsLiked: completion.isLiked || false,
           };
-        }),
+        })
       );
 
       // Sort by completion date (most recent first)
-      processedCompletions.sort((a, b) => new Date(b.completionDate).getTime() - new Date(a.completionDate).getTime());
+      processedCompletions.sort(
+        (a, b) => new Date(b.completionDate).getTime() - new Date(a.completionDate).getTime()
+      );
 
       setCompletions(processedCompletions);
     } catch (err) {
@@ -196,7 +202,7 @@ const BrowsingPage: React.FC = () => {
         }
       }
     },
-    [completions],
+    [completions]
   );
 
   const handleVideoClick = useCallback((completionId: string) => {
@@ -349,7 +355,7 @@ const BrowsingPage: React.FC = () => {
           };
         }
         return comp;
-      }),
+      })
     );
 
     try {
@@ -382,7 +388,7 @@ const BrowsingPage: React.FC = () => {
             };
           }
           return comp;
-        }),
+        })
       );
     } catch (error) {
       console.error('Failed to toggle like:', error);
@@ -398,7 +404,7 @@ const BrowsingPage: React.FC = () => {
             };
           }
           return comp;
-        }),
+        })
       );
 
       // Show error message to user
@@ -406,7 +412,11 @@ const BrowsingPage: React.FC = () => {
     }
   };
 
-  const handleRealMojiCapture = async (imageBlob: Blob, reactionType: string, completionId: string) => {
+  const handleRealMojiCapture = async (
+    imageBlob: Blob,
+    reactionType: string,
+    completionId: string
+  ) => {
     console.log('🎭 [RealMoji] Starting capture process:', {
       reactionType,
       completionId,
@@ -483,7 +493,7 @@ const BrowsingPage: React.FC = () => {
             };
           }
           return comp;
-        }),
+        })
       );
 
       // Show success message to user
@@ -566,10 +576,14 @@ const BrowsingPage: React.FC = () => {
         }}
       >
         {completions.map((completion, index) => {
-          const challenge = completion.publicChallenge || completion.privateChallenge || completion.aiChallenge;
+          const challenge =
+            completion.publicChallenge || completion.privateChallenge || completion.aiChallenge;
 
           return (
-            <div key={completion.id} className="h-screen w-full relative snap-start snap-always overflow-hidden">
+            <div
+              key={completion.id}
+              className="h-screen w-full relative snap-start snap-always overflow-hidden"
+            >
               {/* Full-screen video */}
               <div className="absolute inset-0 w-full h-full bg-black">
                 {completion.videoUrl ? (
@@ -581,7 +595,9 @@ const BrowsingPage: React.FC = () => {
 
                           // Add event listeners for play/pause to update button visibility
                           const updatePlayButton = () => {
-                            const playButton = document.getElementById(`play-button-${completion.id}`);
+                            const playButton = document.getElementById(
+                              `play-button-${completion.id}`
+                            );
                             if (playButton) {
                               playButton.style.display = el.paused ? 'flex' : 'none';
                             }
@@ -609,7 +625,11 @@ const BrowsingPage: React.FC = () => {
                       style={{ display: 'none' }}
                     >
                       <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                        <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <svg
+                          className="w-10 h-10 text-white ml-1"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       </div>
@@ -628,7 +648,11 @@ const BrowsingPage: React.FC = () => {
               {/* Corner selfie */}
               {completion.selfieUrl && (
                 <div className="absolute top-4 right-4 w-48 h-48 rounded-xl overflow-hidden border-2 border-white shadow-lg z-30">
-                  <img src={completion.selfieUrl} alt="Selfie" className="w-full h-full object-cover" />
+                  <img
+                    src={completion.selfieUrl}
+                    alt="Selfie"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
 
@@ -705,7 +729,9 @@ const BrowsingPage: React.FC = () => {
                 {/* User info */}
                 <div className="mb-3">
                   <div className="flex items-center space-x-2 mb-2">
-                    <p className="text-white font-bold text-lg drop-shadow-lg">@{completion.user.username}</p>
+                    <p className="text-white font-bold text-lg drop-shadow-lg">
+                      @{completion.user.username}
+                    </p>
                     <span className="text-white/80 text-sm drop-shadow-lg">
                       {new Date(completion.completionDate).toLocaleDateString()}
                     </span>
@@ -714,13 +740,19 @@ const BrowsingPage: React.FC = () => {
 
                 {/* Challenge description */}
                 <div className="mb-3">
-                  <h3 className="text-white font-bold text-base mb-1 drop-shadow-lg">{challenge?.title}</h3>
-                  <p className="text-white text-sm drop-shadow-lg leading-relaxed">{challenge?.description}</p>
+                  <h3 className="text-white font-bold text-base mb-1 drop-shadow-lg">
+                    {challenge?.title}
+                  </h3>
+                  <p className="text-white text-sm drop-shadow-lg leading-relaxed">
+                    {challenge?.description}
+                  </p>
                 </div>
 
                 {/* User's completion description */}
                 <div className="flex items-center space-x-2">
-                  <span className="text-white/90 text-sm drop-shadow-lg">"Completed the challenge!"</span>
+                  <span className="text-white/90 text-sm drop-shadow-lg">
+                    "Completed the challenge!"
+                  </span>
                 </div>
 
                 {/* Progress indicator */}

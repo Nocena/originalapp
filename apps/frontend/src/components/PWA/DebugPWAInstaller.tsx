@@ -40,7 +40,9 @@ const DebugPWAInstaller: React.FC = () => {
         const hasStart = !!data.start_url;
         const hasDisplay = data.display === 'standalone' || data.display === 'fullscreen';
 
-        addDebug(`Manifest check: name=${hasName}, icons=${hasIcons}, start_url=${hasStart}, display=${hasDisplay}`);
+        addDebug(
+          `Manifest check: name=${hasName}, icons=${hasIcons}, start_url=${hasStart}, display=${hasDisplay}`
+        );
       })
       .catch((err) => {
         addDebug(`Manifest error: ${err}`);
@@ -137,7 +139,7 @@ const DebugPWAInstaller: React.FC = () => {
   // Alternative manual install button for when deferredPrompt is null
   const handleManualInstall = () => {
     addDebug(
-      "To install manually:\n1. Tap the menu (⋮) in Chrome\n2. Tap 'Add to Home screen'\n3. Tap 'Add' when prompted",
+      "To install manually:\n1. Tap the menu (⋮) in Chrome\n2. Tap 'Add to Home screen'\n3. Tap 'Add' when prompted"
     );
   };
 

@@ -25,7 +25,7 @@ const getAccountDataByRaw = (rawData: any): AccountType => {
 
 export const fetchAvailableLensAccounts = async (
   sessionClient: SessionClient | null,
-  walletAddress: string,
+  walletAddress: string
 ): Promise<AccountType[]> => {
   if (!walletAddress) {
     return [];
@@ -47,7 +47,7 @@ export const fetchAvailableLensAccounts = async (
 
 export const fetchRecommendedAccounts = async (
   sessionClient: SessionClient | null,
-  accountAddress: string,
+  accountAddress: string
 ): Promise<AccountType[]> => {
   if (!accountAddress) {
     return [];
@@ -72,7 +72,7 @@ export const fetchRecommendedAccounts = async (
 
 export const fetchAccountByUserName = async (
   sessionClient: SessionClient | null,
-  userName: string,
+  userName: string
 ): Promise<AccountType | null> => {
   if (!userName) {
     return null;
@@ -96,7 +96,7 @@ export const fetchAccountByUserName = async (
 
 export const getLastLoggedInAccount = async (
   sessionClient: SessionClient | null,
-  walletAddress: string,
+  walletAddress: string
 ): Promise<AccountType | null> => {
   if (!walletAddress) {
     return null;
@@ -125,7 +125,7 @@ export const getLastLoggedInAccount = async (
 
 export const getAccountStats = async (
   sessionClient: SessionClient | null,
-  accountAddress: string,
+  accountAddress: string
 ): Promise<AccountStatusType | null> => {
   if (!accountAddress) {
     return null;
@@ -163,7 +163,7 @@ export const getAccountStats = async (
 
 export const getAccountFollowers = async (
   sessionClient: SessionClient | null,
-  accountAddress: string,
+  accountAddress: string
 ): Promise<AccountType[]> => {
   if (!accountAddress) {
     return [];
@@ -193,7 +193,7 @@ export const getAccountFollowers = async (
 
 export const getAccountFollowings = async (
   sessionClient: SessionClient | null,
-  accountAddress: string,
+  accountAddress: string
 ): Promise<AccountType[]> => {
   if (!accountAddress) {
     return [];

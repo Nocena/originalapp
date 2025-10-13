@@ -9,13 +9,13 @@ const parseJwt = (
   act: { sub: string };
 } => {
   try {
-    return JSON.parse(decoded(token.split(".")[1]));
+    return JSON.parse(decoded(token.split('.')[1]));
   } catch {
     return {
-      sub: "",
+      sub: '',
       exp: 0,
-      sid: "",
-      act: { sub: "" }
+      sid: '',
+      act: { sub: '' },
     };
   }
 };

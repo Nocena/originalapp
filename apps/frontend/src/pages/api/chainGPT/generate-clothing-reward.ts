@@ -112,7 +112,7 @@ function buildClothingPrompt(
   itemType: ItemType,
   rarity: RarityType,
   challengeTitle: string,
-  challengeDescription: string,
+  challengeDescription: string
 ): string {
   // Rarity-based subtle effects that don't overwhelm the template
   const rarityEnhancements = {
@@ -198,7 +198,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!userID || !completionId) {
-      console.log('🟥 ERROR: Missing required fields - userID:', !!userID, 'completionId:', !!completionId);
+      console.log(
+        '🟥 ERROR: Missing required fields - userID:',
+        !!userID,
+        'completionId:',
+        !!completionId
+      );
       return res.status(400).json({
         error: 'Missing required fields: userID and completionId',
       });
@@ -219,7 +224,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ? { itemType: forceItemType as ItemType, rarity: forceRarity as RarityType }
         : generateRandomItemAndRarity();
 
-    console.log('🟩 Generated/Selected:', { itemType, rarity, forced: !!(forceItemType && forceRarity) });
+    console.log('🟩 Generated/Selected:', {
+      itemType,
+      rarity,
+      forced: !!(forceItemType && forceRarity),
+    });
 
     console.log('🟩 Step 4: Getting template data...');
     // Get template CID and token bonus

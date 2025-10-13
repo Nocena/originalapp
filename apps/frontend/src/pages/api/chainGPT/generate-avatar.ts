@@ -161,7 +161,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     const nft = new Nft({ apiKey: process.env.CHAINGPT_API_KEY });
 
-    const finalPrompt = buildPrompt(customPrompt, typeof profilePicture === 'string' ? profilePicture : undefined);
+    const finalPrompt = buildPrompt(
+      customPrompt,
+      typeof profilePicture === 'string' ? profilePicture : undefined
+    );
     console.log('✨ Final Enhanced Prompt:', finalPrompt);
 
     // ------ STEP 1: Enhanced image-to-image with custom prompt ------
@@ -200,7 +203,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
           ],
         },
         // NEW: Add dynamic traits based on custom prompt keywords
-        ...(customPrompt.toLowerCase().includes('magic') || customPrompt.toLowerCase().includes('fantasy')
+        ...(customPrompt.toLowerCase().includes('magic') ||
+        customPrompt.toLowerCase().includes('fantasy')
           ? [
               {
                 trait_type: 'Effects',
@@ -208,7 +212,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
               },
             ]
           : []),
-        ...(customPrompt.toLowerCase().includes('robot') || customPrompt.toLowerCase().includes('android')
+        ...(customPrompt.toLowerCase().includes('robot') ||
+        customPrompt.toLowerCase().includes('android')
           ? [
               {
                 trait_type: 'Tech_Level',

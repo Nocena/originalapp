@@ -1,5 +1,5 @@
-import { Regex } from "@nocena/data/regex";
-import type { AccountMentionFragment, PostMentionFragment } from "@nocena/indexer";
+import { Regex } from '@nocena/data/regex';
+import type { AccountMentionFragment, PostMentionFragment } from '@nocena/indexer';
 
 const getMentions = (text: string): [] | PostMentionFragment[] => {
   if (!text) {
@@ -8,16 +8,16 @@ const getMentions = (text: string): [] | PostMentionFragment[] => {
 
   const mentions = text.match(Regex.mention);
   const processedMentions = mentions?.map((mention) => {
-    const splited = mention.split("/");
+    const splited = mention.split('/');
     const handleWithoutNameSpace = splited[splited.length - 1];
 
     return {
-      account: "",
-      namespace: "",
+      account: '',
+      namespace: '',
       replace: {
         from: handleWithoutNameSpace.toLowerCase(),
-        to: handleWithoutNameSpace.toLowerCase()
-      }
+        to: handleWithoutNameSpace.toLowerCase(),
+      },
     } as AccountMentionFragment;
   });
 

@@ -128,7 +128,7 @@ const VideoReviewScreen: React.FC<VideoReviewScreenProps> = ({
               }
             },
             'image/jpeg',
-            0.9,
+            0.9
           );
         }
       } catch (error) {
@@ -177,7 +177,7 @@ const VideoReviewScreen: React.FC<VideoReviewScreenProps> = ({
             }
           },
           'image/jpeg',
-          0.9,
+          0.9
         );
       }
     } catch (error) {
@@ -202,7 +202,11 @@ const VideoReviewScreen: React.FC<VideoReviewScreenProps> = ({
         }}
       >
         {/* Back Button */}
-        <button onClick={onBack} className="focus:outline-none pointer-events-auto" aria-label="Back">
+        <button
+          onClick={onBack}
+          className="focus:outline-none pointer-events-auto"
+          aria-label="Back"
+        >
           <ThematicContainer
             color="nocenaBlue"
             glassmorphic={true}
@@ -210,14 +214,28 @@ const VideoReviewScreen: React.FC<VideoReviewScreenProps> = ({
             rounded="full"
             className="w-12 h-12 flex items-center justify-center"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </ThematicContainer>
         </button>
 
         {/* Cancel Button */}
-        <button onClick={onCancel} className="focus:outline-none pointer-events-auto" aria-label="Cancel">
+        <button
+          onClick={onCancel}
+          className="focus:outline-none pointer-events-auto"
+          aria-label="Cancel"
+        >
           <ThematicContainer
             color="nocenaBlue"
             glassmorphic={true}
@@ -225,8 +243,18 @@ const VideoReviewScreen: React.FC<VideoReviewScreenProps> = ({
             rounded="full"
             className="w-12 h-12 flex items-center justify-center"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </ThematicContainer>
         </button>
@@ -245,7 +273,13 @@ const VideoReviewScreen: React.FC<VideoReviewScreenProps> = ({
 
         {/* Video Player Card */}
         <div className="mb-4">
-          <ThematicContainer color="nocenaBlue" glassmorphic={true} asButton={false} rounded="2xl" className="p-6">
+          <ThematicContainer
+            color="nocenaBlue"
+            glassmorphic={true}
+            asButton={false}
+            rounded="2xl"
+            className="p-6"
+          >
             <div className="relative rounded-xl overflow-hidden bg-black w-64 h-80 shadow-2xl mx-auto">
               <video
                 ref={videoRef}
@@ -347,7 +381,9 @@ const VideoReviewScreen: React.FC<VideoReviewScreenProps> = ({
             </div>
 
             {/* Status Text */}
-            <h3 className={`text-lg font-bold mb-2 ${canProceed ? 'text-nocenaPurple' : 'text-nocenaPink'}`}>
+            <h3
+              className={`text-lg font-bold mb-2 ${canProceed ? 'text-nocenaPurple' : 'text-nocenaPink'}`}
+            >
               {canProceed ? 'Ready to Proceed' : 'Recording Too Short (3s minimum)'}
             </h3>
 
@@ -360,8 +396,16 @@ const VideoReviewScreen: React.FC<VideoReviewScreenProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="w-full max-w-sm flex gap-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-          <PrimaryButton onClick={onRetakeVideo} text="Retake Video" className="flex-1" isActive={true} />
+        <div
+          className="w-full max-w-sm flex gap-4"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <PrimaryButton
+            onClick={onRetakeVideo}
+            text="Retake Video"
+            className="flex-1"
+            isActive={true}
+          />
           <PrimaryButton
             onClick={onApproveVideo}
             text={canProceed ? 'Continue to Selfie' : 'Too Short to Continue'}

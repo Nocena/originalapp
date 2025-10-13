@@ -83,7 +83,6 @@ export function usePermissions() {
     };
   }, [permissionManager]);
 
-
   const requestCameraPermission = useCallback(async () => {
     setError(null);
     try {
@@ -124,9 +123,12 @@ export function usePermissions() {
     }
   }, [permissionManager, permissionState]);
 
-  const shouldShowPrimer = useCallback((permission: 'camera' | 'microphone' | 'notifications') => {
-    return permissionManager?.shouldShowPermissionPrimer(permission);
-  }, [permissionManager]);
+  const shouldShowPrimer = useCallback(
+    (permission: 'camera' | 'microphone' | 'notifications') => {
+      return permissionManager?.shouldShowPermissionPrimer(permission);
+    },
+    [permissionManager]
+  );
 
   const hasAllRequiredPermissions = useCallback(() => {
     return (

@@ -1,6 +1,6 @@
-import { Localstorage } from "@nocena/data/storage";
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { Localstorage } from '@nocena/data/storage';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface Tokens {
   accessToken: null | string;
@@ -8,13 +8,10 @@ interface Tokens {
 }
 
 interface State {
-  accessToken: Tokens["accessToken"];
+  accessToken: Tokens['accessToken'];
   hydrateAuthTokens: () => Tokens;
-  refreshToken: Tokens["refreshToken"];
-  signIn: (tokens: {
-    accessToken: string;
-    refreshToken: string;
-  }) => void;
+  refreshToken: Tokens['refreshToken'];
+  signIn: (tokens: { accessToken: string; refreshToken: string }) => void;
   signOut: () => void;
 }
 
@@ -27,8 +24,7 @@ const store = create(
         return { accessToken, refreshToken };
       },
       refreshToken: null,
-      signIn: ({ accessToken, refreshToken }) =>
-        set({ accessToken, refreshToken }),
+      signIn: ({ accessToken, refreshToken }) => set({ accessToken, refreshToken }),
       signOut: async () => {
         // Clear Localstorage
         const allLocalstorageStores = Object.values(Localstorage).filter(
@@ -37,15 +33,13 @@ const store = create(
         for (const store of allLocalstorageStores) {
           localStorage.removeItem(store);
         }
-      }
+      },
     }),
     { name: Localstorage.AuthStore }
   )
 );
 
-export const signIn = (tokens: {
-  accessToken: string;
-  refreshToken: string;
-}) => store.getState().signIn(tokens);
+export const signIn = (tokens: { accessToken: string; refreshToken: string }) =>
+  store.getState().signIn(tokens);
 export const signOut = () => store.getState().signOut();
 export const hydrateAuthTokens = () => store.getState().hydrateAuthTokens();

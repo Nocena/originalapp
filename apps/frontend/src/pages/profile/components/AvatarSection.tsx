@@ -52,7 +52,9 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   const [generationError, setGenerationError] = useState<string>('');
 
   // Custom prompt state
-  const [customPrompt, setCustomPrompt] = useState('Create a stylized 3D avatar for the Nocena universe');
+  const [customPrompt, setCustomPrompt] = useState(
+    'Create a stylized 3D avatar for the Nocena universe'
+  );
   const [showPromptSuggestions, setShowPromptSuggestions] = useState(false);
 
   // State for NFT selection
@@ -73,7 +75,9 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
   const [updateError, setUpdateError] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
-  const [activeClothingType, setActiveClothingType] = useState<'cap' | 'hoodie' | 'pants' | 'shoes' | null>(null);
+  const [activeClothingType, setActiveClothingType] = useState<
+    'cap' | 'hoodie' | 'pants' | 'shoes' | null
+  >(null);
 
   // Use actual user from auth context
   const { user, updateUser } = useAuth();
@@ -149,7 +153,10 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
         const avatarData = await getUserAvatar(user.id);
 
         if (avatarData?.avatarRecord?.generationPrompt) {
-          console.log('🎨 Loading fallback prompt from user avatar:', avatarData.avatarRecord.generationPrompt);
+          console.log(
+            '🎨 Loading fallback prompt from user avatar:',
+            avatarData.avatarRecord.generationPrompt
+          );
           setCustomPrompt(avatarData.avatarRecord.generationPrompt);
         }
       } catch (error) {
@@ -162,7 +169,10 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
     return Object.values(selectedNFTs).some((nft) => nft !== null);
   };
 
-  const handleNFTSelect = async (type: 'cap' | 'hoodie' | 'pants' | 'shoes', nft: NFTItem | null) => {
+  const handleNFTSelect = async (
+    type: 'cap' | 'hoodie' | 'pants' | 'shoes',
+    nft: NFTItem | null
+  ) => {
     setSelectedNFTs((prev) => ({
       ...prev,
       [type]: nft,
@@ -426,10 +436,21 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   // COMING SOON VIEW
   if (!enableAvatarFeature) {
     return (
-      <ThematicContainer asButton={false} glassmorphic={true} color="nocenaPink" rounded="xl" className="p-6 mx-4">
+      <ThematicContainer
+        asButton={false}
+        glassmorphic={true}
+        color="nocenaPink"
+        rounded="xl"
+        className="p-6 mx-4"
+      >
         <div className="text-center py-8">
           <div className="w-20 h-20 mx-auto mb-4 bg-purple-600/30 rounded-full flex items-center justify-center">
-            <svg className="w-10 h-10 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-10 h-10 text-purple-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -556,8 +577,18 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
                       className="w-6 h-6 bg-pink-500/30 backdrop-blur-sm border border-pink-400/40 rounded-lg flex items-center justify-center text-pink-300 hover:bg-pink-500/40 transition-colors"
                       onClick={() => setActiveClothingType(null)}
                     >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -576,8 +607,18 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
                       onClick={() => handleNFTSelect(activeClothingType, null)}
                     >
                       <div className="w-full h-full flex items-center justify-center">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <svg
+                          className="w-4 h-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -599,7 +640,11 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
                             `}
                             onClick={() => handleNFTSelect(activeClothingType, nft)}
                           >
-                            <img src={nft.imageUrl} alt={nft.name} className="w-full h-full object-cover rounded" />
+                            <img
+                              src={nft.imageUrl}
+                              alt={nft.name}
+                              className="w-full h-full object-cover rounded"
+                            />
                           </div>
                         ))
                     ) : (
@@ -618,8 +663,12 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
                             d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
                           />
                         </svg>
-                        <p className="text-gray-400 text-xs font-medium">No {activeClothingType}s owned</p>
-                        <p className="text-gray-500 text-xs mt-1">Complete challenges to earn items</p>
+                        <p className="text-gray-400 text-xs font-medium">
+                          No {activeClothingType}s owned
+                        </p>
+                        <p className="text-gray-500 text-xs mt-1">
+                          Complete challenges to earn items
+                        </p>
                       </div>
                     )}
                   </div>
@@ -627,10 +676,12 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
                   {/* Selected item info */}
                   {selectedNFTs[activeClothingType] && (
                     <div className="mt-3 p-3 bg-purple-600/20 backdrop-blur-sm border border-purple-400/30 rounded-lg">
-                      <p className="text-white text-sm font-medium">{selectedNFTs[activeClothingType]!.name}</p>
+                      <p className="text-white text-sm font-medium">
+                        {selectedNFTs[activeClothingType]!.name}
+                      </p>
                       <p className="text-gray-400 text-xs">
-                        {selectedNFTs[activeClothingType]!.rarity} • +{selectedNFTs[activeClothingType]!.tokenBonus}{' '}
-                        tokens
+                        {selectedNFTs[activeClothingType]!.rarity} • +
+                        {selectedNFTs[activeClothingType]!.tokenBonus} tokens
                       </p>
                     </div>
                   )}
@@ -642,7 +693,12 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
           {/* Avatar Style Prompt Section */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
-              <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-4 h-4 text-purple-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

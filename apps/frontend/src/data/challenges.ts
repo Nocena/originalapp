@@ -25,7 +25,7 @@ export interface Challenge {
 // Helper function to get completion method and duration based on challenge type
 export function getChallengeCompletionParams(
   category: ChallengeCategory,
-  frequency?: ChallengeFrequency,
+  frequency?: ChallengeFrequency
 ): {
   completionMethod: ChallengeCompletionMethod;
   maxDurationSeconds: number;
@@ -157,13 +157,15 @@ export const weeklyChallenges: Challenge[] = [
   },
   {
     title: 'Flash Kitchen',
-    description: 'Cook something and invite a stranger to taste it. Capture their reaction and feedback.',
+    description:
+      'Cook something and invite a stranger to taste it. Capture their reaction and feedback.',
     category: ChallengeCategory.AI,
     frequency: ChallengeFrequency.WEEKLY,
   },
   {
     title: 'Tour Guide',
-    description: 'Give a tour to tourists or newcomers in your city, showcasing interesting spots and local insights.',
+    description:
+      'Give a tour to tourists or newcomers in your city, showcasing interesting spots and local insights.',
     category: ChallengeCategory.AI,
     frequency: ChallengeFrequency.WEEKLY,
   },
@@ -204,7 +206,8 @@ export const weeklyChallenges: Challenge[] = [
   },
   {
     title: 'Street Wisdom',
-    description: 'Ask at least 5 strangers for their best life advice and compile it into a video edit.',
+    description:
+      'Ask at least 5 strangers for their best life advice and compile it into a video edit.',
     category: ChallengeCategory.AI,
     frequency: ChallengeFrequency.WEEKLY,
   },
@@ -219,7 +222,8 @@ export const weeklyChallenges: Challenge[] = [
   // Adventure & Exploration Challenges
   {
     title: 'Slackline Star',
-    description: 'Set up a slackline (or a rope between trees) and try learning to balance and walk on it.',
+    description:
+      'Set up a slackline (or a rope between trees) and try learning to balance and walk on it.',
     category: ChallengeCategory.AI,
     frequency: ChallengeFrequency.WEEKLY,
   },
@@ -253,19 +257,22 @@ export const weeklyChallenges: Challenge[] = [
   },
   {
     title: 'Community Support',
-    description: 'Find a way to contribute to your city or community. Document what you did and the impact.',
+    description:
+      'Find a way to contribute to your city or community. Document what you did and the impact.',
     category: ChallengeCategory.AI,
     frequency: ChallengeFrequency.WEEKLY,
   },
   {
     title: 'Local Hero',
-    description: 'Visit a local independent business. Show what makes it unique and interview the owner.',
+    description:
+      'Visit a local independent business. Show what makes it unique and interview the owner.',
     category: ChallengeCategory.AI,
     frequency: ChallengeFrequency.WEEKLY,
   },
   {
     title: 'Cold Exposure',
-    description: "Challenge yourself with some type of cold plunge (be careful if you're new to it).",
+    description:
+      "Challenge yourself with some type of cold plunge (be careful if you're new to it).",
     category: ChallengeCategory.AI,
     frequency: ChallengeFrequency.WEEKLY,
   },

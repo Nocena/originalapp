@@ -1,6 +1,9 @@
 // lib/verification/steps/humanVideoCheck.ts
 
-import { detectHumanInVideo, type VideoHumanDetectionResult } from '../helpers/tensorflowHumanDetection';
+import {
+  detectHumanInVideo,
+  type VideoHumanDetectionResult,
+} from '../helpers/tensorflowHumanDetection';
 
 export interface HumanVideoCheckResult {
   passed: boolean;
@@ -19,7 +22,7 @@ export interface HumanVideoCheckResult {
  */
 export async function runHumanVideoCheck(
   videoBlob: Blob,
-  onProgress?: (progress: number, message: string) => void,
+  onProgress?: (progress: number, message: string) => void
 ): Promise<HumanVideoCheckResult> {
   console.group('🤖 HUMAN DETECTION IN VIDEO');
   console.log('Video size:', `${(videoBlob.size / 1024 / 1024).toFixed(2)} MB`);
@@ -57,7 +60,7 @@ export async function runHumanVideoCheck(
       videoElement.onloadedmetadata = () => {
         clearTimeout(timeout);
         console.log(
-          `📹 Video loaded: ${videoElement.videoWidth}x${videoElement.videoHeight}, duration: ${videoElement.duration}s`,
+          `📹 Video loaded: ${videoElement.videoWidth}x${videoElement.videoHeight}, duration: ${videoElement.duration}s`
         );
         resolve();
       };
@@ -101,7 +104,8 @@ export async function runHumanVideoCheck(
 
     // Determine if video passes our requirements
     const minDetectionThreshold = 1; // Need at least 1 human detection
-    const passed = detectionResult.hasHuman && detectionResult.detectionCount >= minDetectionThreshold;
+    const passed =
+      detectionResult.hasHuman && detectionResult.detectionCount >= minDetectionThreshold;
 
     // Convert confidence to 0-100 scale
     const confidence = passed ? Math.round(detectionResult.confidence * 100) : 0;

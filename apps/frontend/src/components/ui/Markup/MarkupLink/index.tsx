@@ -1,9 +1,7 @@
-import type {
-  PostMentionFragment
-} from "@nocena/indexer";
-import ExternalLink from "./ExternalLink";
-import Hashtag from "./Hashtag";
-import Mention from "./Mention";
+import type { PostMentionFragment } from '@nocena/indexer';
+import ExternalLink from './ExternalLink';
+import Hashtag from './Hashtag';
+import Mention from './Mention';
 
 export interface MarkupLinkProps {
   mentions?: PostMentionFragment[];
@@ -15,13 +13,13 @@ const MarkupLink = ({ mentions, title }: MarkupLinkProps) => {
     return null;
   }
 
-/*
+  /*
   if (title.startsWith("@")) {
     return <Mention mentions={mentions} title={title} />;
   }
 */
 
-  if (title.startsWith("#")) {
+  if (title.startsWith('#')) {
     return <Hashtag title={title} />;
   }
 

@@ -36,7 +36,9 @@ export const debugCurrentDateValues = () => {
   });
 };
 
-export const getCurrentChallenge = async (frequency: 'daily' | 'weekly' | 'monthly'): Promise<AIChallenge | null> => {
+export const getCurrentChallenge = async (
+  frequency: 'daily' | 'weekly' | 'monthly'
+): Promise<AIChallenge | null> => {
   const now = new Date();
   const year = now.getFullYear();
 
@@ -71,7 +73,11 @@ export const getCurrentChallenge = async (frequency: 'daily' | 'weekly' | 'month
   try {
     console.log(`🔍 Fetching ${frequency} AI challenges...`);
 
-    const response = await axios.post(DGRAPH_ENDPOINT, { query }, { headers: { 'Content-Type': 'application/json' } });
+    const response = await axios.post(
+      DGRAPH_ENDPOINT,
+      { query },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
 
     if (response.data.errors) {
       console.error('Dgraph query error:', response.data.errors);
@@ -86,7 +92,9 @@ export const getCurrentChallenge = async (frequency: 'daily' | 'weekly' | 'month
 
     if (frequency === 'daily') {
       const dayOfYear = getDayOfYear(now);
-      filteredChallenge = challenges.find((c: AIChallenge) => c.year === year && c.day === dayOfYear);
+      filteredChallenge = challenges.find(
+        (c: AIChallenge) => c.year === year && c.day === dayOfYear
+      );
 
       // If no exact match, get the newest daily challenge for today
       if (!filteredChallenge && challenges.length > 0) {
@@ -95,17 +103,23 @@ export const getCurrentChallenge = async (frequency: 'daily' | 'weekly' | 'month
           .filter((c: AIChallenge) => c.year === year)
           .sort(
             (a: AIChallenge, b: AIChallenge) =>
-              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
+              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
           )[0];
       }
     } else if (frequency === 'weekly') {
       const weekOfYear = getWeekOfYear(now);
-      filteredChallenge = challenges.find((c: AIChallenge) => c.year === year && c.week === weekOfYear);
+      filteredChallenge = challenges.find(
+        (c: AIChallenge) => c.year === year && c.week === weekOfYear
+      );
 
       // If no exact match, check if there's a challenge for week 24 (one week ahead)
       if (!filteredChallenge) {
-        console.log(`⚠️ No weekly challenge for week ${weekOfYear}, checking week ${weekOfYear + 1}`);
-        filteredChallenge = challenges.find((c: AIChallenge) => c.year === year && c.week === weekOfYear + 1);
+        console.log(
+          `⚠️ No weekly challenge for week ${weekOfYear}, checking week ${weekOfYear + 1}`
+        );
+        filteredChallenge = challenges.find(
+          (c: AIChallenge) => c.year === year && c.week === weekOfYear + 1
+        );
       }
 
       // If still no match, get the newest weekly challenge
@@ -115,7 +129,7 @@ export const getCurrentChallenge = async (frequency: 'daily' | 'weekly' | 'month
           .filter((c: AIChallenge) => c.year === year)
           .sort(
             (a: AIChallenge, b: AIChallenge) =>
-              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
+              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
           )[0];
       }
     } else if (frequency === 'monthly') {
@@ -129,7 +143,7 @@ export const getCurrentChallenge = async (frequency: 'daily' | 'weekly' | 'month
           .filter((c: AIChallenge) => c.year === year)
           .sort(
             (a: AIChallenge, b: AIChallenge) =>
-              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
+              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
           )[0];
       }
     }
@@ -147,7 +161,7 @@ export const getCurrentChallenge = async (frequency: 'daily' | 'weekly' | 'month
           : frequency === 'weekly'
             ? `week=${getWeekOfYear(now)}`
             : `month=${now.getMonth() + 1}`
-      }`,
+      }`
     );
 
     return null;
@@ -239,7 +253,11 @@ export const fetchAllAIChallenges = async (): Promise<AIChallenge[]> => {
   `;
 
   try {
-    const response = await axios.post(DGRAPH_ENDPOINT, { query }, { headers: { 'Content-Type': 'application/json' } });
+    const response = await axios.post(
+      DGRAPH_ENDPOINT,
+      { query },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
 
     if (response.data.errors) {
       console.error('Dgraph query error:', response.data.errors);
@@ -251,7 +269,9 @@ export const fetchAllAIChallenges = async (): Promise<AIChallenge[]> => {
     // Log detailed info about each challenge
     console.log('📋 All AI Challenges with date info:');
     challenges.forEach((c: AIChallenge) => {
-      console.log(`- ${c.title} (${c.frequency}): year=${c.year}, month=${c.month}, week=${c.week}, day=${c.day}`);
+      console.log(
+        `- ${c.title} (${c.frequency}): year=${c.year}, month=${c.month}, week=${c.week}, day=${c.day}`
+      );
     });
 
     return challenges;

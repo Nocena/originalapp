@@ -1,12 +1,8 @@
-import {
-  hydrateAuthTokens,
-  signIn,
-  signOut
-} from "../store/persisted/useAuthStore";
-import { ApolloLink, fromPromise, toPromise } from "@apollo/client";
-import { LENS_API_URL } from "@nocena/data/constants";
+import { hydrateAuthTokens, signIn, signOut } from '../store/persisted/useAuthStore';
+import { ApolloLink, fromPromise, toPromise } from '@apollo/client';
+import { LENS_API_URL } from '@nocena/data/constants';
 import parseJwt from './parseJwt';
-import type { RefreshResult } from "@nocena/indexer";
+import type { RefreshResult } from '@nocena/indexer';
 
 const REFRESH_AUTHENTICATION_MUTATION = `
   mutation Refresh($request: RefreshRequest!) {
@@ -24,19 +20,16 @@ let refreshPromise: Promise<string> | null = null;
 
 const MAX_RETRIES = 5;
 
-const executeTokenRefresh = async (
-  refreshToken: string,
-  attempt = 0
-): Promise<string> => {
+const executeTokenRefresh = async (refreshToken: string, attempt = 0): Promise<string> => {
   try {
     const response = await fetch(LENS_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        operationName: "Refresh",
+        operationName: 'Refresh',
         query: REFRESH_AUTHENTICATION_MUTATION,
-        variables: { request: { refreshToken } }
-      })
+        variables: { request: { refreshToken } },
+      }),
     });
 
     if (!response.ok) {
@@ -47,37 +40,36 @@ const executeTokenRefresh = async (
     const refreshResult = data?.refresh as RefreshResult;
 
     if (!refreshResult) {
-      throw new Error("No response from refresh");
+      throw new Error('No response from refresh');
     }
 
     const { __typename } = refreshResult;
 
-    if (__typename === "AuthenticationTokens") {
-      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-        refreshResult;
+    if (__typename === 'AuthenticationTokens') {
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshResult;
 
       if (!newAccessToken || !newRefreshToken) {
-        throw new Error("Missing tokens in refresh response");
+        throw new Error('Missing tokens in refresh response');
       }
 
       signIn({
         accessToken: newAccessToken,
-        refreshToken: newRefreshToken
+        refreshToken: newRefreshToken,
       });
 
       return newAccessToken;
     }
 
-    if (__typename === "ForbiddenError") {
+    if (__typename === 'ForbiddenError') {
       signOut();
-      throw new Error("Refresh token is invalid or expired");
+      throw new Error('Refresh token is invalid or expired');
     }
 
     if (attempt < MAX_RETRIES) {
       return await executeTokenRefresh(refreshToken, attempt + 1);
     }
 
-    throw new Error("Unknown error during token refresh");
+    throw new Error('Unknown error during token refresh');
   } finally {
     refreshPromise = null;
   }
@@ -102,12 +94,11 @@ const authLink = new ApolloLink((operation, forward) => {
   const tokenData = parseJwt(accessToken);
   const bufferInMinutes = 5;
   const isExpiringSoon =
-    tokenData?.exp &&
-    Date.now() >= tokenData.exp * 1000 - bufferInMinutes * 60 * 1000;
+    tokenData?.exp && Date.now() >= tokenData.exp * 1000 - bufferInMinutes * 60 * 1000;
 
   if (!isExpiringSoon) {
     operation.setContext({
-      headers: { "X-Access-Token": accessToken }
+      headers: { 'X-Access-Token': accessToken },
     });
 
     return forward(operation);
@@ -117,7 +108,7 @@ const authLink = new ApolloLink((operation, forward) => {
     refreshTokens(refreshToken)
       .then((newAccessToken) => {
         operation.setContext({
-          headers: { "X-Access-Token": newAccessToken }
+          headers: { 'X-Access-Token': newAccessToken },
         });
         return toPromise(forward(operation));
       })

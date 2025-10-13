@@ -235,7 +235,12 @@ const RealMojiCapture: React.FC<RealMojiCaptureProps> = ({
 
   // CRITICAL: Only start camera ONCE when component opens
   useEffect(() => {
-    if (isOpen && selectedEmoji && !cameraInitializedRef.current && !isInitializingCameraRef.current) {
+    if (
+      isOpen &&
+      selectedEmoji &&
+      !cameraInitializedRef.current &&
+      !isInitializingCameraRef.current
+    ) {
       console.log('🎥 [RealMoji] Opening RealMoji capture - starting camera');
       isActivelyCapturingRef.current = false;
       hasSuccessfullyCompletedRef.current = false;
@@ -445,7 +450,10 @@ const RealMojiCapture: React.FC<RealMojiCaptureProps> = ({
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      console.log('🎥 [RealMoji] Canvas dimensions:', { width: canvas.width, height: canvas.height });
+      console.log('🎥 [RealMoji] Canvas dimensions:', {
+        width: canvas.width,
+        height: canvas.height,
+      });
 
       // Draw the video frame
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -461,7 +469,7 @@ const RealMojiCapture: React.FC<RealMojiCaptureProps> = ({
             }
           },
           'image/jpeg',
-          0.85,
+          0.85
         );
       });
 
@@ -514,14 +522,24 @@ const RealMojiCapture: React.FC<RealMojiCaptureProps> = ({
     <div className="fixed inset-0 z-50 bg-black">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
-        <button onClick={handleClose} className="w-10 h-10 rounded-full bg-black/50 flex items-center justify-center">
+        <button
+          onClick={handleClose}
+          className="w-10 h-10 rounded-full bg-black/50 flex items-center justify-center"
+        >
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
         <div className="flex-1 text-center">
           <h1 className="text-white text-lg font-semibold">RealMoji</h1>
-          <p className="text-white/80 text-sm">Show your {displayEmoji.label.toLowerCase()} reaction!</p>
+          <p className="text-white/80 text-sm">
+            Show your {displayEmoji.label.toLowerCase()} reaction!
+          </p>
         </div>
         <div className="w-10 h-10" /> {/* Spacer */}
       </div>
@@ -533,7 +551,10 @@ const RealMojiCapture: React.FC<RealMojiCaptureProps> = ({
             <div className="text-4xl mb-4">📷</div>
             <p className="text-lg font-medium mb-2">Camera Access Required</p>
             <p className="text-sm text-white/80 mb-4">{cameraError}</p>
-            <button onClick={startCamera} className="px-6 py-3 bg-white rounded-full text-black font-medium">
+            <button
+              onClick={startCamera}
+              className="px-6 py-3 bg-white rounded-full text-black font-medium"
+            >
               Try Again
             </button>
           </div>
@@ -585,14 +606,18 @@ const RealMojiCapture: React.FC<RealMojiCaptureProps> = ({
             {/* Countdown */}
             {countdown !== null && !isProcessing && (
               <div className="absolute inset-0 flex items-center justify-center z-20">
-                <div className="text-8xl font-bold text-white drop-shadow-lg animate-pulse">{countdown}</div>
+                <div className="text-8xl font-bold text-white drop-shadow-lg animate-pulse">
+                  {countdown}
+                </div>
               </div>
             )}
 
             {/* Instructions */}
             {!isCapturing && countdown === null && !isProcessing && (
               <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 z-20 text-center">
-                <p className="text-white text-lg font-medium mb-2">Make a {displayEmoji.label.toLowerCase()} face!</p>
+                <p className="text-white text-lg font-medium mb-2">
+                  Make a {displayEmoji.label.toLowerCase()} face!
+                </p>
                 <p className="text-white/80 text-sm">Position your face in the circle</p>
               </div>
             )}

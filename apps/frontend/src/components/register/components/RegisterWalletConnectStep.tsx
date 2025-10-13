@@ -11,7 +11,9 @@ interface RegisterWalletConnectStepProps {
   onWalletConnected: () => void;
 }
 
-const RegisterWalletConnectStep: React.FC<RegisterWalletConnectStepProps> = ({ onWalletConnected }) => {
+const RegisterWalletConnectStep: React.FC<RegisterWalletConnectStepProps> = ({
+  onWalletConnected,
+}) => {
   const account = useActiveAccount();
   const [isCheckingWallet, setIsCheckingWallet] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
@@ -63,7 +65,9 @@ const RegisterWalletConnectStep: React.FC<RegisterWalletConnectStepProps> = ({ o
       checkWalletExists(account.address)
         .then((exists) => {
           if (exists) {
-            setWalletError('This wallet is already registered. Please use a different wallet or sign in instead.');
+            setWalletError(
+              'This wallet is already registered. Please use a different wallet or sign in instead.'
+            );
           } else {
             setWalletError(null);
           }

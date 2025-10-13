@@ -122,7 +122,7 @@ export async function detectHumanInVideo(
     minConfidence?: number; // Minimum confidence threshold (0-1)
     maxFrames?: number; // Maximum frames to check
     consecutiveThreshold?: number; // Number of consecutive detections to confirm human
-  } = {},
+  } = {}
 ): Promise<VideoHumanDetectionResult> {
   const {
     frameInterval = 0.1, // Check every 0.1 seconds
@@ -162,7 +162,7 @@ export async function detectHumanInVideo(
       timePoints
         .slice(0, maxFrames)
         .map((t) => `${t.toFixed(1)}s`)
-        .join(', '),
+        .join(', ')
     );
 
     for (const timePoint of timePoints.slice(0, maxFrames)) {
@@ -191,12 +191,14 @@ export async function detectHumanInVideo(
           maxConfidence = Math.max(maxConfidence, frameResult.confidence);
 
           console.log(
-            `✅ Frame ${framesChecked} (${timePoint.toFixed(1)}s): Human detected (${(frameResult.confidence * 100).toFixed(1)}% confidence) - Consecutive: ${consecutiveDetections}`,
+            `✅ Frame ${framesChecked} (${timePoint.toFixed(1)}s): Human detected (${(frameResult.confidence * 100).toFixed(1)}% confidence) - Consecutive: ${consecutiveDetections}`
           );
 
           // Stop early if we have enough consecutive detections
           if (consecutiveDetections >= consecutiveThreshold) {
-            console.log(`🏁 Stopping early: Found humans in ${consecutiveDetections} consecutive frames`);
+            console.log(
+              `🏁 Stopping early: Found humans in ${consecutiveDetections} consecutive frames`
+            );
             stoppedEarly = true;
             break;
           }
@@ -322,7 +324,7 @@ export async function detectHumanInImage(
     preferFaceDetection?: boolean; // Use BlazeFace first, fallback to COCO-SSD
     minConfidence?: number; // Minimum confidence threshold (0-1)
     maxFaces?: number; // Maximum number of faces to detect
-  } = {},
+  } = {}
 ): Promise<HumanDetectionResult> {
   const { preferFaceDetection = true, minConfidence = 0.6, maxFaces = 3 } = options;
 
@@ -384,7 +386,7 @@ export async function detectHumanInImage(
 async function detectFacesWithBlazeFace(
   imageElement: HTMLImageElement | HTMLCanvasElement,
   minConfidence: number,
-  maxFaces: number,
+  maxFaces: number
 ): Promise<HumanDetectionResult> {
   const model = await loadBlazeFaceModel();
 
@@ -465,7 +467,7 @@ async function detectFacesWithBlazeFace(
  */
 async function detectPersonWithCocoSsd(
   imageElement: HTMLImageElement | HTMLCanvasElement,
-  minConfidence: number,
+  minConfidence: number
 ): Promise<HumanDetectionResult> {
   const model = await loadCocoSsdModel();
 

@@ -124,7 +124,8 @@ function MyAppContent({ Component, pageProps }: AppProps) {
 
     const publicRoutes = ['/login', '/register', '/admin/seed-invites', '/test-admin'];
     const isPublicRoute =
-      publicRoutes.some((route) => currentPathname.startsWith(route)) || currentPathname.startsWith('/admin/');
+      publicRoutes.some((route) => currentPathname.startsWith(route)) ||
+      currentPathname.startsWith('/admin/');
 
     if (!loading && !user && !isPublicRoute) {
       router.replace('/login');
@@ -206,7 +207,8 @@ function MyAppContent({ Component, pageProps }: AppProps) {
 
   // Determine layout type
   const isSpecialPage = specialPages.includes(currentPathname);
-  const shouldUseAppLayout = !noLayoutPages.includes(currentPathname) && !isAdminPage && !isSpecialPage;
+  const shouldUseAppLayout =
+    !noLayoutPages.includes(currentPathname) && !isAdminPage && !isSpecialPage;
   const shouldUseSpecialLayout = isSpecialPage && user;
 
   console.log('Layout decision:', {

@@ -129,7 +129,9 @@ const FeedbackMenu: React.FC<FeedbackMenuProps> = ({ onBack }) => {
               </div>
               <div>
                 <div className="text-white font-medium text-sm">User experience feedback</div>
-                <div className="text-white/60 text-xs">Things that are confusing or hard to use</div>
+                <div className="text-white/60 text-xs">
+                  Things that are confusing or hard to use
+                </div>
               </div>
             </div>
 
@@ -152,26 +154,29 @@ const FeedbackMenu: React.FC<FeedbackMenuProps> = ({ onBack }) => {
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaPink rounded-full mt-2 flex-shrink-0"></div>
               <p className="text-white/70 text-sm">
-                <strong className="text-white">Be specific:</strong> Describe exactly what happened and when
+                <strong className="text-white">Be specific:</strong> Describe exactly what happened
+                and when
               </p>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaBlue rounded-full mt-2 flex-shrink-0"></div>
               <p className="text-white/70 text-sm">
-                <strong className="text-white">Include screenshots:</strong> Visual examples help us understand issues
-                faster
+                <strong className="text-white">Include screenshots:</strong> Visual examples help us
+                understand issues faster
               </p>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaPurple rounded-full mt-2 flex-shrink-0"></div>
               <p className="text-white/70 text-sm">
-                <strong className="text-white">Steps to reproduce:</strong> Tell us how to recreate the problem
+                <strong className="text-white">Steps to reproduce:</strong> Tell us how to recreate
+                the problem
               </p>
             </div>
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-nocenaPink rounded-full mt-2 flex-shrink-0"></div>
               <p className="text-white/70 text-sm">
-                <strong className="text-white">Device info:</strong> Mention your device type and browser if relevant
+                <strong className="text-white">Device info:</strong> Mention your device type and
+                browser if relevant
               </p>
             </div>
           </div>

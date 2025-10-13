@@ -1,17 +1,9 @@
-import { PLACEHOLDER_IMAGE } from "@nocena/data/constants";
-import type {
-  DetailedHTMLProps,
-  ImgHTMLAttributes,
-  Ref,
-  SyntheticEvent
-} from "react";
-import { forwardRef, memo, useCallback, useEffect, useState } from "react";
+import { PLACEHOLDER_IMAGE } from '@nocena/data/constants';
+import type { DetailedHTMLProps, ImgHTMLAttributes, Ref, SyntheticEvent } from 'react';
+import { forwardRef, memo, useCallback, useEffect, useState } from 'react';
 
 const Image = forwardRef(function Image(
-  {
-    onError,
-    ...props
-  }: DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>,
+  { onError, ...props }: DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>,
   ref: Ref<HTMLImageElement>
 ) {
   const [imageLoadFailed, setImageLoadFailed] = useState(false);
@@ -36,7 +28,7 @@ const Image = forwardRef(function Image(
   return (
     <img
       {...props}
-      alt={props.alt || ""}
+      alt={props.alt || ''}
       onError={handleError}
       ref={ref}
       src={imageLoadFailed ? PLACEHOLDER_IMAGE : props.src}

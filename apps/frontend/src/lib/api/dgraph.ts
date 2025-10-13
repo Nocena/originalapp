@@ -2,7 +2,12 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import { User } from '../../contexts/AuthContext';
 import { getDayOfYear, getWeekOfYear } from '@utils/dateUtils';
-import { ChallengeFormData, CreateChallengeResponse, PublicChallenge, PrivateChallenge } from '../map/types';
+import {
+  ChallengeFormData,
+  CreateChallengeResponse,
+  PublicChallenge,
+  PrivateChallenge,
+} from '../map/types';
 
 const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
 
@@ -41,7 +46,7 @@ export const registerUser = async (
   lensTransactionHash: string,
   lensMetadataUri: string,
   invitedById?: string,
-  pushSubscription?: string | null,
+  pushSubscription?: string | null
 ) => {
   // Normalize wallet address to lowercase for consistency
   const normalizedWallet = wallet.toLowerCase();
@@ -69,7 +74,10 @@ export const registerUser = async (
   // Push subscriptions are now optional - we'll store empty string if not provided
   const finalPushSubscription = pushSubscription || '';
 
-  console.log('🔧 REGISTER: Final push subscription value:', finalPushSubscription ? 'PROVIDED' : 'EMPTY');
+  console.log(
+    '🔧 REGISTER: Final push subscription value:',
+    finalPushSubscription ? 'PROVIDED' : 'EMPTY'
+  );
 
   // Validate that all Lens data is provided
   if (!lensHandle || !lensAccountId || !lensTransactionHash || !lensMetadataUri) {
@@ -203,7 +211,7 @@ export const registerUser = async (
       if (userData.pushSubscription) {
         console.log(
           '🔧 REGISTER: Successfully saved pushSubscription:',
-          userData.pushSubscription.substring(0, 50) + '...',
+          userData.pushSubscription.substring(0, 50) + '...'
         );
       } else {
         console.log('🔧 REGISTER: No push subscription provided - user can enable later');
@@ -213,7 +221,9 @@ export const registerUser = async (
       console.log('🌿 REGISTER: Successfully saved Lens data:', {
         handle: userData.lensHandle,
         accountId: userData.lensAccountId,
-        txHash: userData.lensTransactionHash ? `${userData.lensTransactionHash.substring(0, 10)}...` : 'missing',
+        txHash: userData.lensTransactionHash
+          ? `${userData.lensTransactionHash.substring(0, 10)}...`
+          : 'missing',
         metadataUri: userData.lensMetadataUri,
       });
 
@@ -269,7 +279,7 @@ export const registerUser = async (
       '🔧 REGISTER: Successfully registered user:',
       userData.id,
       userData.username,
-      `(notifications: ${userData.pushSubscription ? 'enabled' : 'disabled'})`,
+      `(notifications: ${userData.pushSubscription ? 'enabled' : 'disabled'})`
     );
     return userData;
   } catch (error) {
@@ -289,7 +299,7 @@ export const updateUserLensData = async (
   lensHandle: string,
   lensAccountId?: string,
   lensTransactionHash?: string,
-  lensMetadataUri?: string,
+  lensMetadataUri?: string
 ) => {
   console.log('🌿 Updating user with Lens data:', { userId, lensHandle, lensAccountId });
 
@@ -340,7 +350,7 @@ export const updateUserLensData = async (
  * Validates an invite code - FIXED GraphQL types
  */
 export const validateInviteCode = async (
-  code: string,
+  code: string
 ): Promise<{ valid: boolean; ownerId?: string; ownerUsername?: string }> => {
   const query = `
     query ValidateInvite($code: String!) {
@@ -475,7 +485,10 @@ export const markInviteAsUsed = async (code: string, userId: string): Promise<bo
 /**
  * Generates invite codes for a user - FIXED GraphQL types
  */
-export const generateInviteCode = async (userId: string, source: string = 'earned'): Promise<string | null> => {
+export const generateInviteCode = async (
+  userId: string,
+  source: string = 'earned'
+): Promise<string | null> => {
   console.log(`🚀 BOOTSTRAP: Starting generateInviteCode for userId: ${userId}, source: ${source}`);
 
   try {
@@ -552,7 +565,7 @@ export const generateInviteCode = async (userId: string, source: string = 'earne
               'X-Auth-Token': process.env.NEXT_PUBLIC_DGRAPH_API_KEY,
             }),
           },
-        },
+        }
       );
 
       if (codeCheckResponse.data.errors) {
@@ -659,7 +672,7 @@ export const generateInviteCode = async (userId: string, source: string = 'earne
             'X-Auth-Token': process.env.NEXT_PUBLIC_DGRAPH_API_KEY,
           }),
         },
-      },
+      }
     );
 
     console.log('🚀 BOOTSTRAP: Create response status:', response.status);
@@ -671,7 +684,9 @@ export const generateInviteCode = async (userId: string, source: string = 'earne
       // let's try a workaround
       if (
         userId === 'system' &&
-        response.data.errors.some((err: any) => err.message.includes('owner') || err.message.includes('UserRef'))
+        response.data.errors.some(
+          (err: any) => err.message.includes('owner') || err.message.includes('UserRef')
+        )
       ) {
         console.log('🚀 BOOTSTRAP: Owner field required - this is the bootstrap problem!');
         console.log('🚀 BOOTSTRAP: You need to either:');
@@ -855,7 +870,8 @@ export const getAdminInviteStats = async () => {
         count: systemInvites.length,
         used: systemUsedCount,
         unused: systemUnusedCount,
-        usageRate: systemInvites.length > 0 ? Math.round((systemUsedCount / systemInvites.length) * 100) : 0,
+        usageRate:
+          systemInvites.length > 0 ? Math.round((systemUsedCount / systemInvites.length) * 100) : 0,
       },
       bySource,
       recentSystemUsage: systemInvites
@@ -1100,7 +1116,7 @@ export const getUserFromDgraph = async (walletAddress: string) => {
         headers: {
           'Content-Type': 'application/json',
         },
-      },
+      }
     );
 
     console.log('🔍 WALLET LOOKUP: Query response:', {
@@ -1468,7 +1484,7 @@ export const getUserByIdFromDgraph = async (userId: string) => {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     console.log('=== Dgraph response ===');
@@ -1626,7 +1642,7 @@ export const updateBio = async (userId: string, newBio: string): Promise<void> =
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -1641,7 +1657,10 @@ export const updateBio = async (userId: string, newBio: string): Promise<void> =
   }
 };
 
-export const updateProfilePicture = async (userId: string, profilePictureUrl: string): Promise<void> => {
+export const updateProfilePicture = async (
+  userId: string,
+  profilePictureUrl: string
+): Promise<void> => {
   const mutation = `
     mutation UpdateUserProfilePicture($id: String!, $profilePicture: String!) {
       updateUser(input: { filter: { id: { eq: $id } }, set: { profilePicture: $profilePicture } }) {
@@ -1667,7 +1686,7 @@ export const updateProfilePicture = async (userId: string, profilePictureUrl: st
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -1699,10 +1718,16 @@ export const fetchAllUsers = async (): Promise<User[]> => {
   `;
 
   try {
-    const response = await axios.post(DGRAPH_ENDPOINT, { query }, { headers: { 'Content-Type': 'application/json' } });
+    const response = await axios.post(
+      DGRAPH_ENDPOINT,
+      { query },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
 
     if (response.data.errors) {
-      throw new Error(`Dgraph Error: ${response.data.errors.map((e: any) => e.message).join(', ')}`);
+      throw new Error(
+        `Dgraph Error: ${response.data.errors.map((e: any) => e.message).join(', ')}`
+      );
     }
 
     return response.data.data.queryUser.map((user: any) => ({
@@ -1738,11 +1763,13 @@ export const followUser = async (userId: string, targetUserId: string) => {
         query: mutation,
         variables: { userId, targetUserId },
       },
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     if (response.data.errors) {
-      throw new Error(`Dgraph Error: ${response.data.errors.map((e: any) => e.message).join(', ')}`);
+      throw new Error(
+        `Dgraph Error: ${response.data.errors.map((e: any) => e.message).join(', ')}`
+      );
     }
   } catch (error) {
     console.error('Error following user in Dgraph:', error);
@@ -1773,11 +1800,13 @@ export const unfollowUser = async (userId: string, targetUserId: string) => {
         query: mutation,
         variables: { userId, targetUserId },
       },
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     if (response.data.errors) {
-      throw new Error(`Dgraph Error: ${response.data.errors.map((e: any) => e.message).join(', ')}`);
+      throw new Error(
+        `Dgraph Error: ${response.data.errors.map((e: any) => e.message).join(', ')}`
+      );
     }
   } catch (error) {
     console.error('Error unfollowing user in Dgraph:', error);
@@ -1833,10 +1862,13 @@ export const searchUsers = async (query: string): Promise<any[]> => {
 export const toggleFollowUser = async (
   currentUserId: string,
   targetUserId: string,
-  currentUsername: string,
+  currentUsername: string
 ): Promise<boolean> => {
   if (!currentUserId || !targetUserId || currentUserId === targetUserId) {
-    console.error('Invalid user IDs for follow/unfollow operation.', { currentUserId, targetUserId });
+    console.error('Invalid user IDs for follow/unfollow operation.', {
+      currentUserId,
+      targetUserId,
+    });
     return false;
   }
 
@@ -1919,7 +1951,12 @@ export const toggleFollowUser = async (
 
     if (!isFollowing) {
       console.log('Creating notification with triggeredById:', currentUserId);
-      await createNotification(targetUserId, currentUserId, `${currentUsername} followed you`, 'follow');
+      await createNotification(
+        targetUserId,
+        currentUserId,
+        `${currentUsername} followed you`,
+        'follow'
+      );
     }
 
     console.log(`Follow/unfollow successful: ${currentUserId} -> ${targetUserId}`);
@@ -1994,7 +2031,7 @@ export const createPrivateChallenge = async (
   title: string,
   description: string,
   reward: number,
-  expiresInDays: number = 30,
+  expiresInDays: number = 30
 ): Promise<string> => {
   const id = uuidv4();
   const now = new Date();
@@ -2049,7 +2086,7 @@ export const createPrivateChallenge = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -2074,7 +2111,7 @@ export const createPublicChallenge = async (
   reward: number,
   latitude: number,
   longitude: number,
-  maxParticipants: number = 100,
+  maxParticipants: number = 100
 ): Promise<string> => {
   const id = uuidv4();
   const createdAt = new Date().toISOString();
@@ -2133,7 +2170,7 @@ export const createPublicChallenge = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -2155,7 +2192,7 @@ export const createAIChallenge = async (
   title: string,
   description: string,
   reward: number,
-  frequency: string,
+  frequency: string
 ): Promise<string> => {
   const id = uuidv4();
   const now = new Date();
@@ -2229,7 +2266,7 @@ export const createAIChallenge = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -2252,7 +2289,7 @@ export const createChallengeCompletion = async (
   userId: string,
   challengeId: string,
   challengeType: 'private' | 'public' | 'ai',
-  mediaData: string | MediaMetadata,
+  mediaData: string | MediaMetadata
 ): Promise<string> => {
   console.log('Creating challenge completion with parameters:', {
     userId,
@@ -2354,7 +2391,7 @@ export const createChallengeCompletion = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -2383,7 +2420,7 @@ export const createChallengeCompletion = async (
           },
           {
             headers: { 'Content-Type': 'application/json' },
-          },
+          }
         );
 
         if (challengeResponse.data.errors) {
@@ -2411,7 +2448,10 @@ export const createChallengeCompletion = async (
  * Updates the user's challenge tracking strings when a challenge is completed
  * This function handles dailyChallenge, weeklyChallenge, and monthlyChallenge fields
  */
-export const updateUserChallengeStrings = async (userId: string, frequency: string | null): Promise<void> => {
+export const updateUserChallengeStrings = async (
+  userId: string,
+  frequency: string | null
+): Promise<void> => {
   console.log(`Updating challenge strings for user ${userId}, frequency ${frequency}`);
 
   // Skip if no frequency (for non-AI challenges)
@@ -2468,7 +2508,7 @@ export const updateUserChallengeStrings = async (userId: string, frequency: stri
         },
         {
           headers: { 'Content-Type': 'application/json' },
-        },
+        }
       );
 
       challengeString = response.data?.data?.getUser?.dailyChallenge || '';
@@ -2489,7 +2529,7 @@ export const updateUserChallengeStrings = async (userId: string, frequency: stri
         },
         {
           headers: { 'Content-Type': 'application/json' },
-        },
+        }
       );
 
       challengeString = response.data?.data?.getUser?.weeklyChallenge || '';
@@ -2510,7 +2550,7 @@ export const updateUserChallengeStrings = async (userId: string, frequency: stri
         },
         {
           headers: { 'Content-Type': 'application/json' },
-        },
+        }
       );
 
       challengeString = response.data?.data?.getUser?.monthlyChallenge || '';
@@ -2520,19 +2560,25 @@ export const updateUserChallengeStrings = async (userId: string, frequency: stri
 
     // If challenge string is empty/null, create a new one with the right length
     if (!challengeString) {
-      const length = fieldName === 'dailyChallenge' ? 365 : fieldName === 'weeklyChallenge' ? 54 : 12;
+      const length =
+        fieldName === 'dailyChallenge' ? 365 : fieldName === 'weeklyChallenge' ? 54 : 12;
       challengeString = '0'.repeat(length);
       console.log(`Created new string with length ${length}`);
     }
 
     // Ensure position is valid
     if (position < 0 || position >= challengeString.length) {
-      console.error(`Invalid position ${position} for ${fieldName} with length ${challengeString.length}`);
-      throw new Error(`Invalid position ${position} for ${fieldName} with length ${challengeString.length}`);
+      console.error(
+        `Invalid position ${position} for ${fieldName} with length ${challengeString.length}`
+      );
+      throw new Error(
+        `Invalid position ${position} for ${fieldName} with length ${challengeString.length}`
+      );
     }
 
     // Update the string at the specified position
-    const updatedString = challengeString.substring(0, position) + '1' + challengeString.substring(position + 1);
+    const updatedString =
+      challengeString.substring(0, position) + '1' + challengeString.substring(position + 1);
 
     console.log(`Updated string:`, updatedString);
 
@@ -2590,7 +2636,7 @@ export const updateUserChallengeStrings = async (userId: string, frequency: stri
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (updateResponse.data.errors) {
@@ -2613,7 +2659,7 @@ export const getOrCreateAIChallenge = async (
   title: string,
   description: string,
   reward: number,
-  frequency: string,
+  frequency: string
 ): Promise<string> => {
   const now = new Date();
   const year = now.getFullYear();
@@ -2653,7 +2699,7 @@ export const getOrCreateAIChallenge = async (
     const queryResponse = await axios.post(
       DGRAPH_ENDPOINT,
       { query },
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     if (queryResponse.data.errors) {
@@ -2661,7 +2707,10 @@ export const getOrCreateAIChallenge = async (
     }
 
     // If AI challenge exists, return its ID
-    if (queryResponse.data.data.queryAIChallenge && queryResponse.data.data.queryAIChallenge.length > 0) {
+    if (
+      queryResponse.data.data.queryAIChallenge &&
+      queryResponse.data.data.queryAIChallenge.length > 0
+    ) {
       return queryResponse.data.data.queryAIChallenge[0].id;
     }
 
@@ -2680,7 +2729,7 @@ export async function fetchUserCompletions(
   userId: string,
   startDate: string,
   endDate: string,
-  challengeType?: 'ai' | 'private' | 'public',
+  challengeType?: 'ai' | 'private' | 'public'
 ): Promise<any[]> {
   const axios = (await import('axios')).default;
   const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
@@ -2698,7 +2747,9 @@ export async function fetchUserCompletions(
     }
 
     const filterString =
-      filterConditions.length > 1 ? `and: [${filterConditions.join(', ')}]` : filterConditions[0].slice(1, -1); // Remove outer braces for single condition
+      filterConditions.length > 1
+        ? `and: [${filterConditions.join(', ')}]`
+        : filterConditions[0].slice(1, -1); // Remove outer braces for single condition
 
     // Query through User's completedChallenges field
     const query = `
@@ -2758,7 +2809,7 @@ export async function fetchUserCompletions(
           endDate,
         },
       },
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     if (response.data.errors) {
@@ -2778,7 +2829,7 @@ export async function fetchUserCompletions(
  */
 export async function fetchLatestUserCompletion(
   userId: string,
-  challengeType: 'ai' | 'private' | 'public' = 'ai',
+  challengeType: 'ai' | 'private' | 'public' = 'ai'
 ): Promise<any | null> {
   const axios = (await import('axios')).default;
   const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
@@ -2857,7 +2908,7 @@ export async function fetchLatestUserCompletion(
           userId,
         },
       },
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     if (response.data.errors) {
@@ -2876,7 +2927,11 @@ export async function fetchLatestUserCompletion(
 /**
  * Fetch follower completions for a given date and challenge frequency
  */
-export async function fetchFollowerCompletions(userId: string, date: string, frequency: string): Promise<any[]> {
+export async function fetchFollowerCompletions(
+  userId: string,
+  date: string,
+  frequency: string
+): Promise<any[]> {
   const axios = (await import('axios')).default;
   const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
 
@@ -2888,7 +2943,14 @@ export async function fetchFollowerCompletions(userId: string, date: string, fre
 
     if (frequency === 'daily') {
       startDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-      endDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59);
+      endDate = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate(),
+        23,
+        59,
+        59
+      );
     } else if (frequency === 'weekly') {
       const dayOfWeek = targetDate.getDay();
       const monday = new Date(targetDate);
@@ -2954,7 +3016,7 @@ export async function fetchFollowerCompletions(userId: string, date: string, fre
           endDate: endDate.toISOString(),
         },
       },
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     if (response.data.errors) {
@@ -2985,20 +3047,25 @@ export async function fetchFollowerCompletions(userId: string, date: string, fre
 /**
  * Check if user has completed a specific challenge type for current period
  */
-export function hasCompletedChallenge(user: any, challengeType: 'daily' | 'weekly' | 'monthly'): boolean {
+export function hasCompletedChallenge(
+  user: any,
+  challengeType: 'daily' | 'weekly' | 'monthly'
+): boolean {
   if (!user) return false;
 
   const now = new Date();
 
   if (challengeType === 'daily') {
-    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const dayOfYear = Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
+    );
     return user.dailyChallenge?.charAt(dayOfYear - 1) === '1';
   } else if (challengeType === 'weekly') {
     const weekOfYear = Math.ceil(
       ((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000 +
         new Date(now.getFullYear(), 0, 1).getDay() +
         1) /
-        7,
+        7
     );
     return user.weeklyChallenge?.charAt(weekOfYear - 1) === '1';
   } else {
@@ -3058,7 +3125,7 @@ export const createChallengeNotification = async (
   content: string,
   notificationType: string,
   challengeType: 'private' | 'public' | 'ai' | null = null,
-  challengeId: string | null = null,
+  challengeId: string | null = null
 ): Promise<boolean> => {
   const id = generateId();
   const createdAt = new Date().toISOString();
@@ -3138,7 +3205,7 @@ export const createNotification = async (
   recipientId: string,
   triggeredById: string,
   content: string,
-  notificationType: string,
+  notificationType: string
 ): Promise<boolean> => {
   const id = generateId();
   const createdAt = new Date().toISOString();
@@ -3372,7 +3439,7 @@ export const updateUserTokens = async (userId: string, tokenAmount: number): Pro
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (getUserResponse.data.errors) {
@@ -3438,7 +3505,7 @@ export const updateUserTokens = async (userId: string, tokenAmount: number): Pro
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (updateResponse.data.errors) {
@@ -3464,7 +3531,7 @@ export const updateUserTokens = async (userId: string, tokenAmount: number): Pro
 export const handleChallengeCreation = async (
   userId: string,
   challengeData: ChallengeFormData,
-  mode: 'private' | 'public',
+  mode: 'private' | 'public'
 ) => {
   try {
     if (mode === 'private') {
@@ -3477,7 +3544,9 @@ export const handleChallengeCreation = async (
       // The existing createPrivateChallenge doesn't use expiresAt directly, it uses expiresInDays
       // So we'll calculate days from now to the expiresAt date, or use default of 7 days
       const expiresInDays = challengeData.expiresAt
-        ? Math.ceil((new Date(challengeData.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        ? Math.ceil(
+            (new Date(challengeData.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+          )
         : 7;
 
       const challengeId = await createPrivateChallenge(
@@ -3486,7 +3555,7 @@ export const handleChallengeCreation = async (
         challengeData.challengeName,
         challengeData.description,
         challengeData.reward,
-        expiresInDays,
+        expiresInDays
       );
 
       // Fetch the target user's username to include in the success message
@@ -3517,7 +3586,7 @@ export const handleChallengeCreation = async (
         `You've been challenged!`,
         'challenge',
         'private',
-        challengeId,
+        challengeId
       );
 
       return {
@@ -3544,7 +3613,7 @@ export const handleChallengeCreation = async (
         challengeData.reward,
         challengeData.latitude,
         challengeData.longitude,
-        challengeData.participants || 10,
+        challengeData.participants || 10
       );
 
       return {
@@ -3566,7 +3635,9 @@ export const handleChallengeCreation = async (
  * Helper function to reset time-based earnings counters
  * This should be called by a scheduled job (daily/weekly/monthly)
  */
-export const resetTimeBasedEarnings = async (resetType: 'daily' | 'weekly' | 'monthly'): Promise<void> => {
+export const resetTimeBasedEarnings = async (
+  resetType: 'daily' | 'weekly' | 'monthly'
+): Promise<void> => {
   console.log(`Resetting ${resetType} earnings for all users`);
 
   let setFields: any = {
@@ -3603,7 +3674,7 @@ export const resetTimeBasedEarnings = async (resetType: 'daily' | 'weekly' | 'mo
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -3611,7 +3682,9 @@ export const resetTimeBasedEarnings = async (resetType: 'daily' | 'weekly' | 'mo
       throw new Error(`Failed to reset ${resetType} earnings`);
     }
 
-    console.log(`Successfully reset ${resetType} earnings for ${response.data.data.updateUser.numUids} users`);
+    console.log(
+      `Successfully reset ${resetType} earnings for ${response.data.data.updateUser.numUids} users`
+    );
   } catch (error) {
     console.error(`Error resetting ${resetType} earnings:`, error);
     throw error;
@@ -3649,7 +3722,11 @@ export const fetchAllPublicChallenges = async (): Promise<any[]> => {
   `;
 
   try {
-    const response = await axios.post(DGRAPH_ENDPOINT, { query }, { headers: { 'Content-Type': 'application/json' } });
+    const response = await axios.post(
+      DGRAPH_ENDPOINT,
+      { query },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
 
     if (response.data.errors) {
       console.error('Dgraph query error:', response.data.errors);
@@ -3673,7 +3750,7 @@ export const fetchAllPublicChallenges = async (): Promise<any[]> => {
 export const fetchNearbyPublicChallenges = async (
   longitude: number,
   latitude: number,
-  radiusKm: number = 10,
+  radiusKm: number = 10
 ): Promise<any[]> => {
   try {
     // First fetch all challenges since Dgraph doesn't support geospatial queries directly
@@ -3685,7 +3762,7 @@ export const fetchNearbyPublicChallenges = async (
         latitude,
         longitude,
         challenge.location.latitude,
-        challenge.location.longitude,
+        challenge.location.longitude
       );
 
       return distance <= radiusKm;
@@ -3721,7 +3798,7 @@ export const joinPublicChallenge = async (userId: string, challengeId: string): 
     const checkResponse = await axios.post(
       DGRAPH_ENDPOINT,
       { query: checkQuery },
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     if (checkResponse.data.errors) {
@@ -3768,7 +3845,7 @@ export const joinPublicChallenge = async (userId: string, challengeId: string): 
     const joinResponse = await axios.post(
       DGRAPH_ENDPOINT,
       { query: mutation },
-      { headers: { 'Content-Type': 'application/json' } },
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
     if (joinResponse.data.errors) {
@@ -3824,7 +3901,10 @@ export const getAllUserPushSubscriptions = async (): Promise<string[]> => {
       query,
     });
 
-    console.log('🔔 BULK: Push subscriptions query response:', JSON.stringify(response.data, null, 2));
+    console.log(
+      '🔔 BULK: Push subscriptions query response:',
+      JSON.stringify(response.data, null, 2)
+    );
 
     if (response.data.errors) {
       console.error('🔔 BULK: GraphQL errors:', response.data.errors);
@@ -3870,7 +3950,7 @@ export const updateTrailerVideo = async (userId: string, trailerVideo: string): 
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -3911,7 +3991,7 @@ export const updateCoverPhoto = async (userId: string, coverPhoto: string): Prom
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -4078,7 +4158,7 @@ export const checkUsernameExists = async (username: string) => {
  */
 export const getLeaderboard = async (
   period: 'all-time' | 'today' | 'week' | 'month',
-  limit: number = 50,
+  limit: number = 50
 ): Promise<any[]> => {
   console.log(`Fetching ${period} leaderboard (top ${limit})`);
 
@@ -4133,7 +4213,7 @@ export const getLeaderboard = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -4200,7 +4280,11 @@ export const fetchAllPublicChallengesWithCompletions = async (): Promise<any[]> 
   `;
 
   try {
-    const response = await axios.post(DGRAPH_ENDPOINT, { query }, { headers: { 'Content-Type': 'application/json' } });
+    const response = await axios.post(
+      DGRAPH_ENDPOINT,
+      { query },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
 
     if (response.data.errors) {
       console.error('Dgraph query error:', response.data.errors);
@@ -4215,7 +4299,10 @@ export const fetchAllPublicChallengesWithCompletions = async (): Promise<any[]> 
       completionCount: challenge.completions?.length || 0,
       recentCompletions:
         challenge.completions
-          ?.sort((a: any, b: any) => new Date(b.completionDate).getTime() - new Date(a.completionDate).getTime())
+          ?.sort(
+            (a: any, b: any) =>
+              new Date(b.completionDate).getTime() - new Date(a.completionDate).getTime()
+          )
           ?.slice(0, 5) // Get most recent 5 completions
           ?.map((completion: any) => ({
             userId: completion.user.id,
@@ -4240,7 +4327,7 @@ export const fetchAllPublicChallengesWithCompletions = async (): Promise<any[]> 
  */
 export const toggleCompletionLike = async (
   userId: string,
-  completionId: string,
+  completionId: string
 ): Promise<{ isLiked: boolean; newLikeCount: number }> => {
   console.log(`Toggling like: User ${userId} on completion ${completionId}`);
 
@@ -4264,7 +4351,7 @@ export const toggleCompletionLike = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (userResponse.data.errors) {
@@ -4302,7 +4389,7 @@ export const toggleCompletionLike = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (checkResponse.data.errors) {
@@ -4389,7 +4476,7 @@ export const toggleCompletionLike = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (updateResponse.data.errors) {
@@ -4400,14 +4487,21 @@ export const toggleCompletionLike = async (
     // If this is a new like (not unliking), create a notification for the completion owner
     if (newIsLiked && completion.user.id !== userId) {
       try {
-        await createNotification(completion.user.id, userId, `liked your challenge completion`, 'like');
+        await createNotification(
+          completion.user.id,
+          userId,
+          `liked your challenge completion`,
+          'like'
+        );
       } catch (notificationError) {
         console.error('Failed to create like notification:', notificationError);
         // Don't throw error as the like operation succeeded
       }
     }
 
-    console.log(`Like toggled successfully: ${newIsLiked ? 'liked' : 'unliked'}, new count: ${newLikeCount}`);
+    console.log(
+      `Like toggled successfully: ${newIsLiked ? 'liked' : 'unliked'}, new count: ${newLikeCount}`
+    );
 
     return {
       isLiked: newIsLiked,
@@ -4427,7 +4521,7 @@ export const toggleCompletionLike = async (
  */
 export const getCompletionLikes = async (
   completionId: string,
-  userId?: string,
+  userId?: string
 ): Promise<{ likesCount: number; isLiked: boolean; recentLikes: Array<any> }> => {
   console.log(`Getting likes for completion ${completionId}, user ${userId}`);
 
@@ -4470,7 +4564,7 @@ export const getCompletionLikes = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -4504,7 +4598,10 @@ export const getCompletionLikes = async (
  * @param userId - Current user ID to check like status
  * @returns Promise<Array<ChallengeCompletion>>
  */
-export const fetchChallengeCompletionsWithLikes = async (challengeId?: string, userId?: string): Promise<any[]> => {
+export const fetchChallengeCompletionsWithLikes = async (
+  challengeId?: string,
+  userId?: string
+): Promise<any[]> => {
   console.log('Fetching challenge completions with like data', { challengeId, userId });
 
   try {
@@ -4592,7 +4689,7 @@ export const fetchChallengeCompletionsWithLikes = async (challengeId?: string, u
             'X-Auth-Token': process.env.NEXT_PUBLIC_DGRAPH_API_KEY,
           }),
         },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -4628,9 +4725,11 @@ export const createRealMojiReaction = async (
   userId: string,
   completionId: string,
   reactionType: string,
-  selfieCID: string,
+  selfieCID: string
 ): Promise<string> => {
-  console.log(`Creating RealMoji reaction: ${reactionType} by user ${userId} on completion ${completionId}`);
+  console.log(
+    `Creating RealMoji reaction: ${reactionType} by user ${userId} on completion ${completionId}`
+  );
 
   try {
     // For now, skip duplicate check and just create the reaction
@@ -4687,7 +4786,7 @@ export const createRealMojiReaction = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (createResponse.data.errors) {
@@ -4715,7 +4814,7 @@ export const createRealMojiReaction = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     // Create notification for the completion owner (if not reacting to own post)
@@ -4727,7 +4826,7 @@ export const createRealMojiReaction = async (
             completionOwner.id,
             userId,
             `reacted with a ${reactionType} RealMoji to your challenge`,
-            'reaction',
+            'reaction'
           );
         } catch (notificationError) {
           console.error('Failed to create reaction notification:', notificationError);
@@ -4780,7 +4879,7 @@ export const getCompletionReactions = async (completionId: string): Promise<any[
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -4799,7 +4898,9 @@ export const getCompletionReactions = async (completionId: string): Promise<any[
     return reactions.map((reaction: any) => ({
       ...reaction,
       emoji: getEmojiForReactionType(reaction.reactionType),
-      selfieUrl: reaction.selfieCID ? `https://gateway.pinata.cloud/ipfs/${reaction.selfieCID}` : null,
+      selfieUrl: reaction.selfieCID
+        ? `https://gateway.pinata.cloud/ipfs/${reaction.selfieCID}`
+        : null,
     }));
   } catch (error) {
     console.error('Error getting completion reactions:', error);
@@ -4813,7 +4914,10 @@ export const getCompletionReactions = async (completionId: string): Promise<any[
  * @param reactionType - Type of reaction for filename
  * @returns Promise<string> - IPFS CID of uploaded image
  */
-export const uploadRealMojiToIPFS = async (imageBlob: Blob, reactionType: string): Promise<string> => {
+export const uploadRealMojiToIPFS = async (
+  imageBlob: Blob,
+  reactionType: string
+): Promise<string> => {
   console.log(`Uploading RealMoji selfie to IPFS: ${reactionType}, size: ${imageBlob.size} bytes`);
 
   try {
@@ -4841,8 +4945,8 @@ export const uploadRealMojiToIPFS = async (imageBlob: Blob, reactionType: string
     const response = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        'pinata_api_key': process.env.PINATA_API_KEY!,
-        'pinata_secret_api_key': process.env.PINATA_SECRET_KEY!,
+        pinata_api_key: process.env.PINATA_API_KEY!,
+        pinata_secret_api_key: process.env.PINATA_SECRET_KEY!,
       },
     });
 
@@ -4883,7 +4987,7 @@ const getEmojiForReactionType = (reactionType: string): string => {
  */
 export const fetchChallengeCompletionsWithLikesAndReactions = async (
   challengeId?: string,
-  userId?: string,
+  userId?: string
 ): Promise<any[]> => {
   console.log('Fetching challenge completions with likes and reactions', { challengeId, userId });
 
@@ -4983,7 +5087,7 @@ export const fetchChallengeCompletionsWithLikesAndReactions = async (
             'X-Auth-Token': process.env.NEXT_PUBLIC_DGRAPH_API_KEY,
           }),
         },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -5005,7 +5109,9 @@ export const fetchChallengeCompletionsWithLikesAndReactions = async (
       recentReactions: (completion.reactions || []).map((reaction: any) => ({
         ...reaction,
         emoji: getEmojiForReactionType(reaction.reactionType),
-        selfieUrl: reaction.selfieCID ? `https://gateway.pinata.cloud/ipfs/${reaction.selfieCID}` : null,
+        selfieUrl: reaction.selfieCID
+          ? `https://gateway.pinata.cloud/ipfs/${reaction.selfieCID}`
+          : null,
       })),
     }));
   } catch (error) {
@@ -5121,7 +5227,7 @@ export const createNFTItem = async (nftData: {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -5149,7 +5255,10 @@ export const createNFTItem = async (nftData: {
  * @param nftId - ID of the NFT item
  * @returns Promise<boolean> - Success status
  */
-export const updateChallengeCompletionWithNFT = async (completionId: string, nftId: string): Promise<boolean> => {
+export const updateChallengeCompletionWithNFT = async (
+  completionId: string,
+  nftId: string
+): Promise<boolean> => {
   console.log('Updating challenge completion with NFT reward:', { completionId, nftId });
 
   const mutation = `
@@ -5182,7 +5291,7 @@ export const updateChallengeCompletionWithNFT = async (completionId: string, nft
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -5216,7 +5325,7 @@ export const saveNFTRewardToDatabase = async (
     imageUrl: string;
     generationPrompt?: string;
     ownerId: string;
-  },
+  }
 ): Promise<{ success: boolean; nftId?: string; error?: string }> => {
   console.log('🎁 Saving NFT reward to database:', {
     completionId,
@@ -5329,7 +5438,7 @@ export const getUserNFTCollection = async (userId: string): Promise<any[]> => {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -5349,7 +5458,8 @@ export const getUserNFTCollection = async (userId: string): Promise<any[]> => {
       ...nft,
       // Add convenience fields
       isRare: nft.rarity === 'rare' || nft.rarity === 'epic',
-      displayUrl: nft.imageUrl || (nft.imageCID ? `https://gateway.pinata.cloud/ipfs/${nft.imageCID}` : null),
+      displayUrl:
+        nft.imageUrl || (nft.imageCID ? `https://gateway.pinata.cloud/ipfs/${nft.imageCID}` : null),
     }));
   } catch (error) {
     console.error('Error fetching user NFT collection:', error);
@@ -5397,7 +5507,7 @@ export const equipNFT = async (userId: string, nftId: string): Promise<boolean> 
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     // Then equip the new NFT
@@ -5435,7 +5545,7 @@ export const equipNFT = async (userId: string, nftId: string): Promise<boolean> 
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -5491,7 +5601,7 @@ export const saveUserAvatar = async (avatarData: {
       console.warn('⚠️ Cleanup failed, but continuing with save:', cleanupResults.error);
     } else {
       console.log(
-        `✅ Cleanup complete: ${cleanupResults.deletedCount} records, ${cleanupResults.cleanedFiles?.length} files`,
+        `✅ Cleanup complete: ${cleanupResults.deletedCount} records, ${cleanupResults.cleanedFiles?.length} files`
       );
     }
 
@@ -5515,7 +5625,7 @@ export const saveUserAvatar = async (avatarData: {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     // STEP 3: Create the new avatar
@@ -5579,7 +5689,7 @@ export const saveUserAvatar = async (avatarData: {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -5623,7 +5733,7 @@ export const saveUserAvatar = async (avatarData: {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     console.log('✅ User currentAvatar updated successfully');
@@ -5727,7 +5837,7 @@ export const getUserAvatar = async (userId: string): Promise<any | null> => {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -5798,7 +5908,7 @@ export const getUserNFTsByType = async (userId: string, itemType?: string): Prom
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -5831,7 +5941,7 @@ export const updateUserEquippedItems = async (
     hoodieId?: string | null;
     pantsId?: string | null;
     shoesId?: string | null;
-  },
+  }
 ): Promise<boolean> => {
   console.log('🎨 Updating user equipped items:', { userId, equippedItems });
 
@@ -5906,7 +6016,7 @@ export const updateUserEquippedItems = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -5928,7 +6038,7 @@ export const updateUserEquippedItems = async (
  * @returns Promise<{success: boolean, deletedCount?: number, cleanedFiles?: string[]}>
  */
 export const cleanupOldAvatars = async (
-  userId: string,
+  userId: string
 ): Promise<{
   success: boolean;
   deletedCount?: number;
@@ -5964,7 +6074,7 @@ export const cleanupOldAvatars = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -6006,7 +6116,9 @@ export const cleanupOldAvatars = async (
       }
     });
 
-    console.log(`🧹 Will delete ${avatarIds.length} avatar records and ${cidsToDelete.length} IPFS files`);
+    console.log(
+      `🧹 Will delete ${avatarIds.length} avatar records and ${cidsToDelete.length} IPFS files`
+    );
 
     // Delete from Pinata first (so we don't lose reference if Dgraph fails)
     const cleanedFiles: string[] = [];
@@ -6043,12 +6155,14 @@ export const cleanupOldAvatars = async (
         },
         {
           headers: { 'Content-Type': 'application/json' },
-        },
+        }
       );
 
       if (deleteResponse.data.errors) {
         console.error('Error deleting avatar records:', deleteResponse.data.errors);
-        throw new Error(`Failed to delete avatar records: ${deleteResponse.data.errors[0].message}`);
+        throw new Error(
+          `Failed to delete avatar records: ${deleteResponse.data.errors[0].message}`
+        );
       }
 
       const deletedCount = deleteResponse.data.data.deleteAvatar.numUids;
@@ -6115,7 +6229,7 @@ export const deletePinataFile = async (cid: string): Promise<boolean> => {
  * @returns Promise with storage stats
  */
 export const getUserStorageStats = async (
-  userId: string,
+  userId: string
 ): Promise<{
   totalAvatars: number;
   activeAvatars: number;
@@ -6154,7 +6268,7 @@ export const getUserStorageStats = async (
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -6248,7 +6362,7 @@ export async function getUserAvatarByImageUrl(userId: string, imageUrl: string) 
         headers: {
           'Content-Type': 'application/json',
         },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -6259,7 +6373,9 @@ export async function getUserAvatarByImageUrl(userId: string, imageUrl: string) 
     const user = response.data?.data?.queryUser?.[0];
     if (user?.avatarHistory?.length > 0) {
       // Filter in JavaScript to find the avatar with matching URL
-      const matchingAvatar = user.avatarHistory.find((avatar: any) => avatar.generatedImageUrl === imageUrl);
+      const matchingAvatar = user.avatarHistory.find(
+        (avatar: any) => avatar.generatedImageUrl === imageUrl
+      );
       return matchingAvatar || null;
     }
 

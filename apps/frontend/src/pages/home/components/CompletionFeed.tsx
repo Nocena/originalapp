@@ -71,7 +71,7 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
           user.id,
           startDate.toISOString(),
           endDate.toISOString(),
-          'ai', // Filter for AI challenges
+          'ai' // Filter for AI challenges
         );
 
         // Find the most recent completion for this period
@@ -131,7 +131,8 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
               // Ensure we have a proper profile object
               const profile = {
                 userId: item.userId || item.user?.id || item.id || `unknown-${index}`,
-                username: item.username || item.user?.username || item.displayName || 'Unknown User',
+                username:
+                  item.username || item.user?.username || item.displayName || 'Unknown User',
                 profilePicture: item.profilePicture || item.user?.profilePicture || null,
               };
 
@@ -179,7 +180,9 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
       {/* Show message when user completed but no friends have */}
       {hasUserCompleted && followerCompletions.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-gray-500 text-sm">None of your friends have completed this challenge yet.</p>
+          <p className="text-gray-500 text-sm">
+            None of your friends have completed this challenge yet.
+          </p>
         </div>
       )}
     </div>

@@ -66,7 +66,9 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
   const [videoUrl, setVideoUrl] = useState<string>('');
   const [photoUrl, setPhotoUrl] = useState<string>('');
   const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
-  const [verificationStage, setVerificationStage] = useState<'ready' | 'verifying' | 'complete' | 'failed'>('ready');
+  const [verificationStage, setVerificationStage] = useState<
+    'ready' | 'verifying' | 'complete' | 'failed'
+  >('ready');
   const [verificationSteps, setVerificationSteps] = useState<VerificationStep[]>([]);
   const [verificationResult, setVerificationResult] = useState<any>(null);
   const [currentStepMessage, setCurrentStepMessage] = useState('Ready to verify submission');
@@ -101,22 +103,36 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
   // UPDATED: Monitor background verification task
   useEffect(() => {
     if (backgroundTaskIds.verificationId) {
-      console.log('[Verification Screen] Monitoring background verification:', backgroundTaskIds.verificationId);
+      console.log(
+        '[Verification Screen] Monitoring background verification:',
+        backgroundTaskIds.verificationId
+      );
 
       const monitorTask = () => {
         const task = backgroundTasks.getTask(backgroundTaskIds.verificationId!);
         if (!task) return;
 
         // Stop monitoring if task is in a final state
-        if (task.status === 'completed' || task.status === 'failed' || task.status === 'cancelled') {
+        if (
+          task.status === 'completed' ||
+          task.status === 'failed' ||
+          task.status === 'cancelled'
+        ) {
           if (monitorIntervalRef.current) {
             clearInterval(monitorIntervalRef.current);
             monitorIntervalRef.current = null;
-            console.log('[Verification Screen] Stopped monitoring - task reached final state:', task.status);
+            console.log(
+              '[Verification Screen] Stopped monitoring - task reached final state:',
+              task.status
+            );
           }
         }
 
-        console.log('[Verification Screen] Background task status:', task.status, task.progress + '%');
+        console.log(
+          '[Verification Screen] Background task status:',
+          task.status,
+          task.progress + '%'
+        );
 
         if (task.status === 'running') {
           setVerificationStage('verifying');
@@ -221,7 +237,8 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
         name: 'Basic File Check',
         status: progress >= 20 ? 'completed' : progress > 0 ? 'running' : 'pending',
         progress: Math.min(progress, 20) * 5, // Scale to 0-100
-        message: progress >= 20 ? 'Files validated successfully' : 'Checking video and photo files...',
+        message:
+          progress >= 20 ? 'Files validated successfully' : 'Checking video and photo files...',
         confidence: progress >= 20 ? 0.95 : undefined,
       },
       {
@@ -365,7 +382,7 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
               }
             },
             'image/jpeg',
-            0.9,
+            0.9
           );
         }
       } catch (error) {
@@ -441,7 +458,11 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
         }
       });
 
-      const result = await verificationService.runFullVerification(videoBlob, photoBlob, challenge.description);
+      const result = await verificationService.runFullVerification(
+        videoBlob,
+        photoBlob,
+        challenge.description
+      );
 
       if (result.success && result.passed) {
         setVerificationResult({
@@ -549,7 +570,8 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
       const fakeResult = {
         passed: true,
         overallConfidence: 0.92,
-        details: 'All verification checks completed successfully. Challenge completion confirmed with high confidence.',
+        details:
+          'All verification checks completed successfully. Challenge completion confirmed with high confidence.',
         steps: fakeSteps,
         timestamp: new Date().toISOString(),
       };
@@ -607,7 +629,10 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
           };
         } else {
           return {
-            title: isDevelopmentEnvironment && useMockVerification ? 'Mock AI Verification' : 'AI Verification',
+            title:
+              isDevelopmentEnvironment && useMockVerification
+                ? 'Mock AI Verification'
+                : 'AI Verification',
             subtitle,
             color: 'nocenaPink',
           };
@@ -621,7 +646,9 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
       case 'complete':
         return {
           title: 'Verified ✓',
-          subtitle: backgroundVerificationUsed ? 'Background analysis completed' : 'Ready to claim your reward',
+          subtitle: backgroundVerificationUsed
+            ? 'Background analysis completed'
+            : 'Ready to claim your reward',
           color: 'nocenaPurple',
         };
       case 'failed':
@@ -660,7 +687,11 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
         }}
       >
         {/* Back Button - Left */}
-        <button onClick={onBack} className="focus:outline-none pointer-events-auto" aria-label="Back">
+        <button
+          onClick={onBack}
+          className="focus:outline-none pointer-events-auto"
+          aria-label="Back"
+        >
           <ThematicContainer
             color="nocenaBlue"
             glassmorphic={true}
@@ -668,14 +699,28 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
             rounded="full"
             className="w-12 h-12 flex items-center justify-center"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </ThematicContainer>
         </button>
 
         {/* Cancel Button - Right */}
-        <button onClick={onCancel} className="focus:outline-none pointer-events-auto" aria-label="Cancel">
+        <button
+          onClick={onCancel}
+          className="focus:outline-none pointer-events-auto"
+          aria-label="Cancel"
+        >
           <ThematicContainer
             color="nocenaBlue"
             glassmorphic={true}
@@ -683,8 +728,18 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
             rounded="full"
             className="w-12 h-12 flex items-center justify-center"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </ThematicContainer>
         </button>
@@ -755,7 +810,11 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
               />
 
               <div className="absolute top-4 right-4 w-20 h-24 rounded-xl overflow-hidden border-2 border-white shadow-lg">
-                <img src={photoUrl || undefined} alt="Verification selfie" className="w-full h-full object-cover" />
+                <img
+                  src={photoUrl || undefined}
+                  alt="Verification selfie"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               <div className="absolute bottom-4 left-4 right-4">
@@ -785,10 +844,21 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
         <div className="mb-6 flex-1">
           {verificationStage === 'ready' && (
             <div className="text-center">
-              <ThematicContainer color="nocenaBlue" glassmorphic={true} asButton={false} rounded="2xl" className="p-8">
+              <ThematicContainer
+                color="nocenaBlue"
+                glassmorphic={true}
+                asButton={false}
+                rounded="2xl"
+                className="p-8"
+              >
                 {/* Analysis Icon */}
                 <div className="w-16 h-16 bg-nocenaBlue/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-nocenaBlue/30">
-                  <svg className="w-8 h-8 text-nocenaBlue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-8 h-8 text-nocenaBlue"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -800,7 +870,9 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
 
                 {/* Title */}
                 <h3 className="text-xl font-bold text-white mb-2">
-                  {backgroundStatus.verification.status !== 'pending' ? 'Instant Analysis Ready' : 'AI Analysis Ready'}
+                  {backgroundStatus.verification.status !== 'pending'
+                    ? 'Instant Analysis Ready'
+                    : 'AI Analysis Ready'}
                 </h3>
 
                 {/* Subtitle */}
@@ -821,7 +893,13 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
 
           {verificationStage === 'verifying' && (
             <div className="text-center">
-              <ThematicContainer color="nocenaPink" glassmorphic={true} asButton={false} rounded="2xl" className="p-8">
+              <ThematicContainer
+                color="nocenaPink"
+                glassmorphic={true}
+                asButton={false}
+                rounded="2xl"
+                className="p-8"
+              >
                 {/* Loading Animation */}
                 <div className="w-16 h-16 border-4 border-nocenaPink/20 border-t-nocenaPink rounded-full animate-spin mx-auto mb-6" />
 
@@ -855,8 +933,18 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
               >
                 {/* Success Icon */}
                 <div className="w-16 h-16 bg-nocenaPurple/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-nocenaPurple/30">
-                  <svg className="w-8 h-8 text-nocenaPurple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-8 h-8 text-nocenaPurple"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </div>
 
@@ -872,7 +960,9 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
 
                     // First, try to get AI step result from verification steps
                     if (verificationResult?.steps) {
-                      const aiStep = verificationResult.steps.find((s: any) => s.id === 'ai-challenge-check');
+                      const aiStep = verificationResult.steps.find(
+                        (s: any) => s.id === 'ai-challenge-check'
+                      );
                       if (aiStep?.result) {
                         aiResult = aiStep.result.rawAIResponse || aiStep.result;
                         aiExplanation = aiResult?.explanation || aiStep.result.explanation || '';
@@ -882,13 +972,16 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                     // Fallback: Use the main verification result if no steps found
                     if (!aiResult && verificationResult) {
                       aiResult = verificationResult;
-                      aiExplanation = verificationResult.explanation || verificationResult.details || '';
+                      aiExplanation =
+                        verificationResult.explanation || verificationResult.details || '';
                     }
 
                     // UPDATED: Parse ratings using the same logic as failure case
                     const extractRatingsFromText = (text: string) => {
                       const creativityMatch = text.match(/(?:[Cc]reativity|eativity):\s*(\d+)\/10/);
-                      const authenticityMatch = text.match(/(?:[Aa]uthenticity|uthenticity):\s*(\d+)\/10/);
+                      const authenticityMatch = text.match(
+                        /(?:[Aa]uthenticity|uthenticity):\s*(\d+)\/10/
+                      );
                       const effortMatch = text.match(/(?:[Ee]ffort|ffort):\s*(\d+)\/10/);
 
                       return {
@@ -927,7 +1020,9 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                     // Calculate overall score
                     const overallScore =
                       aiResult?.score ||
-                      Math.round(((ratings.creativity + ratings.authenticity + ratings.effort) * 10) / 3);
+                      Math.round(
+                        ((ratings.creativity + ratings.authenticity + ratings.effort) * 10) / 3
+                      );
 
                     // DEBUG: Log the parsing results
                     console.log('SUCCESS PARSING DEBUG:', {
@@ -948,15 +1043,21 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                         {/* Compact Metrics */}
                         <div className="flex justify-center gap-6 mb-6">
                           <div className="text-center">
-                            <div className="text-lg font-bold text-nocenaPink">{ratings.creativity}</div>
+                            <div className="text-lg font-bold text-nocenaPink">
+                              {ratings.creativity}
+                            </div>
                             <div className="text-xs text-gray-400">Creative</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-nocenaBlue">{ratings.authenticity}</div>
+                            <div className="text-lg font-bold text-nocenaBlue">
+                              {ratings.authenticity}
+                            </div>
                             <div className="text-xs text-gray-400">Authentic</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-nocenaPurple">{ratings.effort}</div>
+                            <div className="text-lg font-bold text-nocenaPurple">
+                              {ratings.effort}
+                            </div>
                             <div className="text-xs text-gray-400">Effort</div>
                           </div>
                         </div>
@@ -979,7 +1080,13 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
 
           {verificationStage === 'failed' && (
             <div className="text-center">
-              <ThematicContainer color="nocenaPink" glassmorphic={true} asButton={false} rounded="2xl" className="p-8">
+              <ThematicContainer
+                color="nocenaPink"
+                glassmorphic={true}
+                asButton={false}
+                rounded="2xl"
+                className="p-8"
+              >
                 {/* Title */}
                 <h3 className="text-2xl font-bold text-white mb-2">Challenge failed</h3>
 
@@ -989,7 +1096,9 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                     // Extract AI analysis data
                     let aiResult = null;
                     if (verificationResult?.steps) {
-                      const aiStep = verificationResult.steps.find((s: any) => s.id === 'ai-challenge-check');
+                      const aiStep = verificationResult.steps.find(
+                        (s: any) => s.id === 'ai-challenge-check'
+                      );
                       if (aiStep?.result) {
                         aiResult = aiStep.result.rawAIResponse || aiStep.result;
                       }
@@ -1002,26 +1111,36 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                     const ratings = parseAIRatings(aiResult?.explanation || '', aiResult);
                     const overallScore =
                       aiResult?.score ||
-                      Math.round(((ratings.creativity + ratings.authenticity + ratings.effort) * 10) / 3);
+                      Math.round(
+                        ((ratings.creativity + ratings.authenticity + ratings.effort) * 10) / 3
+                      );
                     const cleanExplanation = cleanAIExplanation(aiResult?.explanation || '');
 
                     return (
                       <>
-                        <div className="text-4xl font-black text-nocenaPink mb-2">{overallScore}</div>
+                        <div className="text-4xl font-black text-nocenaPink mb-2">
+                          {overallScore}
+                        </div>
                         <div className="text-sm text-gray-400 mb-6">Performance Score</div>
 
                         {/* Compact Metrics */}
                         <div className="flex justify-center gap-6 mb-6">
                           <div className="text-center">
-                            <div className="text-lg font-bold text-nocenaPink">{ratings.creativity}</div>
+                            <div className="text-lg font-bold text-nocenaPink">
+                              {ratings.creativity}
+                            </div>
                             <div className="text-xs text-gray-400">Creative</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-nocenaBlue">{ratings.authenticity}</div>
+                            <div className="text-lg font-bold text-nocenaBlue">
+                              {ratings.authenticity}
+                            </div>
                             <div className="text-xs text-gray-400">Authentic</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-nocenaPurple">{ratings.effort}</div>
+                            <div className="text-lg font-bold text-nocenaPurple">
+                              {ratings.effort}
+                            </div>
                             <div className="text-xs text-gray-400">Effort</div>
                           </div>
                         </div>
@@ -1029,7 +1148,9 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                         {/* AI Feedback - Integrated and minimal */}
                         <div className="bg-black/30 rounded-xl p-4 mb-6">
                           <div className="text-xs text-gray-400 mb-2">AI Analysis:</div>
-                          <p className="text-sm text-gray-200 leading-relaxed">{cleanExplanation}</p>
+                          <p className="text-sm text-gray-200 leading-relaxed">
+                            {cleanExplanation}
+                          </p>
                         </div>
                       </>
                     );
@@ -1040,7 +1161,10 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
           )}
         </div>
 
-        <div className="flex gap-4 mt-auto" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div
+          className="flex gap-4 mt-auto"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
           {verificationStage === 'ready' && (
             <PrimaryButton
               onClick={() => {
@@ -1048,7 +1172,9 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                 if (backgroundTaskIds.verificationId) {
                   const task = backgroundTasks.getTask(backgroundTaskIds.verificationId);
                   if (task && (task.status === 'queued' || task.status === 'failed')) {
-                    console.log('[Verification Screen] Background verification stuck, starting fresh');
+                    console.log(
+                      '[Verification Screen] Background verification stuck, starting fresh'
+                    );
                     // Cancel the stuck task and start fresh
                     backgroundTasks.cancelTask(backgroundTaskIds.verificationId);
                     if (isDevelopmentEnvironment && useMockVerification) {
@@ -1106,7 +1232,12 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
           )}
 
           {verificationStage === 'verifying' && (
-            <PrimaryButton text="Processing..." className="flex-1" disabled={true} isActive={false} />
+            <PrimaryButton
+              text="Processing..."
+              className="flex-1"
+              disabled={true}
+              isActive={false}
+            />
           )}
         </div>
       </div>

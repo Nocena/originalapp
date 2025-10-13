@@ -130,7 +130,9 @@ export class PWAPermissionManager {
       // Method 1: Try Permissions API
       if ('permissions' in navigator && navigator.permissions.query) {
         try {
-          const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+          const result = await navigator.permissions.query({
+            name: 'microphone' as PermissionName,
+          });
           if (result.state !== 'prompt') {
             return result.state as 'granted' | 'denied';
           }
@@ -468,7 +470,9 @@ export class PWAPermissionManager {
   /**
    * Check if we should show permission primer
    */
-  public shouldShowPermissionPrimer(permission: 'camera' | 'microphone' | 'notifications'): boolean {
+  public shouldShowPermissionPrimer(
+    permission: 'camera' | 'microphone' | 'notifications'
+  ): boolean {
     const history = this.permissionHistory[permission];
     const state = this.permissionState[permission];
 

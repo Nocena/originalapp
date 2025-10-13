@@ -42,10 +42,7 @@ export const UPDATE_USER_LENS_DATA = gql`
 
 export const UPDATE_BIO = gql`
   mutation UpdateBio($userId: String!, $bio: String!) {
-    updateUser(
-      filter: { id: { eq: $userId } }
-      set: { bio: $bio }
-    ) {
+    updateUser(filter: { id: { eq: $userId } }, set: { bio: $bio }) {
       user {
         id
         bio
@@ -56,10 +53,7 @@ export const UPDATE_BIO = gql`
 
 export const UPDATE_PROFILE_PICTURE = gql`
   mutation UpdateProfilePicture($userId: String!, $profilePicture: String!) {
-    updateUser(
-      filter: { id: { eq: $userId } }
-      set: { profilePicture: $profilePicture }
-    ) {
+    updateUser(filter: { id: { eq: $userId } }, set: { profilePicture: $profilePicture }) {
       user {
         id
         profilePicture
@@ -70,10 +64,7 @@ export const UPDATE_PROFILE_PICTURE = gql`
 
 export const UPDATE_TRAILER_VIDEO = gql`
   mutation UpdateTrailerVideo($userId: String!, $trailerVideo: String!) {
-    updateUser(
-      filter: { id: { eq: $userId } }
-      set: { trailerVideo: $trailerVideo }
-    ) {
+    updateUser(filter: { id: { eq: $userId } }, set: { trailerVideo: $trailerVideo }) {
       user {
         id
         trailerVideo
@@ -84,10 +75,7 @@ export const UPDATE_TRAILER_VIDEO = gql`
 
 export const UPDATE_COVER_PHOTO = gql`
   mutation UpdateCoverPhoto($userId: String!, $coverPhoto: String!) {
-    updateUser(
-      filter: { id: { eq: $userId } }
-      set: { coverPhoto: $coverPhoto }
-    ) {
+    updateUser(filter: { id: { eq: $userId } }, set: { coverPhoto: $coverPhoto }) {
       user {
         id
         coverPhoto
@@ -98,12 +86,7 @@ export const UPDATE_COVER_PHOTO = gql`
 
 export const FOLLOW_USER = gql`
   mutation FollowUser($userId: String!, $targetUserId: String!) {
-    updateUser(
-      filter: { id: { eq: $userId } }
-      set: { 
-        following: [{ id: $targetUserId }] 
-      }
-    ) {
+    updateUser(filter: { id: { eq: $userId } }, set: { following: [{ id: $targetUserId }] }) {
       user {
         id
         following {
@@ -116,12 +99,7 @@ export const FOLLOW_USER = gql`
 
 export const UNFOLLOW_USER = gql`
   mutation UnfollowUser($userId: String!, $targetUserId: String!) {
-    updateUser(
-      filter: { id: { eq: $userId } }
-      remove: { 
-        following: [{ id: $targetUserId }] 
-      }
-    ) {
+    updateUser(filter: { id: { eq: $userId } }, remove: { following: [{ id: $targetUserId }] }) {
       user {
         id
         following {
@@ -187,10 +165,7 @@ export const UPDATE_USER_CHALLENGE_STRINGS = gql`
 
 export const RESET_DAILY_EARNINGS = gql`
   mutation ResetDailyEarnings {
-    updateUser(
-      filter: {}
-      set: { earnedTokensToday: 0 }
-    ) {
+    updateUser(filter: {}, set: { earnedTokensToday: 0 }) {
       numUids
     }
   }
@@ -198,13 +173,7 @@ export const RESET_DAILY_EARNINGS = gql`
 
 export const RESET_WEEKLY_EARNINGS = gql`
   mutation ResetWeeklyEarnings {
-    updateUser(
-      filter: {}
-      set: { 
-        earnedTokensThisWeek: 0
-        earnedTokensToday: 0
-      }
-    ) {
+    updateUser(filter: {}, set: { earnedTokensThisWeek: 0, earnedTokensToday: 0 }) {
       numUids
     }
   }
@@ -214,14 +183,9 @@ export const RESET_MONTHLY_EARNINGS = gql`
   mutation ResetMonthlyEarnings {
     updateUser(
       filter: {}
-      set: { 
-        earnedTokensThisMonth: 0
-        earnedTokensThisWeek: 0
-        earnedTokensToday: 0
-      }
+      set: { earnedTokensThisMonth: 0, earnedTokensThisWeek: 0, earnedTokensToday: 0 }
     ) {
       numUids
     }
   }
 `;
-

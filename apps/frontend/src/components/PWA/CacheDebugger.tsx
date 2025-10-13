@@ -118,7 +118,10 @@ const CacheDebugger: React.FC = () => {
       const data = await response.json();
 
       if (data.success) {
-        alert('Emergency cache clear initiated! Follow the instructions:\n\n' + data.instructions.join('\n'));
+        alert(
+          'Emergency cache clear initiated! Follow the instructions:\n\n' +
+            data.instructions.join('\n')
+        );
       } else {
         alert('Emergency cache clear failed: ' + data.message);
       }
@@ -152,7 +155,11 @@ const CacheDebugger: React.FC = () => {
           <div className="bg-white rounded-lg p-4 max-w-md w-full max-h-96 overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg">Cache Debug Info</h3>
-              <button onClick={() => setIsVisible(false)} className="text-gray-500 hover:text-gray-700" type="button">
+              <button
+                onClick={() => setIsVisible(false)}
+                className="text-gray-500 hover:text-gray-700"
+                type="button"
+              >
                 ✕
               </button>
             </div>

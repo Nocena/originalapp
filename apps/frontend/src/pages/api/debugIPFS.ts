@@ -66,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             error: error.message,
           };
         }
-      }),
+      })
     );
 
     // Check if IPFS directory exists
@@ -93,7 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               pinata_api_key: process.env.PINATA_API_KEY,
               pinata_secret_api_key: process.env.PINATA_SECRET_KEY,
             },
-          },
+          }
         );
 
         pinataApiCheck = {
@@ -115,7 +115,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       directoryExists,
       gatewayResults,
       pinataApiCheck,
-      workingGateways: gatewayResults.filter((result) => result.success).map((result) => result.gateway),
+      workingGateways: gatewayResults
+        .filter((result) => result.success)
+        .map((result) => result.gateway),
       recommendations: getRecommendations(gatewayResults, directoryExists, pinataApiCheck),
     });
   } catch (error: any) {
@@ -130,22 +132,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 /**
  * Generate recommendations based on test results
  */
-function getRecommendations(gatewayResults: any[], directoryExists: boolean, pinataApiCheck: any): string[] {
+function getRecommendations(
+  gatewayResults: any[],
+  directoryExists: boolean,
+  pinataApiCheck: any
+): string[] {
   const recommendations: string[] = [];
 
   const anySuccess = gatewayResults.some((result) => result.success);
 
   if (!directoryExists) {
     recommendations.push(
-      'The IPFS directory does not appear to exist. The CID may be incorrect or the content may not be properly pinned.',
+      'The IPFS directory does not appear to exist. The CID may be incorrect or the content may not be properly pinned.'
     );
 
     if (pinataApiCheck && !pinataApiCheck.isPinned) {
-      recommendations.push('This content is not pinned in your Pinata account. You may need to re-upload it.');
+      recommendations.push(
+        'This content is not pinned in your Pinata account. You may need to re-upload it.'
+      );
     }
   } else if (!anySuccess) {
     recommendations.push(
-      'The directory exists but the specific file could not be accessed. Check if the filename is correct.',
+      'The directory exists but the specific file could not be accessed. Check if the filename is correct.'
     );
   }
 
@@ -158,8 +166,12 @@ function getRecommendations(gatewayResults: any[], directoryExists: boolean, pin
       recommendations.push(`Use this gateway for best performance: ${workingGateways[0].gateway}`);
     }
   } else {
-    recommendations.push('Consider setting up a dedicated Pinata gateway for more reliable access.');
-    recommendations.push('Check your Pinata subscription limits to ensure you have not exceeded your bandwidth.');
+    recommendations.push(
+      'Consider setting up a dedicated Pinata gateway for more reliable access.'
+    );
+    recommendations.push(
+      'Check your Pinata subscription limits to ensure you have not exceeded your bandwidth.'
+    );
   }
 
   return recommendations;

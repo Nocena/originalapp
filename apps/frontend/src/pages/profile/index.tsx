@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { updateBio, updateProfilePicture, updateCoverPhoto, getUserAvatar } from '../../lib/graphql';
+import {
+  updateBio,
+  updateProfilePicture,
+  updateCoverPhoto,
+  getUserAvatar,
+} from '../../lib/graphql';
 import { unpinFromPinata } from '../../lib/api/pinata';
 import Image from 'next/image';
 import type { StaticImageData } from 'next/image';
@@ -29,31 +34,42 @@ const ProfileView: React.FC = () => {
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   // Basic profile state
-  const [profilePic, setProfilePic] = useState<string | StaticImageData>(user?.profilePicture || defaultProfilePic);
+  const [profilePic, setProfilePic] = useState<string | StaticImageData>(
+    user?.profilePicture || defaultProfilePic
+  );
   const [coverPhoto, setCoverPhoto] = useState<string>(user?.coverPhoto || '/images/cover.jpg');
   const [username, setUsername] = useState<string>(user?.username || 'Guest');
   const [bio, setBio] = useState<string>(user?.bio || 'No bio yet');
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
   const [tokenBalance, setTokenBalance] = useState<number>(user?.earnedTokens || 0);
-  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>('trailer');
+  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
+    'trailer'
+  );
 
   // Avatar generation state - NEW
-  const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(user?.currentAvatar || null);
+  const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(
+    user?.currentAvatar || null
+  );
 
   // Challenge data
   const [dailyChallenges, setDailyChallenges] = useState<boolean[]>(
-    user?.dailyChallenge.split('').map((char) => char === '1') || [],
+    user?.dailyChallenge.split('').map((char) => char === '1') || []
   );
   const [weeklyChallenges, setWeeklyChallenges] = useState<boolean[]>(
-    user?.weeklyChallenge.split('').map((char) => char === '1') || [],
+    user?.weeklyChallenge.split('').map((char) => char === '1') || []
   );
   const [monthlyChallenges, setMonthlyChallenges] = useState<boolean[]>(
-    user?.monthlyChallenge.split('').map((char) => char === '1') || [],
+    user?.monthlyChallenge.split('').map((char) => char === '1') || []
   );
 
   // Use custom hook for followers data
-  const { followersCount, followers, showFollowersPopup, setShowFollowersPopup, handleFollowersClick } =
-    useFollowersData(user?.id);
+  const {
+    followersCount,
+    followers,
+    showFollowersPopup,
+    setShowFollowersPopup,
+    handleFollowersClick,
+  } = useFollowersData(user?.id);
 
   // Sync user data when user changes
   useEffect(() => {
@@ -65,7 +81,9 @@ const ProfileView: React.FC = () => {
       setProfilePic(user.profilePicture || defaultProfilePic);
       setCoverPhoto(user.coverPhoto || '/images/cover.jpg');
       setUsername(user.username);
-      setBio(user.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!');
+      setBio(
+        user.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!'
+      );
 
       // NEW: Avatar data loading
       setGeneratedAvatar(user.currentAvatar || null);
@@ -267,7 +285,9 @@ const ProfileView: React.FC = () => {
               user.coverPhoto !== '/images/cover.jpg' &&
               !user.coverPhoto.includes('/images/cover.jpg')
             ) {
-              const oldCid = user.coverPhoto.includes('/') ? user.coverPhoto.split('/').pop() : user.coverPhoto;
+              const oldCid = user.coverPhoto.includes('/')
+                ? user.coverPhoto.split('/').pop()
+                : user.coverPhoto;
               if (oldCid) {
                 await unpinFromPinata(oldCid).catch((error) => {
                   console.warn('Failed to unpin old cover photo:', error);
@@ -357,7 +377,9 @@ const ProfileView: React.FC = () => {
   };
 
   const handleCancelEdit = () => {
-    setBio(user?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!');
+    setBio(
+      user?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!'
+    );
     setIsEditingBio(false);
   };
 

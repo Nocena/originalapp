@@ -1,21 +1,21 @@
-import trimify from "../../../helpers/trimify";
-import { Regex } from "@nocena/data/regex";
-import type { PostMentionFragment } from "@nocena/indexer";
-import { memo } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkBreaks from "remark-breaks";
+import trimify from '../../../helpers/trimify';
+import { Regex } from '@nocena/data/regex';
+import type { PostMentionFragment } from '@nocena/indexer';
+import { memo } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 // @ts-expect-error
-import linkifyRegex from "remark-linkify-regex";
-import stripMarkdown from "strip-markdown";
-import Code from "./Code";
-import MarkupLink from "./MarkupLink";
+import linkifyRegex from 'remark-linkify-regex';
+import stripMarkdown from 'strip-markdown';
+import Code from './Code';
+import MarkupLink from './MarkupLink';
 
 const plugins = [
-  [stripMarkdown, { keep: ["strong", "emphasis", "list", "listItem"] }],
+  [stripMarkdown, { keep: ['strong', 'emphasis', 'list', 'listItem'] }],
   remarkBreaks,
   linkifyRegex(Regex.url),
   linkifyRegex(Regex.mention),
-  linkifyRegex(Regex.hashtag)
+  linkifyRegex(Regex.hashtag),
 ];
 
 interface MarkupProps {
@@ -24,7 +24,7 @@ interface MarkupProps {
   mentions?: PostMentionFragment[];
 }
 
-const Markup = ({ children, className = "", mentions = [] }: MarkupProps) => {
+const Markup = ({ children, className = '', mentions = [] }: MarkupProps) => {
   if (!children) {
     return null;
   }
@@ -33,7 +33,7 @@ const Markup = ({ children, className = "", mentions = [] }: MarkupProps) => {
     a: (props: any) => {
       return <MarkupLink mentions={mentions} title={props.title} />;
     },
-    code: Code
+    code: Code,
   };
 
   return (

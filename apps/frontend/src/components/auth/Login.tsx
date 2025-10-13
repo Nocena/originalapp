@@ -26,9 +26,7 @@ import type { CombinedUser, User } from '../../contexts/AuthContext';
 const Login = () => {
   const [hasAccounts, setHasAccounts] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loggingInAccountId, setLoggingInAccountId] = useState<null | string>(
-    null,
-  );
+  const [loggingInAccountId, setLoggingInAccountId] = useState<null | string>(null);
   const onError = (error?: any) => {
     setIsSubmitting(false);
     setLoggingInAccountId(null);
@@ -59,28 +57,31 @@ const Login = () => {
 
   const remainingAccounts = lastLogin
     ? allAccounts
-      .filter(({ account }) => account.address !== lastLogin.address)
-      .map(({ account }) => account)
+        .filter(({ account }) => account.address !== lastLogin.address)
+        .map(({ account }) => account)
     : allAccounts.map(({ account }) => account);
 
-  const accounts = lastLogin
-    ? [lastLogin, ...remainingAccounts]
-    : remainingAccounts;
+  const accounts = lastLogin ? [lastLogin, ...remainingAccounts] : remainingAccounts;
 
-  const { users, loading: loadingDgraph, error: errorDgraph } = useUsersByWalletAndLensIds(thirdWebAccount?.address, accounts.map(account => account.address))
+  const {
+    users,
+    loading: loadingDgraph,
+    error: errorDgraph,
+  } = useUsersByWalletAndLensIds(
+    thirdWebAccount?.address,
+    accounts.map((account) => account.address)
+  );
 
   const mergedUsers = users.map((user: User) => {
-    const lensAccount = accounts.find(acc => acc.address === user.lensAccountId);
+    const lensAccount = accounts.find((acc) => acc.address === user.lensAccountId);
     return { ...user, lensAccount };
   }) as CombinedUser[];
 
   const handleSign = async (account: string) => {
-    if (!thirdWebAccount)
-      return;
+    if (!thirdWebAccount) return;
 
     const isManager = allAccounts.some(
-      ({ account: a, __typename }) =>
-        __typename === 'AccountManaged' && a.address === account,
+      ({ account: a, __typename }) => __typename === 'AccountManaged' && a.address === account
     );
 
     const meta = { app: IS_MAINNET ? NOCENA_APP : undefined, account };
@@ -136,11 +137,7 @@ const Login = () => {
         ) : null}
         {loading || loadingDgraph ? (
           <Card className="w-full dark:divide-gray-700" forceRounded>
-            <Loader
-              className="my-4"
-              message="Loading accounts managed by you..."
-              small
-            />
+            <Loader className="my-4" message="Loading accounts managed by you..." small />
           </Card>
         ) : mergedUsers.length > 0 ? (
           <AnimatePresence mode="popLayout">
@@ -164,7 +161,7 @@ const Login = () => {
                   description="Nocena uses this signature to verify that you're the owner of this address."
                   title="Please sign the message."
                 />
-                {mergedUsers.map(({lensAccount}, index) => (
+                {mergedUsers.map(({ lensAccount }, index) => (
                   <motion.div
                     key={lensAccount.address}
                     variants={{
@@ -182,17 +179,10 @@ const Login = () => {
                       transition: { duration: 0.2 },
                     }}
                   >
-                    <SingleAccount
-                      account={lensAccount}
-                      showUserPreview={false}
-                    />
+                    <SingleAccount account={lensAccount} showUserPreview={false} />
                     <Button
-                      disabled={
-                        isSubmitting && loggingInAccountId === lensAccount.address
-                      }
-                      loading={
-                        isSubmitting && loggingInAccountId === lensAccount.address
-                      }
+                      disabled={isSubmitting && loggingInAccountId === lensAccount.address}
+                      loading={isSubmitting && loggingInAccountId === lensAccount.address}
                       onClick={() => handleSign(lensAccount.address)}
                       outline
                     >

@@ -87,7 +87,8 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
   // Detect if user is in an in-app browser
   useEffect(() => {
     const userAgent = navigator.userAgent || navigator.vendor;
-    const isInAppBrowser = /FBAN|FBAV|Instagram|Line|WhatsApp|Telegram|MessengerForiOS|MessengerLite/i.test(userAgent);
+    const isInAppBrowser =
+      /FBAN|FBAV|Instagram|Line|WhatsApp|Telegram|MessengerForiOS|MessengerLite/i.test(userAgent);
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
     if (isInAppBrowser && !isStandalone) {
@@ -177,7 +178,10 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-nocenaBg/50 backdrop-blur-md border-b border-white/10">
         <div className="flex items-center justify-between p-4">
-          <button onClick={onBack} className="flex items-center text-white/70 hover:text-white transition-colors">
+          <button
+            onClick={onBack}
+            className="flex items-center text-white/70 hover:text-white transition-colors"
+          >
             <svg
               width="20"
               height="20"
@@ -205,8 +209,8 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
               <div>
                 <h3 className="text-orange-200 font-medium mb-1">Open in Browser Required</h3>
                 <p className="text-orange-300/80 text-sm">
-                  You're in an in-app browser. For the best experience sharing invites, tap the menu (⋯) and select
-                  "Open in Browser".
+                  You're in an in-app browser. For the best experience sharing invites, tap the menu
+                  (⋯) and select "Open in Browser".
                 </p>
               </div>
             </div>
@@ -247,10 +251,15 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
             <h3 className="text-white/80 font-medium text-sm">Your Invite Codes</h3>
 
             {inviteStats.inviteCodes.map((invite, index) => (
-              <div key={invite.code} className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+              <div
+                key={invite.code}
+                className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10"
+              >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className={`text-2xl font-mono font-bold ${invite.isUsed ? 'text-white/40' : 'text-white'}`}>
+                    <div
+                      className={`text-2xl font-mono font-bold ${invite.isUsed ? 'text-white/40' : 'text-white'}`}
+                    >
                       {invite.code}
                     </div>
                     {invite.isUsed ? (
@@ -267,7 +276,9 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
 
                 {invite.isUsed ? (
                   <div className="text-center py-4">
-                    <p className="text-white/50 text-sm">This code has been used successfully! 🎉</p>
+                    <p className="text-white/50 text-sm">
+                      This code has been used successfully! 🎉
+                    </p>
                     <p className="text-white/40 text-xs mt-1">You both earned 50 Nocenix tokens</p>
                   </div>
                 ) : (

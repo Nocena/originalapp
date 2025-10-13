@@ -1,14 +1,15 @@
 import { gql } from '@apollo/client';
-import { USER_BASIC_FIELDS, USER_WITH_RELATIONS, CHALLENGE_COMPLETION_WITH_CHALLENGE } from '../../fragments';
+import {
+  USER_BASIC_FIELDS,
+  USER_WITH_RELATIONS,
+  CHALLENGE_COMPLETION_WITH_CHALLENGE,
+} from '../../fragments';
 
 export const GET_USER_BY_WALLET = gql`
   query GetUserByWallet($walletAddress: String!, $normalizedWallet: String!) {
-    queryUser(filter: { 
-      or: [
-        { wallet: { eq: $walletAddress } },
-        { wallet: { eq: $normalizedWallet } }
-      ]
-    }) {
+    queryUser(
+      filter: { or: [{ wallet: { eq: $walletAddress } }, { wallet: { eq: $normalizedWallet } }] }
+    ) {
       ...UserWithRelations
       completedChallenges {
         ...ChallengeCompletionWithChallenge
@@ -20,32 +21,27 @@ export const GET_USER_BY_WALLET = gql`
 `;
 
 export const GET_USERS_BY_WALLET_AND_LENS_ACCOUNTS = gql`
-    query GetUsersByWalletAndLens(
-        $walletAddress: String!
-        $normalizedWallet: String!
-        $lensIds: [String!]
+  query GetUsersByWalletAndLens(
+    $walletAddress: String!
+    $normalizedWallet: String!
+    $lensIds: [String!]
+  ) {
+    queryUser(
+      filter: {
+        and: [
+          { or: [{ wallet: { eq: $walletAddress } }, { wallet: { eq: $normalizedWallet } }] }
+          { lensAccountId: { in: $lensIds } }
+        ]
+      }
     ) {
-        queryUser(
-            filter: {
-                and: [
-                    {
-                        or: [
-                            { wallet: { eq: $walletAddress } }
-                            { wallet: { eq: $normalizedWallet } }
-                        ]
-                    }
-                    { lensAccountId: { in: $lensIds } }
-                ]
-            }
-        ) {
-            ...UserWithRelations
-            completedChallenges {
-                ...ChallengeCompletionWithChallenge
-            }
-        }
+      ...UserWithRelations
+      completedChallenges {
+        ...ChallengeCompletionWithChallenge
+      }
     }
-    ${USER_WITH_RELATIONS}
-    ${CHALLENGE_COMPLETION_WITH_CHALLENGE}
+  }
+  ${USER_WITH_RELATIONS}
+  ${CHALLENGE_COMPLETION_WITH_CHALLENGE}
 `;
 
 export const GET_USER_BY_ID = gql`
@@ -78,11 +74,7 @@ export const GET_ALL_USERS = gql`
 
 export const SEARCH_USERS = gql`
   query SearchUsers($searchQuery: String!) {
-    queryUser(filter: { 
-      or: [
-        { username: { regexp: $searchQuery } }
-      ]
-    }) {
+    queryUser(filter: { or: [{ username: { regexp: $searchQuery } }] }) {
       id
       username
       bio
@@ -105,12 +97,9 @@ export const GET_USER_FOLLOWERS = gql`
 
 export const CHECK_WALLET_EXISTS = gql`
   query CheckWalletExists($walletAddress: String!, $normalizedWallet: String!) {
-    queryUser(filter: { 
-      or: [
-        { wallet: { eq: $walletAddress } },
-        { wallet: { eq: $normalizedWallet } }
-      ]
-    }) {
+    queryUser(
+      filter: { or: [{ wallet: { eq: $walletAddress } }, { wallet: { eq: $normalizedWallet } }] }
+    ) {
       id
       wallet
     }
@@ -128,11 +117,7 @@ export const CHECK_USERNAME_EXISTS = gql`
 
 export const GET_LEADERBOARD = gql`
   query GetLeaderboard($first: Int, $offset: Int) {
-    queryUser(
-      order: { desc: earnedTokens }
-      first: $first
-      offset: $offset
-    ) {
+    queryUser(order: { desc: earnedTokens }, first: $first, offset: $offset) {
       id
       username
       profilePicture
@@ -151,4 +136,3 @@ export const GET_ALL_PUSH_SUBSCRIPTIONS = gql`
     }
   }
 `;
-

@@ -271,7 +271,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Add clothing templates as style references
     const activeClothingTemplates = Object.entries(processedClothingTemplates).filter(
-      ([key, template]) => clothingItems[key] && template,
+      ([key, template]) => clothingItems[key] && template
     );
 
     if (activeClothingTemplates.length > 0 && totalImageDataSize < 300) {
@@ -296,7 +296,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       dimensions: `${generationParams.width}x${generationParams.height}`,
       enhance: generationParams.enhance,
       hasBaseAvatar:
-        !!generationParams.referenceImage || !!generationParams.baseImage || !!generationParams.sourceImage,
+        !!generationParams.referenceImage ||
+        !!generationParams.baseImage ||
+        !!generationParams.sourceImage,
       hasClothingTemplate: !!generationParams.styleReference,
       totalDataSize: `~${Math.round(totalImageDataSize)}KB`,
       approach: avatarApproach,
@@ -309,7 +311,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('✅ ChainGPT Avatar Clothing Update Success:', JSON.stringify(result, null, 2));
 
     // Extract collection ID
-    const collectionId = result?.collectionId || result?.id || result?.data?.collectionId || result?.data?.id;
+    const collectionId =
+      result?.collectionId || result?.id || result?.data?.collectionId || result?.data?.id;
 
     if (!collectionId) {
       console.log('❌ No collection ID found in update result');
@@ -351,7 +354,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         hasBaseAvatar: avatarApproach === 'image-based',
         hasClothingTemplates: activeClothingTemplates.length > 0,
         promptStrategy:
-          avatarApproach === 'image-based' ? 'preserve-avatar-change-clothing' : 'regenerate-with-characteristics',
+          avatarApproach === 'image-based'
+            ? 'preserve-avatar-change-clothing'
+            : 'regenerate-with-characteristics',
         clothingTemplatesUsed: activeClothingTemplates.map(([type]) => type),
       },
       debug: {

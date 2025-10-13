@@ -16,7 +16,7 @@ const openai = new OpenAI({
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT || 'mailto:lustykjakub@gmail.com',
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || '',
+  process.env.VAPID_PRIVATE_KEY || ''
 );
 
 const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
@@ -61,7 +61,7 @@ export const getAllUserPushSubscriptions = async (): Promise<string[]> => {
       },
       {
         headers,
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -75,7 +75,7 @@ export const getAllUserPushSubscriptions = async (): Promise<string[]> => {
       .filter((sub: string) => sub && sub.length > 0 && sub !== 'null' && sub.trim() !== '');
 
     console.log(
-      `🔔 BULK: Found ${users.length} total users, ${pushSubscriptions.length} with valid push subscriptions`,
+      `🔔 BULK: Found ${users.length} total users, ${pushSubscriptions.length} with valid push subscriptions`
     );
     return pushSubscriptions;
   } catch (error) {
@@ -116,7 +116,7 @@ const getUsersWithPushSubscriptions = async (): Promise<
       },
       {
         headers,
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -126,10 +126,15 @@ const getUsersWithPushSubscriptions = async (): Promise<
 
     const users = response.data.data.queryUser || [];
     const validUsers = users.filter(
-      (user: any) => user.pushSubscription && user.pushSubscription.trim() !== '' && user.pushSubscription !== 'null',
+      (user: any) =>
+        user.pushSubscription &&
+        user.pushSubscription.trim() !== '' &&
+        user.pushSubscription !== 'null'
     );
 
-    console.log(`🔔 USERS: Found ${users.length} total users, ${validUsers.length} with valid push subscriptions`);
+    console.log(
+      `🔔 USERS: Found ${users.length} total users, ${validUsers.length} with valid push subscriptions`
+    );
     return validUsers;
   } catch (error) {
     console.error('🔔 USERS: Error fetching users:', error);
@@ -174,7 +179,7 @@ class MonthlyChallengeGenerator {
         },
         {
           headers,
-        },
+        }
       );
 
       if (response.data.errors) {
@@ -225,7 +230,7 @@ class MonthlyChallengeGenerator {
         },
         {
           headers,
-        },
+        }
       );
 
       if (response.data.errors) {
@@ -357,7 +362,9 @@ IMPORTANT: Review the recent episodes above and create something DIFFERENT for m
     const randomIndex = Math.floor(Math.random() * monthlyChallenges.length);
     const selectedChallenge = monthlyChallenges[randomIndex];
 
-    console.log(`🎯 Selected challenge ${randomIndex + 1} of ${monthlyChallenges.length}: ${selectedChallenge.title}`);
+    console.log(
+      `🎯 Selected challenge ${randomIndex + 1} of ${monthlyChallenges.length}: ${selectedChallenge.title}`
+    );
 
     return {
       title: selectedChallenge.title,
@@ -377,7 +384,9 @@ IMPORTANT: Review the recent episodes above and create something DIFFERENT for m
         return !usedChallengeIds.includes(challengeId);
       });
 
-      console.log(`📊 Available challenges: ${availableChallenges.length} of ${monthlyChallenges.length} total`);
+      console.log(
+        `📊 Available challenges: ${availableChallenges.length} of ${monthlyChallenges.length} total`
+      );
 
       // If no unused challenges, reset and use all challenges
       if (availableChallenges.length === 0) {
@@ -396,12 +405,18 @@ IMPORTANT: Review the recent episodes above and create something DIFFERENT for m
         description: selectedChallenge.description,
       };
     } catch (error) {
-      console.error('⚠️ Error selecting unused challenge, falling back to random selection:', error);
+      console.error(
+        '⚠️ Error selecting unused challenge, falling back to random selection:',
+        error
+      );
       return this.selectMonthlyChallenge();
     }
   }
 
-  async generateChallengeForDate(date: Date = new Date(), useAI: boolean = false): Promise<MonthlyAIChallenge> {
+  async generateChallengeForDate(
+    date: Date = new Date(),
+    useAI: boolean = false
+  ): Promise<MonthlyAIChallenge> {
     let title: string;
     let description: string;
 
@@ -516,7 +531,7 @@ const sendPushNotifications = async (challenge: MonthlyAIChallenge): Promise<voi
       const batch = pushSubscriptions.slice(i, i + batchSize);
 
       console.log(
-        `🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(pushSubscriptions.length / batchSize)}`,
+        `🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(pushSubscriptions.length / batchSize)}`
       );
 
       const batchPromises = batch.map(async (pushSubscription, index) => {
@@ -527,10 +542,18 @@ const sendPushNotifications = async (challenge: MonthlyAIChallenge): Promise<voi
           console.log(`✅ Sent notification ${i + index + 1}/${pushSubscriptions.length}`);
         } catch (error: any) {
           failureCount++;
-          console.error(`❌ Failed to send notification ${i + index + 1}:`, error?.message || error);
+          console.error(
+            `❌ Failed to send notification ${i + index + 1}:`,
+            error?.message || error
+          );
 
           // If the subscription is invalid (410 Gone), mark it for removal
-          if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 410) {
+          if (
+            error &&
+            typeof error === 'object' &&
+            'statusCode' in error &&
+            error.statusCode === 410
+          ) {
             console.log(`🗑️ Invalid subscription detected, marking for cleanup`);
             invalidSubscriptions.push(pushSubscription);
           }
@@ -611,13 +634,15 @@ const cleanupInvalidSubscriptions = async (invalidSubscriptions: string[]): Prom
       },
       {
         headers,
-      },
+      }
     );
 
     if (response.data.errors) {
       console.error('❌ Error cleaning up invalid subscriptions:', response.data.errors);
     } else {
-      console.log(`✅ Cleaned up ${response.data.data?.updateUser?.numUids || 0} invalid subscriptions`);
+      console.log(
+        `✅ Cleaned up ${response.data.data?.updateUser?.numUids || 0} invalid subscriptions`
+      );
     }
   } catch (error) {
     console.error('❌ Network error cleaning up subscriptions:', error);
@@ -625,7 +650,9 @@ const cleanupInvalidSubscriptions = async (invalidSubscriptions: string[]): Prom
 };
 
 // Function to save the monthly challenge to Dgraph database
-export const saveMonthlyChallengeToDatabase = async (challenge: MonthlyAIChallenge): Promise<boolean> => {
+export const saveMonthlyChallengeToDatabase = async (
+  challenge: MonthlyAIChallenge
+): Promise<boolean> => {
   if (!DGRAPH_ENDPOINT) {
     console.error('DGRAPH_ENDPOINT is not configured');
     return false;
@@ -668,7 +695,7 @@ export const saveMonthlyChallengeToDatabase = async (challenge: MonthlyAIChallen
       },
       {
         headers,
-      },
+      }
     );
 
     if (response.data.errors) {

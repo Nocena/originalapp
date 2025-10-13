@@ -357,7 +357,8 @@ const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
 // Wrapper component to handle query parameters
 const CreateChallengePage: React.FC = () => {
   const router = useRouter();
-  const { isPrivate, targetUserId, targetUsername, targetProfilePic, isPublic, lat, lng } = router.query;
+  const { isPrivate, targetUserId, targetUsername, targetProfilePic, isPublic, lat, lng } =
+    router.query;
 
   const mode = isPrivate === 'true' ? 'private' : 'public';
 

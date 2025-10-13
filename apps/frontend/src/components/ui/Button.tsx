@@ -1,49 +1,49 @@
-import Spinner from "./Spinner"
-import cn from "../../helpers/cn"
-import { type VariantProps, cva } from "class-variance-authority";
-import { AnimatePresence, motion } from "motion/react";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { forwardRef, memo } from "react";
+import Spinner from './Spinner';
+import cn from '../../helpers/cn';
+import { type VariantProps, cva } from 'class-variance-authority';
+import { AnimatePresence, motion } from 'motion/react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, memo } from 'react';
 
 const buttonVariants = cva(
-  "rounded-full font-bold inline-flex items-center justify-center relative overflow-hidden",
+  'rounded-full font-bold inline-flex items-center justify-center relative overflow-hidden',
   {
     variants: {
-      variant: { primary: "" },
-      size: { sm: "px-3 py-0.5 text-sm", md: "px-4 py-1", lg: "px-5 py-1.5" },
-      outline: { true: "", false: "" }
+      variant: { primary: '' },
+      size: { sm: 'px-3 py-0.5 text-sm', md: 'px-4 py-1', lg: 'px-5 py-1.5' },
+      outline: { true: '', false: '' },
     },
     compoundVariants: [
       // Non-outline Primary
       {
-        variant: "primary",
+        variant: 'primary',
         outline: false,
         class: cn(
-          "text-nocenaPink hover:text-nocenaPink/80 font-medium",
-/*
+          'text-nocenaPink hover:text-nocenaPink/80 font-medium'
+          /*
           "bg-gray-950 hover:bg-gray-800 active:bg-gray-700",
           "border border-gray-950 hover:border-gray-800 active:border-gray-700",
           "dark:text-gray-950 dark:hover:text-gray-900 dark:active:text-gray-600",
           "dark:bg-white dark:hover:bg-gray-200 dark:active:bg-gray-200",
           "dark:border-white dark:hover:border-gray-100 dark:active:border-gray-200"
 */
-        )
+        ),
       },
       // Outline Primary
       {
-        variant: "primary",
+        variant: 'primary',
         outline: true,
         class: cn(
-          "text-nocenaPink hover:text-nocenaPink/80 font-medium",
-          "border border-white/20 hover:border-gray-600"
-        )
-      }
+          'text-nocenaPink hover:text-nocenaPink/80 font-medium',
+          'border border-white/20 hover:border-gray-600'
+        ),
+      },
     ],
     defaultVariants: {
-      variant: "primary",
-      size: "md",
-      outline: false
-    }
+      variant: 'primary',
+      size: 'md',
+      outline: false,
+    },
   }
 );
 
@@ -56,20 +56,7 @@ interface ButtonProps
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      children,
-      className,
-      disabled,
-      icon,
-      outline,
-      size,
-      variant,
-      loading,
-      ...rest
-    },
-    ref
-  ) => {
+  ({ children, className, disabled, icon, outline, size, variant, loading, ...rest }, ref) => {
     return (
       <button
         className={className ? className : buttonVariants({ variant, size, outline, className })}
@@ -82,12 +69,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           <motion.div
             className="flex items-center gap-x-1.5"
             initial="idle"
-            animate={loading ? "loading" : "idle"}
+            animate={loading ? 'loading' : 'idle'}
             variants={{
               idle: { opacity: 1, y: 0 },
-              loading: { opacity: 0, y: -20 }
+              loading: { opacity: 0, y: -20 },
             }}
-            transition={{ type: "spring", duration: 0.2, bounce: 0 }}
+            transition={{ type: 'spring', duration: 0.2, bounce: 0 }}
           >
             {icon}
             {children}
@@ -98,7 +85,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              transition={{ type: "spring", duration: 0.2, bounce: 0 }}
+              transition={{ type: 'spring', duration: 0.2, bounce: 0 }}
             >
               <Spinner size="xs" />
             </motion.div>

@@ -54,32 +54,37 @@ const SearchView = () => {
   const router = useRouter();
 
   // Fetch leaderboard data - only real users with tokens for the period
-  const fetchLeaderboard = useCallback(async (period: ChallengeType): Promise<LeaderboardUser[]> => {
-    try {
-      console.log(`Fetching ${period} leaderboard...`);
-      const response = await fetch(`/api/leaderboard?period=${period}&limit=10`);
+  const fetchLeaderboard = useCallback(
+    async (period: ChallengeType): Promise<LeaderboardUser[]> => {
+      try {
+        console.log(`Fetching ${period} leaderboard...`);
+        const response = await fetch(`/api/leaderboard?period=${period}&limit=10`);
 
-      if (!response.ok) {
-        console.error(`Leaderboard API failed: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+          console.error(`Leaderboard API failed: ${response.status} ${response.statusText}`);
+          return [];
+        }
+
+        const data = await response.json();
+        console.log(`${period} leaderboard response:`, data);
+
+        const leaderboard = data.leaderboard || [];
+
+        // Filter out users with 0 tokens for the current period
+        const usersWithTokens = leaderboard.filter(
+          (user: LeaderboardUser) => user.currentPeriodTokens > 0
+        );
+
+        console.log(`${period} users with tokens:`, usersWithTokens);
+        return usersWithTokens;
+      } catch (error) {
+        console.error(`Error fetching ${period} leaderboard:`, error);
+        // Return empty array if API fails - no fallback data
         return [];
       }
-
-      const data = await response.json();
-      console.log(`${period} leaderboard response:`, data);
-
-      const leaderboard = data.leaderboard || [];
-
-      // Filter out users with 0 tokens for the current period
-      const usersWithTokens = leaderboard.filter((user: LeaderboardUser) => user.currentPeriodTokens > 0);
-
-      console.log(`${period} users with tokens:`, usersWithTokens);
-      return usersWithTokens;
-    } catch (error) {
-      console.error(`Error fetching ${period} leaderboard:`, error);
-      // Return empty array if API fails - no fallback data
-      return [];
-    }
-  }, []);
+    },
+    []
+  );
 
   // Refresh leaderboards - simple approach
   const refreshLeaderboards = useCallback(
@@ -114,7 +119,7 @@ const SearchView = () => {
             JSON.stringify({
               data: { daily, weekly, monthly },
               timestamp: now,
-            }),
+            })
           );
         } catch (error) {
           console.error('Failed to cache leaderboards:', error);
@@ -127,7 +132,7 @@ const SearchView = () => {
         setIsLoading(false);
       }
     },
-    [fetchLeaderboard, lastRefreshTime],
+    [fetchLeaderboard, lastRefreshTime]
   );
 
   // Simple page visibility handling - refresh when page becomes visible
@@ -172,21 +177,30 @@ const SearchView = () => {
         router.push(`/profile/${selectedUser.id}`);
       }
     },
-    [router, user?.id],
+    [router, user?.id]
   );
 
   // Handle follow action
   const handleFollow = useCallback(
     async (targetUserId: string) => {
-      if (!user || !user.id || !targetUserId || user.id === targetUserId || pendingFollowActions.has(targetUserId)) {
+      if (
+        !user ||
+        !user.id ||
+        !targetUserId ||
+        user.id === targetUserId ||
+        pendingFollowActions.has(targetUserId)
+      ) {
         return;
       }
 
       setPendingFollowActions((prev) => new Set(prev).add(targetUserId));
 
       try {
-        await toggleFollowUser(user.id, targetUserId, user.username);
-        // Refresh leaderboards to update follow states
+        const isCurrentlyFollowing =
+          user.following?.some((f: any) => (typeof f === 'string' ? f : f.id) === targetUserId) ??
+          false;
+
+        await toggleFollowUser(user.id, targetUserId, isCurrentlyFollowing); // Refresh leaderboards to update follow states
         // You might want to implement a more efficient update here
       } catch (error) {
         console.error('Error toggling follow:', error);
@@ -198,7 +212,7 @@ const SearchView = () => {
         });
       }
     },
-    [user, pendingFollowActions],
+    [user, pendingFollowActions]
   );
 
   // Handle profile navigation
@@ -210,7 +224,7 @@ const SearchView = () => {
         router.push(`/profile/${leaderboardUser.userId}`);
       }
     },
-    [router, user?.id],
+    [router, user?.id]
   );
 
   // Get current leaderboard based on active tab
@@ -304,7 +318,12 @@ const SearchView = () => {
             <div className="absolute -top-2 -right-2 text-2xl">{style.crown}</div>
             {isCurrentUser && (
               <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                <ThematicContainer asButton={false} color="nocenaPink" rounded="full" className="px-2 py-0.5">
+                <ThematicContainer
+                  asButton={false}
+                  color="nocenaPink"
+                  rounded="full"
+                  className="px-2 py-0.5"
+                >
                   <span className="text-xs font-medium">You</span>
                 </ThematicContainer>
               </div>
@@ -312,12 +331,16 @@ const SearchView = () => {
           </div>
 
           {/* Username */}
-          <h3 className="font-bold text-sm text-white text-center mb-1 max-w-20 truncate">{item.username}</h3>
+          <h3 className="font-bold text-sm text-white text-center mb-1 max-w-20 truncate">
+            {item.username}
+          </h3>
 
           {/* Token Count */}
           <div className="flex items-center justify-center mb-2">
             <Image src="/nocenix.ico" alt="Nocenix" width={16} height={16} />
-            <span className="text-xs font-semibold ml-1 text-white">{item.currentPeriodTokens.toLocaleString()}</span>
+            <span className="text-xs font-semibold ml-1 text-white">
+              {item.currentPeriodTokens.toLocaleString()}
+            </span>
           </div>
 
           {/* Podium Base */}
@@ -333,7 +356,7 @@ const SearchView = () => {
         </div>
       );
     },
-    [user?.id, pendingFollowActions, handleProfileNavigation, handleFollow],
+    [user?.id, pendingFollowActions, handleProfileNavigation, handleFollow]
   );
 
   // Render remaining items (clean list style)
@@ -376,7 +399,12 @@ const SearchView = () => {
                 <div className="flex items-center space-x-2">
                   <h3 className="font-semibold text-white">{item.username}</h3>
                   {isCurrentUser && (
-                    <ThematicContainer asButton={false} color="nocenaPink" rounded="full" className="px-2 py-0.5">
+                    <ThematicContainer
+                      asButton={false}
+                      color="nocenaPink"
+                      rounded="full"
+                      className="px-2 py-0.5"
+                    >
                       <span className="text-xs font-medium">You</span>
                     </ThematicContainer>
                   )}
@@ -395,7 +423,7 @@ const SearchView = () => {
         </ThematicContainer>
       );
     },
-    [user?.id, pendingFollowActions, handleProfileNavigation, handleFollow],
+    [user?.id, pendingFollowActions, handleProfileNavigation, handleFollow]
   );
 
   return (
@@ -451,12 +479,18 @@ const SearchView = () => {
                 <h3 className="text-lg font-medium mb-2">No Rankings Yet</h3>
                 <p className="text-sm">
                   Be the first to complete{' '}
-                  {activeTab === 'today' ? 'a daily' : activeTab === 'week' ? 'a weekly' : 'a monthly'} challenge and
-                  claim the top spot!
+                  {activeTab === 'today'
+                    ? 'a daily'
+                    : activeTab === 'week'
+                      ? 'a weekly'
+                      : 'a monthly'}{' '}
+                  challenge and claim the top spot!
                 </p>
               </div>
               <div className="text-4xl mb-4">🏆</div>
-              <p className="text-xs text-gray-500">Complete challenges to appear on the {activeTab} leaderboard</p>
+              <p className="text-xs text-gray-500">
+                Complete challenges to appear on the {activeTab} leaderboard
+              </p>
             </ThematicContainer>
           ) : (
             <div className="space-y-6">
@@ -464,7 +498,9 @@ const SearchView = () => {
               {currentLeaderboard.slice(0, 3).length > 0 && (
                 <div className="mb-8">
                   <div className="flex justify-center items-end space-x-4 mb-6">
-                    {currentLeaderboard.slice(0, 3).map((item, index) => renderTopThreeItem(item, index))}
+                    {currentLeaderboard
+                      .slice(0, 3)
+                      .map((item, index) => renderTopThreeItem(item, index))}
                   </div>
                 </div>
               )}
@@ -472,8 +508,12 @@ const SearchView = () => {
               {/* Rest of the leaderboard */}
               {currentLeaderboard.slice(3).length > 0 && (
                 <div>
-                  <h3 className="text-left text-sm font-semibold text-gray-400 mb-4 px-2">Runnerups</h3>
-                  {currentLeaderboard.slice(3).map((item, index) => renderRemainingItem(item, index + 3))}
+                  <h3 className="text-left text-sm font-semibold text-gray-400 mb-4 px-2">
+                    Runnerups
+                  </h3>
+                  {currentLeaderboard
+                    .slice(3)
+                    .map((item, index) => renderRemainingItem(item, index + 3))}
                 </div>
               )}
             </div>

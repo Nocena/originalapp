@@ -28,7 +28,12 @@ const NocenixMenu: React.FC<NocenixMenuProps> = ({ onBack }) => {
     sceneRef.current = scene;
 
     // Camera setup
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
     camera.position.set(0, 0, 8);
 
     // Renderer setup
@@ -132,7 +137,7 @@ const NocenixMenu: React.FC<NocenixMenuProps> = ({ onBack }) => {
       undefined,
       (error) => {
         console.error('Error loading 3D model:', error);
-      },
+      }
     );
 
     // Smooth animation loop
@@ -236,7 +241,13 @@ const NocenixMenu: React.FC<NocenixMenuProps> = ({ onBack }) => {
                   `,
                 }}
               >
-                <Image src={nocenix} alt="Nocenix Token" width={64} height={64} className="opacity-90" />
+                <Image
+                  src={nocenix}
+                  alt="Nocenix Token"
+                  width={64}
+                  height={64}
+                  className="opacity-90"
+                />
 
                 {/* Animated border glow */}
                 <div className="absolute inset-0 rounded-3xl border border-white/10 animate-pulse"></div>
@@ -284,8 +295,9 @@ const NocenixMenu: React.FC<NocenixMenuProps> = ({ onBack }) => {
             <div>
               <h3 className="text-orange-200 font-medium mb-2">Beta Testing Phase</h3>
               <p className="text-orange-300/80 text-sm leading-relaxed">
-                Nocenix is currently a <strong>testnet token</strong> with no monetary value. These tokens are for
-                testing purposes during our beta phase, but will carry over when we launch!
+                Nocenix is currently a <strong>testnet token</strong> with no monetary value. These
+                tokens are for testing purposes during our beta phase, but will carry over when we
+                launch!
               </p>
             </div>
           </div>
@@ -298,8 +310,9 @@ const NocenixMenu: React.FC<NocenixMenuProps> = ({ onBack }) => {
             What is Nocenix?
           </h3>
           <p className="text-white/80 leading-relaxed">
-            Nocenix is Nocena's reward token that recognizes your participation and engagement. Think of it as your
-            digital reputation score that will have real value after our beta launch.
+            Nocenix is Nocena's reward token that recognizes your participation and engagement.
+            Think of it as your digital reputation score that will have real value after our beta
+            launch.
           </p>
         </div>
 
@@ -389,7 +402,9 @@ const NocenixMenu: React.FC<NocenixMenuProps> = ({ onBack }) => {
               },
             ].map((item, index) => (
               <div key={index} className="flex items-start space-x-4">
-                <div className={`w-3 h-3 ${item.color} rounded-full mt-2 flex-shrink-0 shadow-lg`}></div>
+                <div
+                  className={`w-3 h-3 ${item.color} rounded-full mt-2 flex-shrink-0 shadow-lg`}
+                ></div>
                 <div>
                   <p className="text-white/90 leading-relaxed">
                     <strong className="text-white">{item.title}:</strong> {item.desc}

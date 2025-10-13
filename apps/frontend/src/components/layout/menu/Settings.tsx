@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { usePermissions } from '../../../hooks/usePermissions';
-import { Settings, Camera, Mic, Bell, RefreshCw, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import {
+  Settings,
+  Camera,
+  Mic,
+  Bell,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+} from 'lucide-react';
 
 interface NotificationState {
   permission: NotificationPermission;
@@ -59,7 +68,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
 
   const handleRequest = async (
     permission: 'camera' | 'microphone' | 'notifications' | 'all',
-    requestFn: () => Promise<any>,
+    requestFn: () => Promise<any>
   ) => {
     setIsRequesting((prev) => ({ ...prev, [permission]: true }));
     try {
@@ -125,10 +134,14 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
   };
 
   const getPushNotificationStatus = () => {
-    if (!notificationState) return { icon: <div className="w-4 h-4 rounded-full bg-white/40" />, text: 'Unknown' };
+    if (!notificationState)
+      return { icon: <div className="w-4 h-4 rounded-full bg-white/40" />, text: 'Unknown' };
 
     if (notificationState.isLoading) {
-      return { icon: <RefreshCw className="w-4 h-4 text-blue-400 animate-spin" />, text: 'Checking...' };
+      return {
+        icon: <RefreshCw className="w-4 h-4 text-blue-400 animate-spin" />,
+        text: 'Checking...',
+      };
     }
 
     if (notificationState.permission === 'denied') {
@@ -136,7 +149,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
     }
 
     if (!notificationState.isSubscribed) {
-      return { icon: <AlertTriangle className="w-4 h-4 text-yellow-400" />, text: 'Not Subscribed' };
+      return {
+        icon: <AlertTriangle className="w-4 h-4 text-yellow-400" />,
+        text: 'Not Subscribed',
+      };
     }
 
     if (notificationState.needsUpdate) {
@@ -197,7 +213,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
           <h2 className="text-white text-2xl font-bold">Settings</h2>
           <p className="text-white/60 text-sm">
             App permissions and preferences
-            {!isLoading && <span className="block text-xs mt-1">Last checked: {lastRefresh.toLocaleTimeString()}</span>}
+            {!isLoading && (
+              <span className="block text-xs mt-1">
+                Last checked: {lastRefresh.toLocaleTimeString()}
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -208,7 +228,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               {error && <div className="text-red-300 text-sm">{error}</div>}
-              {notificationState?.error && <div className="text-red-300 text-sm">Push: {notificationState.error}</div>}
+              {notificationState?.error && (
+                <div className="text-red-300 text-sm">Push: {notificationState.error}</div>
+              )}
             </div>
             <button
               onClick={() => {
@@ -237,9 +259,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-white font-semibold mb-1 text-lg">
-                    {missingPermissions.length} permission{missingPermissions.length > 1 ? 's' : ''} needed
+                    {missingPermissions.length} permission{missingPermissions.length > 1 ? 's' : ''}{' '}
+                    needed
                   </div>
-                  <div className="text-red-300 text-sm">Missing: {missingPermissions.join(', ')}</div>
+                  <div className="text-red-300 text-sm">
+                    Missing: {missingPermissions.join(', ')}
+                  </div>
                 </div>
                 <button
                   onClick={() => handleRequest('all', requestAllPermissions)}
@@ -255,8 +280,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
               <div className="flex items-center space-x-3">
                 <CheckCircle className="w-5 h-5 text-green-400" />
                 <div>
-                  <div className="text-green-300 font-semibold text-lg">All permissions granted</div>
-                  <div className="text-green-300/80 text-sm">Your app is ready to use all features</div>
+                  <div className="text-green-300 font-semibold text-lg">
+                    All permissions granted
+                  </div>
+                  <div className="text-green-300/80 text-sm">
+                    Your app is ready to use all features
+                  </div>
                 </div>
               </div>
             </div>
@@ -291,7 +320,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
                           : 'bg-nocenaBlue hover:bg-nocenaBlue/80 text-white'
                     }`}
                   >
-                    {isRequesting.camera ? 'Requesting...' : permissionState.camera === 'denied' ? 'Blocked' : 'Allow'}
+                    {isRequesting.camera
+                      ? 'Requesting...'
+                      : permissionState.camera === 'denied'
+                        ? 'Blocked'
+                        : 'Allow'}
                   </button>
                 )}
               </div>
@@ -408,7 +441,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
                     className="px-2 py-1 rounded text-xs bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors"
                     title="Refresh status"
                   >
-                    <RefreshCw className={`w-4 h-4 ${isRequesting.pushSync ? 'animate-spin' : ''}`} />
+                    <RefreshCw
+                      className={`w-4 h-4 ${isRequesting.pushSync ? 'animate-spin' : ''}`}
+                    />
                   </button>
                 </div>
 
@@ -442,7 +477,8 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
 
                   {notificationState.permission === 'denied' && (
                     <div className="p-2 bg-red-500/20 rounded text-xs text-red-300">
-                      Push notifications are blocked. Enable basic notifications first, then refresh this page.
+                      Push notifications are blocked. Enable basic notifications first, then refresh
+                      this page.
                     </div>
                   )}
                 </div>
@@ -456,19 +492,27 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
             <div className="space-y-2">
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-nocenaPink rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-white/70 text-sm">If permissions are blocked, check your browser settings</p>
+                <p className="text-white/70 text-sm">
+                  If permissions are blocked, check your browser settings
+                </p>
               </div>
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-nocenaBlue rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-white/70 text-sm">On iOS, permissions may reset when the app updates</p>
+                <p className="text-white/70 text-sm">
+                  On iOS, permissions may reset when the app updates
+                </p>
               </div>
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-nocenaPurple rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-white/70 text-sm">Close other apps using camera/microphone if access fails</p>
+                <p className="text-white/70 text-sm">
+                  Close other apps using camera/microphone if access fails
+                </p>
               </div>
               <div className="flex items-start space-x-3">
                 <div className="w-2 h-2 bg-nocenaPink rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-white/70 text-sm">Try refreshing the app if permissions aren't detected</p>
+                <p className="text-white/70 text-sm">
+                  Try refreshing the app if permissions aren't detected
+                </p>
               </div>
             </div>
           </div>

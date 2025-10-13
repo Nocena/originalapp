@@ -259,4 +259,3 @@ export const NOTIFICATION_FIELDS = gql`
     }
   }
 `;
-

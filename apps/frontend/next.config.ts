@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 import type { Configuration } from 'webpack';
 import withPWA from 'next-pwa';
+const path = require('path'); // ADD THIS LINE
 
 const pwaConfig = withPWA({
   dest: 'public',
@@ -11,6 +12,7 @@ const pwaConfig = withPWA({
   sw: '/sw.js',
   cleanupOutdatedCaches: true,
   publicExcludes: ['!robots.txt', '!sitemap.xml'],
+  maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // ADD THIS LINE
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -39,7 +41,8 @@ const pwaConfig = withPWA({
 
 /** @type {NextConfig} */
 const nextConfig: NextConfig = {
-  transpilePackages: ['@nocena/indexer', '@nocena/data'], // Add this line
+  outputFileTracingRoot: path.join(__dirname, '../../'), // ADD THIS LINE
+  transpilePackages: ['@nocena/indexer', '@nocena/data'],
   images: {
     domains: [
       'gateway.pinata.cloud',

@@ -28,7 +28,7 @@ const MapControls: React.FC<MapControlsProps> = ({
 
     if (!userLocation) {
       alert(
-        'Location access is required to create a challenge. Please enable location access in your browser settings and try again.',
+        'Location access is required to create a challenge. Please enable location access in your browser settings and try again.'
       );
       return;
     }
@@ -132,7 +132,11 @@ const MapControls: React.FC<MapControlsProps> = ({
               <stop offset="100%" stopColor="#FD4EF5" />
             </linearGradient>
           </defs>
-          <path d="M12 2L19 21L12 17L5 21L12 2Z" fill="url(#locationGradient)" stroke="url(#locationGradient)" />
+          <path
+            d="M12 2L19 21L12 17L5 21L12 2Z"
+            fill="url(#locationGradient)"
+            stroke="url(#locationGradient)"
+          />
         </svg>
       </button>
 

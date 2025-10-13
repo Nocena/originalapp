@@ -125,7 +125,7 @@ async function uploadToPinataWithRetry(
   fileBuffer: Buffer,
   fileName: string,
   fileType: string,
-  maxRetries: number = 3,
+  maxRetries: number = 3
 ): Promise<string> {
   const pinataJWT = process.env.NEXT_PUBLIC_PINATA_JWT;
 
@@ -200,7 +200,11 @@ async function uploadToPinataWithRetry(
 
       // Don't retry on certain errors
       if (error instanceof Error) {
-        if (error.message.includes('400') || error.message.includes('401') || error.message.includes('403')) {
+        if (
+          error.message.includes('400') ||
+          error.message.includes('401') ||
+          error.message.includes('403')
+        ) {
           throw error; // Client errors shouldn't be retried
         }
       }

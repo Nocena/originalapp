@@ -49,7 +49,11 @@ const useFollowersData = (userId?: string) => {
         const profileCacheKey = `profile_${userId}`;
 
         // Check cache first
-        if (pageState && pageState[profileCacheKey] && Date.now() - pageState[profileCacheKey].lastFetched < 300000) {
+        if (
+          pageState &&
+          pageState[profileCacheKey] &&
+          Date.now() - pageState[profileCacheKey].lastFetched < 300000
+        ) {
           const { followers } = pageState[profileCacheKey].data;
           if (Array.isArray(followers)) {
             setFollowers(followers);
@@ -74,7 +78,7 @@ const useFollowersData = (userId?: string) => {
             JSON.stringify({
               data: { followers: fetchedFollowers },
               timestamp: Date.now(),
-            }),
+            })
           );
         } else if (typeof fetchedFollowers === 'number') {
           setFollowersCount(fetchedFollowers);
@@ -85,7 +89,7 @@ const useFollowersData = (userId?: string) => {
         if (showLoading) setIsLoading(false);
       }
     },
-    [userId],
+    [userId]
   );
 
   // Main effect for fetching followers

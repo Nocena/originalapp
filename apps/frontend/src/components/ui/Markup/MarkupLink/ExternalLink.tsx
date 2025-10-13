@@ -1,10 +1,8 @@
-import type {
-  PostMentionFragment
-} from "@nocena/indexer";
+import type { PostMentionFragment } from '@nocena/indexer';
 import injectReferrerToUrl from '../../../../helpers/injectReferrerToUrl';
 import stopEventPropagation from '../../../../helpers/stopEventPropagation';
 import truncateUrl from '../../../../helpers/truncateUrl';
-import Link from "next/link";
+import Link from 'next/link';
 
 export interface MarkupLinkProps {
   mentions?: PostMentionFragment[];
@@ -18,7 +16,7 @@ const ExternalLink = ({ title }: MarkupLinkProps) => {
     return null;
   }
 
-  if (!href.includes("://")) {
+  if (!href.includes('://')) {
     href = `https://${href}`;
   }
 
@@ -29,7 +27,7 @@ const ExternalLink = ({ title }: MarkupLinkProps) => {
       href={url}
       onClick={stopEventPropagation}
       rel="noopener"
-      target={url.includes(location.host) ? "_self" : "_blank"}
+      target={url.includes(location.host) ? '_self' : '_blank'}
     >
       {title ? truncateUrl(title, 30) : title}
     </Link>

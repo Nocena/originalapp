@@ -1,7 +1,14 @@
 // contexts/BackgroundTaskContext.tsx - CLEANED VERSION - ONLY 3 TASKS
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { SimpleVerificationService } from '../lib/verification/simpleVerificationService';
 
@@ -56,7 +63,12 @@ interface BackgroundTaskContextType {
   // The 3 specific methods you need
   startNFTGeneration: (userId: string, challengeData?: any, persistent?: boolean) => string;
   startModelPreload: () => string;
-  startVerification: (args: { videoBlob: Blob; photoBlob?: Blob; challenge: any; dependencies?: string[] }) => string;
+  startVerification: (args: {
+    videoBlob: Blob;
+    photoBlob?: Blob;
+    challenge: any;
+    dependencies?: string[];
+  }) => string;
 }
 
 // Initial state
@@ -67,7 +79,10 @@ const initialState: BackgroundTaskState = {
 };
 
 // Reducer
-function backgroundTaskReducer(state: BackgroundTaskState, action: TaskAction): BackgroundTaskState {
+function backgroundTaskReducer(
+  state: BackgroundTaskState,
+  action: TaskAction
+): BackgroundTaskState {
   switch (action.type) {
     case 'QUEUE_TASK': {
       const task: BackgroundTask = {
@@ -75,7 +90,12 @@ function backgroundTaskReducer(state: BackgroundTaskState, action: TaskAction): 
         createdAt: Date.now(),
       };
 
-      console.log('[Queue] Task queued:', task.id.slice(-8), task.type, task.persistent ? '(PERSISTENT)' : '');
+      console.log(
+        '[Queue] Task queued:',
+        task.id.slice(-8),
+        task.type,
+        task.persistent ? '(PERSISTENT)' : ''
+      );
 
       return {
         ...state,
@@ -203,7 +223,11 @@ function backgroundTaskReducer(state: BackgroundTaskState, action: TaskAction): 
         }
       });
 
-      console.log('[Clear] Clearing tasks, keeping', Object.keys(persistentTasks).length, 'persistent tasks');
+      console.log(
+        '[Clear] Clearing tasks, keeping',
+        Object.keys(persistentTasks).length,
+        'persistent tasks'
+      );
 
       return {
         ...state,
@@ -232,7 +256,9 @@ export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ 
 
   // MINIMAL LOGGING: Only log active tasks summary
   useEffect(() => {
-    const activeTasks = Object.values(state.tasks).filter((t) => t.status === 'queued' || t.status === 'running');
+    const activeTasks = Object.values(state.tasks).filter(
+      (t) => t.status === 'queued' || t.status === 'running'
+    );
 
     if (activeTasks.length > 0) {
       const summary = activeTasks.map((t) => `${t.id.slice(-8)}:${t.type}(${t.status})`).join(', ');
@@ -434,7 +460,11 @@ export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ 
         itemType: result.clothingInfo?.type || 'hoodie',
       };
 
-      console.log('[NFT] Generation completed successfully:', finalResult.templateName, finalResult.rarity);
+      console.log(
+        '[NFT] Generation completed successfully:',
+        finalResult.templateName,
+        finalResult.rarity
+      );
       return finalResult;
     } catch (error: any) {
       if (signal.aborted) throw error;
@@ -463,7 +493,9 @@ export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ 
 
     try {
       // Import the TensorFlow detection helper
-      const { preloadModels } = await import('../lib/verification/helpers/tensorflowHumanDetection');
+      const { preloadModels } = await import(
+        '../lib/verification/helpers/tensorflowHumanDetection'
+      );
 
       if (signal.aborted) throw new Error('Cancelled');
       updateProgress(taskId, 30);
@@ -526,7 +558,11 @@ export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ 
     if (signal.aborted) throw new Error('Cancelled');
 
     try {
-      const result = await service.runFullVerification(videoBlob, photoBlob, challenge?.description || '');
+      const result = await service.runFullVerification(
+        videoBlob,
+        photoBlob,
+        challenge?.description || ''
+      );
 
       if (signal.aborted) throw new Error('Cancelled');
 
@@ -568,7 +604,7 @@ export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ 
         persistent: persistent,
       });
     },
-    [queueTask],
+    [queueTask]
   );
 
   // 2. Model Preload (run once when app starts or before verification)
@@ -586,7 +622,12 @@ export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ 
 
   // 3. Verification (pre-run verification before user reaches verification screen)
   const startVerification = useCallback(
-    (args: { videoBlob: Blob; photoBlob?: Blob; challenge: any; dependencies?: string[] }): string => {
+    (args: {
+      videoBlob: Blob;
+      photoBlob?: Blob;
+      challenge: any;
+      dependencies?: string[];
+    }): string => {
       const { videoBlob, photoBlob, challenge, dependencies = [] } = args;
       console.log('Starting background verification...', photoBlob ? 'with selfie' : 'video-only');
       return queueTask({
@@ -598,7 +639,7 @@ export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ 
         priority: 'high',
       });
     },
-    [queueTask],
+    [queueTask]
   );
 
   // Helper methods
@@ -606,17 +647,26 @@ export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ 
     (id: string) => {
       return state.tasks[id];
     },
-    [state.tasks],
+    [state.tasks]
   );
 
   const getTasksByType = useCallback(
     (type: TaskType) => Object.values(state.tasks).filter((task) => task.type === type),
-    [state.tasks],
+    [state.tasks]
   );
 
-  const isTaskCompleted = useCallback((id: string) => state.tasks[id]?.status === 'completed', [state.tasks]);
-  const isTaskRunning = useCallback((id: string) => state.tasks[id]?.status === 'running', [state.tasks]);
-  const getTaskProgress = useCallback((id: string) => state.tasks[id]?.progress || 0, [state.tasks]);
+  const isTaskCompleted = useCallback(
+    (id: string) => state.tasks[id]?.status === 'completed',
+    [state.tasks]
+  );
+  const isTaskRunning = useCallback(
+    (id: string) => state.tasks[id]?.status === 'running',
+    [state.tasks]
+  );
+  const getTaskProgress = useCallback(
+    (id: string) => state.tasks[id]?.progress || 0,
+    [state.tasks]
+  );
 
   const cancelTask = useCallback(
     (id: string) => {
@@ -633,7 +683,7 @@ export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ 
       }
       dispatch({ type: 'CANCEL_TASK', payload: { id } });
     },
-    [state.tasks],
+    [state.tasks]
   );
 
   const clearAllTasks = useCallback(() => {

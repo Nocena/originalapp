@@ -22,7 +22,7 @@ export interface FrameExtractionResult {
  */
 export async function extractVideoFrames(
   videoBlob: Blob,
-  options: FrameExtractionOptions = {},
+  options: FrameExtractionOptions = {}
 ): Promise<FrameExtractionResult> {
   const { framesPerSecond = 4, maxFrames = 20, quality = 0.7, maxDimension = 640 } = options;
 
@@ -84,7 +84,7 @@ export async function extractVideoFrames(
         timePoints
           .slice(0, maxFrames)
           .map((t) => `${t.toFixed(1)}s`)
-          .join(', '),
+          .join(', ')
       );
 
       extractFramesAtTimePoints(video, canvas, ctx, timePoints.slice(0, maxFrames), quality)
@@ -93,7 +93,9 @@ export async function extractVideoFrames(
             frames: extractedFrames,
             totalFrames: extractedFrames.length,
             videoDuration: duration && isFinite(duration) ? duration : Math.max(...timePoints),
-            frameRate: extractedFrames.length / (duration && isFinite(duration) ? duration : Math.max(...timePoints)),
+            frameRate:
+              extractedFrames.length /
+              (duration && isFinite(duration) ? duration : Math.max(...timePoints)),
             videoResolution: { width, height },
           };
 
@@ -147,7 +149,7 @@ async function extractFramesAtTimePoints(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   timePoints: number[],
-  quality: number,
+  quality: number
 ): Promise<string[]> {
   const frames: string[] = [];
 
@@ -173,10 +175,12 @@ async function extractFramesAtTimePoints(
 
       if (brightness < 15 && frames.length === 0) {
         console.warn(
-          `⚠️ Frame ${i + 1} appears very dark (brightness: ${brightness.toFixed(1)}), but keeping as first frame`,
+          `⚠️ Frame ${i + 1} appears very dark (brightness: ${brightness.toFixed(1)}), but keeping as first frame`
         );
       } else if (brightness < 10) {
-        console.warn(`⚠️ Frame ${i + 1} appears very dark (brightness: ${brightness.toFixed(1)}), skipping...`);
+        console.warn(
+          `⚠️ Frame ${i + 1} appears very dark (brightness: ${brightness.toFixed(1)}), skipping...`
+        );
         continue;
       }
 
@@ -186,7 +190,7 @@ async function extractFramesAtTimePoints(
       frames.push(base64Data);
 
       console.log(
-        `📷 Frame ${i + 1}/${timePoints.length} extracted (${timePoint.toFixed(2)}s, brightness: ${brightness.toFixed(1)})`,
+        `📷 Frame ${i + 1}/${timePoints.length} extracted (${timePoint.toFixed(2)}s, brightness: ${brightness.toFixed(1)})`
       );
     } catch (frameError) {
       console.warn(`⚠️ Failed to analyze frame at ${timePoint.toFixed(1)}s:`, frameError);

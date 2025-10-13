@@ -96,13 +96,20 @@ const ThematicContainer: React.FC<Props> = ({
     const flexClasses = className
       .split(' ')
       .filter(
-        (cls) => cls.startsWith('flex') || cls.startsWith('w-') || cls.startsWith('min-w') || cls.startsWith('max-w'),
+        (cls) =>
+          cls.startsWith('flex') ||
+          cls.startsWith('w-') ||
+          cls.startsWith('min-w') ||
+          cls.startsWith('max-w')
       );
     const remainingClasses = className
       .split(' ')
       .filter(
         (cls) =>
-          !cls.startsWith('flex') && !cls.startsWith('w-') && !cls.startsWith('min-w') && !cls.startsWith('max-w'),
+          !cls.startsWith('flex') &&
+          !cls.startsWith('w-') &&
+          !cls.startsWith('min-w') &&
+          !cls.startsWith('max-w')
       );
 
     return {
@@ -212,7 +219,8 @@ const ThematicContainer: React.FC<Props> = ({
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(143, 164, 252, 0.05))',
+          background:
+            'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(143, 164, 252, 0.05))',
           borderRadius: getBorderRadius(),
           zIndex: -1,
         }}

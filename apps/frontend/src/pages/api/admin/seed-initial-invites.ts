@@ -77,7 +77,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // If test batch worked, continue with the rest
     if (generatedCodes.length > 0 && count > testBatchSize) {
-      console.log(`Test batch successful! Continuing with remaining ${count - testBatchSize} codes...`);
+      console.log(
+        `Test batch successful! Continuing with remaining ${count - testBatchSize} codes...`
+      );
 
       const remainingCount = count - testBatchSize;
       const batchSize = 10; // Smaller batches for reliability
@@ -116,7 +118,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    console.log(`Generation complete. Generated: ${generatedCodes.length}, Errors: ${errors.length}`);
+    console.log(
+      `Generation complete. Generated: ${generatedCodes.length}, Errors: ${errors.length}`
+    );
 
     // Log first few errors for debugging
     if (errors.length > 0) {

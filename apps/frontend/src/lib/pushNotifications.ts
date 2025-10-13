@@ -138,7 +138,7 @@ export const getUserStoredSubscription = async (userId: string): Promise<string 
  * Check if current device subscription matches what's stored in database
  */
 export const checkSubscriptionSync = async (
-  userId: string,
+  userId: string
 ): Promise<{
   isInSync: boolean;
   currentDeviceSubscription: string | null;
@@ -150,7 +150,10 @@ export const checkSubscriptionSync = async (
   try {
     // Get current device subscription
     const currentDeviceSubscription = await getCurrentDeviceSubscription();
-    console.log('🔔 SYNC: Current device subscription:', currentDeviceSubscription ? 'EXISTS' : 'NONE');
+    console.log(
+      '🔔 SYNC: Current device subscription:',
+      currentDeviceSubscription ? 'EXISTS' : 'NONE'
+    );
 
     // Get stored subscription from database
     const storedSubscription = await getUserStoredSubscription(userId);
@@ -227,7 +230,7 @@ export const subscribeToPushNotifications = async (userId?: string): Promise<str
       // Subscribe to push notifications
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
       });
 
       console.log('🔔 NEW: Created new push subscription');
@@ -257,7 +260,7 @@ export const subscribeToPushNotifications = async (userId?: string): Promise<str
  */
 export const syncSubscriptionWithDatabase = async (
   userId: string,
-  deviceSubscription?: string | null,
+  deviceSubscription?: string | null
 ): Promise<boolean> => {
   console.log('🔔 SYNC: Starting subscription sync for user:', userId);
 
@@ -294,7 +297,7 @@ export const syncSubscriptionWithDatabase = async (
  * Initialize push notifications with automatic sync
  */
 export const initializePushNotifications = async (
-  userId: string,
+  userId: string
 ): Promise<{
   success: boolean;
   subscription: string | null;
@@ -510,7 +513,10 @@ export const showTestNotification = async (): Promise<void> => {
 /**
  * Update user's push subscription in the database
  */
-export const updateUserPushSubscription = async (userId: string, subscription: string | null): Promise<boolean> => {
+export const updateUserPushSubscription = async (
+  userId: string,
+  subscription: string | null
+): Promise<boolean> => {
   try {
     const mutation = `
         mutation UpdateUserPushSubscription($userId: String!, $subscription: String) {
@@ -559,7 +565,7 @@ export const updateUserPushSubscription = async (userId: string, subscription: s
  * Get notification status for UI display
  */
 export const getNotificationStatus = async (
-  userId?: string,
+  userId?: string
 ): Promise<{
   permission: NotificationPermission;
   isSubscribed: boolean;

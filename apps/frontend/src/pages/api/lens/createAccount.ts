@@ -24,7 +24,10 @@ interface CreateAccountResponse {
   error?: string;
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<CreateAccountResponse>) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<CreateAccountResponse>
+) {
   console.log('🚀 API /api/lens/createAccount: Request received');
   console.log('📋 API: Method:', req.method);
   console.log('📋 API: Body:', req.body);
@@ -38,7 +41,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   try {
-    const { username, walletAddress, bio, profilePicture, authToken }: CreateAccountRequest = req.body;
+    const { username, walletAddress, bio, profilePicture, authToken }: CreateAccountRequest =
+      req.body;
 
     console.log('👤 API: Username:', username);
     console.log('💳 API: Wallet:', walletAddress);
@@ -106,7 +110,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     // Create Lens account
     console.log('🚀 API: Creating Lens account...');
-    const result = await LensProtocolService.createLensAccountWithUsername(username.trim(), walletAddress, authToken);
+    const result = await LensProtocolService.createLensAccountWithUsername(
+      username.trim(),
+      walletAddress,
+      authToken
+    );
 
     console.log('📊 API: Creation result:', result);
 

@@ -46,7 +46,11 @@ const TopNavbar: React.FC<TopNavbarProps> = ({
       <div className="flex-grow"></div>
 
       {/* Profile button using ThematicContainer */}
-      <button onClick={() => handleNavClick(4)} className="focus:outline-none pointer-events-auto" aria-label="Profile">
+      <button
+        onClick={() => handleNavClick(4)}
+        className="focus:outline-none pointer-events-auto"
+        aria-label="Profile"
+      >
         <ThematicContainer
           color={isProfileActive ? 'nocenaPink' : 'nocenaBlue'}
           glassmorphic={true}

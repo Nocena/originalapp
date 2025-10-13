@@ -12,10 +12,14 @@ import RegisterInviteCodeStep from '@components/register/components/RegisterInvi
 import RegisterWalletConnectStep from '@components/register/components/RegisterWalletConnectStep';
 import RegisterFormStep from '@components/register/components/RegisterFormStep';
 import RegisterNotificationsStep from '@components/register/components/RegisterNotificationsStep';
-import { useAuthenticateMutation, useChallengeMutation, useCreateAccountWithUsernameMutation } from '@nocena/indexer';
+import {
+  useAuthenticateMutation,
+  useChallengeMutation,
+  useCreateAccountWithUsernameMutation,
+} from '@nocena/indexer';
 import { toast } from 'react-hot-toast';
-import { getStepInfo, validateInviteCode } from '@pages/register/utils';
-import { schema } from '@pages/register/values';
+import { getStepInfo, validateInviteCode } from 'src/lib/register/utils';
+import { schema } from 'src/lib/register/values';
 import Minting from '@pages/register/Minting';
 
 type FormValues = {
@@ -174,7 +178,10 @@ const RegisterPage = () => {
     });
 
     // Validate we have all required data
-    if (!registrationData.username || !registrationData.walletAddress/* || !registrationData.inviteCode*/) {
+    if (
+      !registrationData.username ||
+      !registrationData.walletAddress /* || !registrationData.inviteCode*/
+    ) {
       setError('Missing registration data. Please try again.');
       return;
     }
@@ -196,39 +203,38 @@ const RegisterPage = () => {
       // STEP 2: Register the user in Dgraph with mock Lens data
       console.log('🗄️ Creating user in Dgraph with mock Lens data...');
       const addedUser = await registerUser({
-          username: registrationData.username,
-          bio: '', // bio (empty for new users)
-          profilePicture: '/images/profile.png', // profilePicture
-          coverPhoto: '/images/cover.jpg', // coverPhoto
-          trailerVideo: '/trailer.mp4', // trailerVideo
-          wallet: registrationData.walletAddress,
-          earnedTokens: 50, // earnedTokens
-          earnedTokensToday: 0, // earnedTokensToday
-          earnedTokensThisWeek: 0, // earnedTokensThisWeek
-          earnedTokensThisMonth: 0, // earnedTokensThisMonth
-          personalField1Type: '', // personalField1Type
-          personalField1Value: '', // personalField1Value
-          personalField1Metadata: '', // personalField1Metadata
-          personalField2Type: '', // personalField2Type
-          personalField2Value: '', // personalField2Value
-          personalField2Metadata: '', // personalField2Metadata
-          personalField3Type: '', // personalField3Type
-          personalField3Value: '', // personalField3Value
-          personalField3Metadata: '', // personalField3Metadata
-          dailyChallenge: '0'.repeat(365), // dailyChallenge
-          weeklyChallenge: '0'.repeat(52), // weeklyChallenge
-          monthlyChallenge: '0'.repeat(12), // monthlyChallenge
-          inviteCode: registrationData.inviteCode || '',
-          // Mock Lens data (these come BEFORE invitedById and pushSubscription according to function signature)
-          lensHandle: '',
-          lensAccountId: '',
-          lensTransactionHash: '',
-          lensMetadataUri: '',
-          // These are the optional parameters at the end
-          invitedById: registrationData.invitedById || '',
-          pushSubscription: pushSubscription || '', // Convert null to empty string for the API
-        },
-      );
+        username: registrationData.username,
+        bio: '', // bio (empty for new users)
+        profilePicture: '/images/profile.png', // profilePicture
+        coverPhoto: '/images/cover.jpg', // coverPhoto
+        trailerVideo: '/trailer.mp4', // trailerVideo
+        wallet: registrationData.walletAddress,
+        earnedTokens: 50, // earnedTokens
+        earnedTokensToday: 0, // earnedTokensToday
+        earnedTokensThisWeek: 0, // earnedTokensThisWeek
+        earnedTokensThisMonth: 0, // earnedTokensThisMonth
+        personalField1Type: '', // personalField1Type
+        personalField1Value: '', // personalField1Value
+        personalField1Metadata: '', // personalField1Metadata
+        personalField2Type: '', // personalField2Type
+        personalField2Value: '', // personalField2Value
+        personalField2Metadata: '', // personalField2Metadata
+        personalField3Type: '', // personalField3Type
+        personalField3Value: '', // personalField3Value
+        personalField3Metadata: '', // personalField3Metadata
+        dailyChallenge: '0'.repeat(365), // dailyChallenge
+        weeklyChallenge: '0'.repeat(52), // weeklyChallenge
+        monthlyChallenge: '0'.repeat(12), // monthlyChallenge
+        inviteCode: registrationData.inviteCode || '',
+        // Mock Lens data (these come BEFORE invitedById and pushSubscription according to function signature)
+        lensHandle: '',
+        lensAccountId: '',
+        lensTransactionHash: '',
+        lensMetadataUri: '',
+        // These are the optional parameters at the end
+        invitedById: registrationData.invitedById || '',
+        pushSubscription: pushSubscription || '', // Convert null to empty string for the API
+      });
 
       if (!addedUser) {
         throw new Error('Failed to create user in database');
@@ -337,7 +343,7 @@ const RegisterPage = () => {
   useEffect(() => {
     if (currentStep === RegisterStep.WELCOME) {
       // Determine timing: longer if video loads, shorter if no video (fallback experience)
-      const welcomeDuration = /*videoPreloaded ?*/ 7000;/* : 3000;*/ // 7s with video, 3s without
+      const welcomeDuration = /*videoPreloaded ?*/ 7000; /* : 3000;*/ // 7s with video, 3s without
 
       /*
             console.log(
@@ -352,7 +358,7 @@ const RegisterPage = () => {
 
       return () => clearTimeout(timer);
     }
-  }, [currentStep, router/*, videoPreloaded, videoPreloadError*/]);
+  }, [currentStep, router /*, videoPreloaded, videoPreloadError*/]);
 
   const onSubmit = async (values: FormValues) => {
     console.log('Form submitted:', values);
@@ -375,7 +381,9 @@ const RegisterPage = () => {
         return <RegisterWalletConnectStep onWalletConnected={handleWalletConnected} />;
 
       case RegisterStep.USER_INFO:
-        return <RegisterFormStep control={control} loading={loading} setStep={handleFormComplete} />;
+        return (
+          <RegisterFormStep control={control} loading={loading} setStep={handleFormComplete} />
+        );
 
       case RegisterStep.MINTING:
         return <Minting />;
@@ -396,15 +404,13 @@ const RegisterPage = () => {
     }
   };
 
-  const stepInfo = useMemo(() =>
-    getStepInfo(currentStep, registrationInProgress, registrationCompleted), [currentStep, registrationInProgress, registrationCompleted]);
+  const stepInfo = useMemo(
+    () => getStepInfo(currentStep, registrationInProgress, registrationCompleted),
+    [currentStep, registrationInProgress, registrationCompleted]
+  );
 
   if (currentStep === RegisterStep.WELCOME) {
-    return (
-      <RegisterWelcomeStep
-        inviteOwner={registrationData.inviteOwner || 'Someone'}
-      />
-    );
+    return <RegisterWelcomeStep inviteOwner={registrationData.inviteOwner || 'Someone'} />;
   }
 
   return (

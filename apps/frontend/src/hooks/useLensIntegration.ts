@@ -72,7 +72,11 @@ export interface UseLensIntegrationReturn {
     profilePicture?: string;
     authToken?: string;
   }) => Promise<LensCreationResult>;
-  claimAccount: (params: { accountId: string; walletAddress: string; authToken?: string }) => Promise<LensClaimResult>;
+  claimAccount: (params: {
+    accountId: string;
+    walletAddress: string;
+    authToken?: string;
+  }) => Promise<LensClaimResult>;
   clearResults: () => void;
 }
 
@@ -130,44 +134,47 @@ export const useLensIntegration = (): UseLensIntegrationReturn => {
     }
   }, []);
 
-  const checkWalletAccount = useCallback(async (walletAddress: string): Promise<WalletCheckResult> => {
-    console.log('🎣 useLensIntegration: Checking wallet for Lens account:', walletAddress);
-    setIsCheckingWallet(true);
+  const checkWalletAccount = useCallback(
+    async (walletAddress: string): Promise<WalletCheckResult> => {
+      console.log('🎣 useLensIntegration: Checking wallet for Lens account:', walletAddress);
+      setIsCheckingWallet(true);
 
-    try {
-      const response = await fetch('/api/lens/checkWallet', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ walletAddress }),
-      });
+      try {
+        const response = await fetch('/api/lens/checkWallet', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ walletAddress }),
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ useLensIntegration: Wallet check error:', errorText);
-        throw new Error(`API error: ${response.status}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ useLensIntegration: Wallet check error:', errorText);
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const result: WalletCheckResult = await response.json();
+        console.log('📊 useLensIntegration: Wallet check result:', result);
+
+        setLastWalletCheck(result);
+        return result;
+      } catch (error) {
+        console.error('💥 useLensIntegration: Error in checkWalletAccount:', error);
+
+        const errorResult: WalletCheckResult = {
+          hasAccount: false,
+          error: error instanceof Error ? error.message : 'Unknown error occurred',
+        };
+
+        setLastWalletCheck(errorResult);
+        return errorResult;
+      } finally {
+        setIsCheckingWallet(false);
       }
-
-      const result: WalletCheckResult = await response.json();
-      console.log('📊 useLensIntegration: Wallet check result:', result);
-
-      setLastWalletCheck(result);
-      return result;
-    } catch (error) {
-      console.error('💥 useLensIntegration: Error in checkWalletAccount:', error);
-
-      const errorResult: WalletCheckResult = {
-        hasAccount: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-      };
-
-      setLastWalletCheck(errorResult);
-      return errorResult;
-    } finally {
-      setIsCheckingWallet(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const createAccount = useCallback(
     async (params: {
@@ -204,11 +211,15 @@ export const useLensIntegration = (): UseLensIntegrationReturn => {
         setIsCreating(false);
       }
     },
-    [],
+    []
   );
 
   const claimAccount = useCallback(
-    async (params: { accountId: string; walletAddress: string; authToken?: string }): Promise<LensClaimResult> => {
+    async (params: {
+      accountId: string;
+      walletAddress: string;
+      authToken?: string;
+    }): Promise<LensClaimResult> => {
       console.log('🎣 useLensIntegration: Claiming Lens account:', params.accountId);
       setIsClaiming(true);
 
@@ -244,7 +255,7 @@ export const useLensIntegration = (): UseLensIntegrationReturn => {
         setIsClaiming(false);
       }
     },
-    [],
+    []
   );
 
   const clearResults = useCallback(() => {
@@ -295,7 +306,7 @@ export const useLensUsernameCheck = (debounceMs: number = 500): UseLensUsernameC
         }
       }, debounceMs);
     },
-    [baseHook.checkUsername, debounceMs],
+    [baseHook.checkUsername, debounceMs]
   );
 
   const cancelPendingCheck = useCallback(() => {
@@ -323,7 +334,7 @@ export const useLensUsernameCheck = (debounceMs: number = 500): UseLensUsernameC
 
 // Validation utilities
 export const validateLensUsername = (
-  username: string,
+  username: string
 ): {
   isValid: boolean;
   errors: string[];

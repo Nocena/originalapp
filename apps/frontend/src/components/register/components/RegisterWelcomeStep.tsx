@@ -50,7 +50,7 @@ const RegisterWelcomeStep: React.FC<Props> = ({ inviteOwner }) => {
         if (duration > 0) {
           const percentLoaded = (buffered / duration) * 100;
           console.log(
-            `📊 Video preload progress: ${percentLoaded.toFixed(1)}% (${buffered.toFixed(1)}s of ${duration.toFixed(1)}s)`,
+            `📊 Video preload progress: ${percentLoaded.toFixed(1)}% (${buffered.toFixed(1)}s of ${duration.toFixed(1)}s)`
           );
 
           // Consider it "ready enough" if we have at least 50% buffered
@@ -130,7 +130,7 @@ const RegisterWelcomeStep: React.FC<Props> = ({ inviteOwner }) => {
         preloadedVideoRef.current = null;
       }
     };
-  }, [])
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -270,7 +270,9 @@ const RegisterWelcomeStep: React.FC<Props> = ({ inviteOwner }) => {
             <p className="text-white/80 text-lg">
               {videoPreloaded ? 'Initializing experience...' : 'Loading experience...'}
             </p>
-            {videoPreloaded && <p className="text-white/60 text-sm mt-2">Video ready, starting now!</p>}
+            {videoPreloaded && (
+              <p className="text-white/60 text-sm mt-2">Video ready, starting now!</p>
+            )}
           </div>
         </div>
       )}
@@ -317,7 +319,12 @@ const RegisterWelcomeStep: React.FC<Props> = ({ inviteOwner }) => {
                   <div className="flex items-center space-x-4">
                     <div className="relative">
                       <div className="w-14 h-14 bg-gradient-to-br from-nocenaBlue via-nocenaPurple to-nocenaPink rounded-full flex items-center justify-center shadow-lg">
-                        <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg
+                          className="w-7 h-7 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"

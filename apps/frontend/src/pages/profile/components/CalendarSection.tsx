@@ -7,7 +7,11 @@ interface CalendarSectionProps {
   monthlyChallenges: boolean[];
 }
 
-const CalendarSection: React.FC<CalendarSectionProps> = ({ dailyChallenges, weeklyChallenges, monthlyChallenges }) => {
+const CalendarSection: React.FC<CalendarSectionProps> = ({
+  dailyChallenges,
+  weeklyChallenges,
+  monthlyChallenges,
+}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'month' | 'year'>('month');
 
@@ -64,15 +68,23 @@ const CalendarSection: React.FC<CalendarSectionProps> = ({ dailyChallenges, week
     // Calculate which day of year this month starts
     const startOfYear = new Date(currentYear, 0, 1);
     const startOfMonth = new Date(currentYear, currentMonth, 1);
-    const daysSinceStartOfYear = Math.floor((startOfMonth.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceStartOfYear = Math.floor(
+      (startOfMonth.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     // Get daily challenges for this month
-    const dailyChallengesForMonth = dailyChallenges.slice(daysSinceStartOfYear, daysSinceStartOfYear + daysInMonth);
+    const dailyChallengesForMonth = dailyChallenges.slice(
+      daysSinceStartOfYear,
+      daysSinceStartOfYear + daysInMonth
+    );
 
     // Calculate weeks for this month
     const weekStartIndex = Math.floor(daysSinceStartOfYear / 7);
     const weeksInMonth = Math.ceil((daysInMonth + startPadding) / 7);
-    const weeklyChallengesForMonth = weeklyChallenges.slice(weekStartIndex, weekStartIndex + weeksInMonth);
+    const weeklyChallengesForMonth = weeklyChallenges.slice(
+      weekStartIndex,
+      weekStartIndex + weeksInMonth
+    );
 
     // Create calendar grid
     const calendarDays: Array<{
@@ -98,13 +110,16 @@ const CalendarSection: React.FC<CalendarSectionProps> = ({ dailyChallenges, week
 
     // Add current month days
     const today = new Date();
-    const isCurrentMonthAndYear = currentMonth === today.getMonth() && currentYear === today.getFullYear();
+    const isCurrentMonthAndYear =
+      currentMonth === today.getMonth() && currentYear === today.getFullYear();
 
     for (let day = 1; day <= daysInMonth; day++) {
       const weekIndex = Math.floor(calendarDays.length / 7);
-      const isDayCompleted = day <= dailyChallengesForMonth.length && dailyChallengesForMonth[day - 1];
+      const isDayCompleted =
+        day <= dailyChallengesForMonth.length && dailyChallengesForMonth[day - 1];
       const isToday = isCurrentMonthAndYear && day === today.getDate();
-      const weekCompleted = weekIndex < weeklyChallengesForMonth.length && weeklyChallengesForMonth[weekIndex];
+      const weekCompleted =
+        weekIndex < weeklyChallengesForMonth.length && weeklyChallengesForMonth[weekIndex];
 
       calendarDays.push({
         day,
@@ -134,7 +149,13 @@ const CalendarSection: React.FC<CalendarSectionProps> = ({ dailyChallenges, week
 
   if (viewMode === 'year') {
     return (
-      <ThematicContainer asButton={false} glassmorphic={true} color="nocenaPink" rounded="xl" className="p-6">
+      <ThematicContainer
+        asButton={false}
+        glassmorphic={true}
+        color="nocenaPink"
+        rounded="xl"
+        className="p-6"
+      >
         {/* Year View Header */}
         <div className="flex items-center justify-between mb-6">
           <ThematicContainer

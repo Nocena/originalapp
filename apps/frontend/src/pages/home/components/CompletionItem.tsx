@@ -75,7 +75,13 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
   console.log('Selfie URL:', selfieUrl);
 
   return (
-    <ThematicContainer asButton={false} glassmorphic={true} color="nocenaBlue" rounded="xl" className="p-6 mb-4">
+    <ThematicContainer
+      asButton={false}
+      glassmorphic={true}
+      color="nocenaBlue"
+      rounded="xl"
+      className="p-6 mb-4"
+    >
       {/* User profile section */}
       <div className="flex items-center mb-4">
         <ThematicContainer
@@ -103,7 +109,11 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
             {completionDate.toLocaleDateString()} at {completionDate.toLocaleTimeString()}
           </p>
           {completion.status && (
-            <ThematicContainer asButton={false} color="nocenaPink" className="px-4 py-1 mt-1 inline-block">
+            <ThematicContainer
+              asButton={false}
+              color="nocenaPink"
+              className="px-4 py-1 mt-1 inline-block"
+            >
               <span className="text-xs font-medium capitalize">{completion.status}</span>
             </ThematicContainer>
           )}
@@ -112,15 +122,31 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
 
       {/* Challenge description if available */}
       {media?.description && (
-        <ThematicContainer asButton={false} glassmorphic={true} color="nocenaPurple" rounded="lg" className="p-3 mb-4">
+        <ThematicContainer
+          asButton={false}
+          glassmorphic={true}
+          color="nocenaPurple"
+          rounded="lg"
+          className="p-3 mb-4"
+        >
           <p className="text-sm text-white italic">"{media.description}"</p>
         </ThematicContainer>
       )}
 
       {/* Video and selfie content */}
       {videoUrl || selfieUrl ? (
-        <ThematicContainer asButton={false} color="nocenaBlue" rounded="lg" className="mb-4 overflow-hidden">
-          <IPFSMediaLoader videoUrl={videoUrl} selfieUrl={selfieUrl} className="w-full" loop={true} />
+        <ThematicContainer
+          asButton={false}
+          color="nocenaBlue"
+          rounded="lg"
+          className="mb-4 overflow-hidden"
+        >
+          <IPFSMediaLoader
+            videoUrl={videoUrl}
+            selfieUrl={selfieUrl}
+            className="w-full"
+            loop={true}
+          />
         </ThematicContainer>
       ) : (
         <ThematicContainer
@@ -141,11 +167,18 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
 
       {/* Verification status if available */}
       {media?.verificationResult && (
-        <ThematicContainer asButton={false} glassmorphic={true} color="nocenaPink" rounded="lg" className="p-3 mb-4">
+        <ThematicContainer
+          asButton={false}
+          glassmorphic={true}
+          color="nocenaPink"
+          rounded="lg"
+          className="p-3 mb-4"
+        >
           <div className="flex items-center">
             <span className="text-green-400 mr-2 text-lg">✓</span>
             <p className="text-sm font-medium">
-              Verified with {Math.round((media.verificationResult.overallConfidence || 0) * 100)}% confidence
+              Verified with {Math.round((media.verificationResult.overallConfidence || 0) * 100)}%
+              confidence
             </p>
           </div>
         </ThematicContainer>
@@ -154,7 +187,11 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
       {/* Action buttons and stats */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <ThematicContainer asButton={true} color="nocenaPink" className="px-3 py-2 flex items-center">
+          <ThematicContainer
+            asButton={true}
+            color="nocenaPink"
+            className="px-3 py-2 flex items-center"
+          >
             <span className="text-red-400 mr-2">♥</span>
             <span className="text-sm font-medium">{completion.likesCount || 0}</span>
           </ThematicContainer>

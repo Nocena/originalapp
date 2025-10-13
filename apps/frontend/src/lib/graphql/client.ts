@@ -7,9 +7,7 @@ const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path }) => {
-      console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-      );
+      console.error(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`);
     });
   }
   if (networkError) {
@@ -53,4 +51,3 @@ export const graphqlClient = new ApolloClient({
 });
 
 export default graphqlClient;
-

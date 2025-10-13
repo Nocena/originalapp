@@ -1,6 +1,6 @@
 /**
  * Main GraphQL API
- * 
+ *
  * Clean, feature-based GraphQL layer using Apollo Client
  * Replaces the old messy dgraph.ts file
  */
@@ -45,4 +45,3 @@ export {
 // Temporary re-exports from old dgraph.ts
 // These will be migrated incrementally
 export * from '../api/dgraph';
-

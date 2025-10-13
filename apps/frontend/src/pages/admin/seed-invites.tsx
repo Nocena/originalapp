@@ -112,7 +112,9 @@ const AdminSeedInvites: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-white/80 text-sm font-medium mb-2">Number of Codes to Generate</label>
+                <label className="block text-white/80 text-sm font-medium mb-2">
+                  Number of Codes to Generate
+                </label>
                 <input
                   type="number"
                   value={count}
@@ -155,7 +157,9 @@ const AdminSeedInvites: React.FC = () => {
           {generatedCodes.length > 0 && (
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Generated Invite Codes ({generatedCodes.length})</h2>
+                <h2 className="text-xl font-bold text-white">
+                  Generated Invite Codes ({generatedCodes.length})
+                </h2>
 
                 <div className="flex space-x-3">
                   <button

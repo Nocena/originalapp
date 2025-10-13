@@ -14,7 +14,7 @@ type VerificationAction = 'SEND' | 'VERIFY';
 export const verifyPhoneNumber = async (
   phoneNumber: string,
   action: VerificationAction,
-  code?: string,
+  code?: string
 ): Promise<boolean> => {
   try {
     // Ensure phone number is in E.164 format

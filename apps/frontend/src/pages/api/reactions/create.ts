@@ -32,8 +32,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Extract form fields
     const userId = Array.isArray(fields.userId) ? fields.userId[0] : fields.userId;
-    const completionId = Array.isArray(fields.completionId) ? fields.completionId[0] : fields.completionId;
-    const reactionType = Array.isArray(fields.reactionType) ? fields.reactionType[0] : fields.reactionType;
+    const completionId = Array.isArray(fields.completionId)
+      ? fields.completionId[0]
+      : fields.completionId;
+    const reactionType = Array.isArray(fields.reactionType)
+      ? fields.reactionType[0]
+      : fields.reactionType;
 
     // Get the uploaded file
     const imageFile = Array.isArray(files.image) ? files.image[0] : files.image;
@@ -52,7 +56,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({
         error: 'Missing required fields',
         required: ['userId', 'completionId', 'reactionType', 'image'],
-        received: { userId: !!userId, completionId: !!completionId, reactionType: !!reactionType, image: !!imageFile },
+        received: {
+          userId: !!userId,
+          completionId: !!completionId,
+          reactionType: !!reactionType,
+          image: !!imageFile,
+        },
       });
     }
 
@@ -149,7 +158,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    if (errorMessage.includes('upload') || errorMessage.includes('IPFS') || errorMessage.includes('Pinata')) {
+    if (
+      errorMessage.includes('upload') ||
+      errorMessage.includes('IPFS') ||
+      errorMessage.includes('Pinata')
+    ) {
       return res.status(500).json({
         error: 'Failed to upload image to IPFS',
         details: errorMessage,

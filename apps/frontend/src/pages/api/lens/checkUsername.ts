@@ -23,7 +23,10 @@ interface CheckUsernameResponse {
   error?: string;
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<CheckUsernameResponse>) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<CheckUsernameResponse>
+) {
   console.log('🚀 API /api/lens/checkUsername: Request received');
   console.log('📋 API: Method:', req.method);
   console.log('📋 API: Body:', req.body);
@@ -70,7 +73,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     console.log('📊 API: Lens result:', lensResult);
 
     // Generate suggestions if username is taken
-    const suggestions = !lensResult.available ? LensProtocolService.generateUsernameSuggestions(trimmedUsername) : [];
+    const suggestions = !lensResult.available
+      ? LensProtocolService.generateUsernameSuggestions(trimmedUsername)
+      : [];
 
     console.log('💡 API: Generated suggestions:', suggestions);
 

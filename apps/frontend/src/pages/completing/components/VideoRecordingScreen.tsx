@@ -24,7 +24,11 @@ interface VideoRecordingScreenProps {
 
 type RecordingStage = 'ready' | 'countdown' | 'recording' | 'stopping';
 
-const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({ challenge, onVideoRecorded, onBack }) => {
+const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({
+  challenge,
+  onVideoRecorded,
+  onBack,
+}) => {
   const [stage, setStage] = useState<RecordingStage>('ready');
   const [countdown, setCountdown] = useState(3);
   const [recordingTime, setRecordingTime] = useState(30);
@@ -106,11 +110,15 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({ challenge, 
           console.error('Both permission approaches failed:', combinedError);
 
           if (combinedError.name === 'NotAllowedError') {
-            setCameraError('Camera or microphone access denied. Please allow both camera and microphone access.');
+            setCameraError(
+              'Camera or microphone access denied. Please allow both camera and microphone access.'
+            );
           } else if (combinedError.name === 'NotFoundError') {
             setCameraError('Camera or microphone not found on this device.');
           } else {
-            setCameraError('Unable to access camera and microphone. Please check your device settings.');
+            setCameraError(
+              'Unable to access camera and microphone. Please check your device settings.'
+            );
           }
           return false;
         }
@@ -321,7 +329,7 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({ challenge, 
         setCameraError('Failed to setup video recording.');
       }
     },
-    [onVideoRecorded],
+    [onVideoRecorded]
   );
 
   // Initialize camera on component mount
@@ -457,10 +465,16 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({ challenge, 
           <div className="text-red-400 text-xl mb-4">⚠️</div>
           <div className="text-lg mb-4">{cameraError}</div>
           <div className="space-y-3">
-            <button onClick={handleRetry} className="w-full bg-nocenaPink px-6 py-3 rounded-lg text-white font-medium">
+            <button
+              onClick={handleRetry}
+              className="w-full bg-nocenaPink px-6 py-3 rounded-lg text-white font-medium"
+            >
               Try Again
             </button>
-            <button onClick={onBack} className="w-full bg-gray-600 px-6 py-3 rounded-lg text-white font-medium">
+            <button
+              onClick={onBack}
+              className="w-full bg-gray-600 px-6 py-3 rounded-lg text-white font-medium"
+            >
               Go Back
             </button>
           </div>
@@ -505,7 +519,12 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({ challenge, 
               rounded="full"
               className="w-12 h-12 flex items-center justify-center"
             >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -533,8 +552,18 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({ challenge, 
             rounded="full"
             className="w-12 h-12 flex items-center justify-center"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </ThematicContainer>
         </button>
@@ -544,7 +573,9 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({ challenge, 
       {stage === 'countdown' && (
         <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
           <div className="text-center">
-            <div className="text-8xl font-bold text-white mb-4 animate-pulse drop-shadow-lg">{countdown}</div>
+            <div className="text-8xl font-bold text-white mb-4 animate-pulse drop-shadow-lg">
+              {countdown}
+            </div>
             <div className="text-xl text-white/90">Get ready...</div>
           </div>
         </div>
@@ -619,10 +650,14 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({ challenge, 
           >
             <div
               className={`absolute inset-1 rounded-full transition-all duration-300 ${
-                cameraInitialized ? 'bg-gradient-to-br from-nocenaPink to-nocenaPurple' : 'bg-gray-600'
+                cameraInitialized
+                  ? 'bg-gradient-to-br from-nocenaPink to-nocenaPurple'
+                  : 'bg-gray-600'
               }`}
             />
-            {cameraInitialized && <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse" />}
+            {cameraInitialized && (
+              <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse" />
+            )}
             {!cameraInitialized && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />

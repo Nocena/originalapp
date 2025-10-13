@@ -133,7 +133,9 @@ export class LensProtocolService {
           return { available: false, error: result.reason };
 
         case 'NamespaceOperationValidationUnknown':
-          console.log('⚠️ LensProtocolService: Username validation unknown - treating as unavailable');
+          console.log(
+            '⚠️ LensProtocolService: Username validation unknown - treating as unavailable'
+          );
           return { available: false, error: 'Username validation requires additional checks' };
 
         case 'UsernameTaken':
@@ -161,7 +163,10 @@ export class LensProtocolService {
     account?: LensAccount;
     error?: string;
   }> {
-    console.log('🔍 LensProtocolService: Checking wallet for existing Lens account:', walletAddress);
+    console.log(
+      '🔍 LensProtocolService: Checking wallet for existing Lens account:',
+      walletAddress
+    );
 
     // For V3, this would require a different approach - for now return false
     // This would need to be implemented with proper V3 account queries
@@ -180,7 +185,7 @@ export class LensProtocolService {
       bio?: string;
       profilePicture?: string;
       coverPicture?: string;
-    },
+    }
   ): Promise<string> {
     console.log('📋 LensProtocolService: Creating account metadata for:', username);
 
@@ -196,7 +201,10 @@ export class LensProtocolService {
   /**
    * Create a Lens Protocol username (V3 API)
    */
-  public static async createUsername(username: string, accessToken: string): Promise<LensAccountCreationResult> {
+  public static async createUsername(
+    username: string,
+    accessToken: string
+  ): Promise<LensAccountCreationResult> {
     try {
       console.log('🏗️ LensProtocolService: Creating username with V3 API...');
 
@@ -204,7 +212,7 @@ export class LensProtocolService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           query: this.CREATE_USERNAME_MUTATION,
@@ -223,7 +231,11 @@ export class LensProtocolService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ LensProtocolService: Create username HTTP error:', response.status, errorText);
+        console.error(
+          '❌ LensProtocolService: Create username HTTP error:',
+          response.status,
+          errorText
+        );
 
         try {
           const errorData = JSON.parse(errorText);
@@ -236,7 +248,10 @@ export class LensProtocolService {
       }
 
       const data = await response.json();
-      console.log('📊 LensProtocolService: Create username response data:', JSON.stringify(data, null, 2));
+      console.log(
+        '📊 LensProtocolService: Create username response data:',
+        JSON.stringify(data, null, 2)
+      );
 
       if (data.errors && data.errors.length > 0) {
         console.error('❌ LensProtocolService: Create username GraphQL errors:', data.errors);
@@ -314,7 +329,8 @@ export class LensProtocolService {
     const cleanBase = baseUsername.toLowerCase().replace(/[^a-z0-9]/g, '');
 
     // Ensure minimum length
-    const base = cleanBase.length >= 5 ? cleanBase : cleanBase + '12345'.slice(0, 5 - cleanBase.length);
+    const base =
+      cleanBase.length >= 5 ? cleanBase : cleanBase + '12345'.slice(0, 5 - cleanBase.length);
 
     // Add numbers
     for (let i = 1; i <= 5; i++) {
@@ -348,7 +364,7 @@ export class LensProtocolService {
       bio?: string;
       profilePicture?: string;
       coverPicture?: string;
-    },
+    }
   ): Promise<{
     success: boolean;
     txHash?: string;

@@ -16,10 +16,12 @@ const AccountNotFound = () => {
         Your wallet is connected, but you need an invite code to create your profile.
       </p>
       <Link href="/register">
-        <button className="text-nocenaPink hover:text-nocenaPink/80 font-medium">Go create profile →</button>
+        <button className="text-nocenaPink hover:text-nocenaPink/80 font-medium">
+          Go create profile →
+        </button>
       </Link>
     </ThematicContainer>
-  )
-}
+  );
+};
 
-export default AccountNotFound
+export default AccountNotFound;

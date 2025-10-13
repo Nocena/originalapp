@@ -27,7 +27,7 @@ export interface AIChallengeCheckResult {
 export async function runAIChallengeCheck(
   videoBlob: Blob,
   challengeDescription: string,
-  onProgress?: (progress: number, message: string) => void,
+  onProgress?: (progress: number, message: string) => void
 ): Promise<AIChallengeCheckResult> {
   console.group('🤖 AI CHALLENGE VERIFICATION');
   console.log('Challenge:', challengeDescription);

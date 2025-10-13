@@ -19,13 +19,14 @@ export interface HumanSelfieCheckResult {
  */
 export async function runHumanSelfieCheck(
   photoBlob: Blob,
-  onProgress?: (progress: number, message: string) => void,
+  onProgress?: (progress: number, message: string) => void
 ): Promise<HumanSelfieCheckResult> {
   console.group('📸 HUMAN DETECTION IN SELFIE');
   console.log('Photo size:', `${(photoBlob.size / 1024).toFixed(2)} KB`);
 
   // Check if this is a placeholder photo
-  const isPlaceholder = !photoBlob || photoBlob.size === 0 || photoBlob.type === '' || photoBlob.size < 100;
+  const isPlaceholder =
+    !photoBlob || photoBlob.size === 0 || photoBlob.type === '' || photoBlob.size < 100;
 
   if (isPlaceholder) {
     console.log('📷 Placeholder photo detected - deferring face detection');

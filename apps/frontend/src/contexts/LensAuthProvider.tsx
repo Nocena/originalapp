@@ -82,7 +82,7 @@ export const LensAuthProvider = ({ children }: { children: React.ReactNode }) =>
         setIsAuthenticating(false);
       }
     },
-    [restore],
+    [restore]
   );
 
   const disconnect = useCallback(async () => {

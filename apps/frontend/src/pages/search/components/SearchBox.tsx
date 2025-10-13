@@ -143,7 +143,9 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users }) 
           className="w-full p-3 bg-gray-800 text-white rounded-lg focus:outline-none"
           value={searchQuery}
           onChange={(e) => setSearchQuery(sanitizeInput(e.target.value))}
-          onFocus={() => searchQuery.trim() !== '' && suggestedUsers.length > 0 && setIsDropdownOpen(true)}
+          onFocus={() =>
+            searchQuery.trim() !== '' && suggestedUsers.length > 0 && setIsDropdownOpen(true)
+          }
         />
 
         {isLoading && (

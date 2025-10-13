@@ -2,11 +2,18 @@ import { useState, useEffect } from 'react';
 import PrimaryButton from '../../ui/PrimaryButton';
 import ThematicContainer from '../../ui/ThematicContainer';
 import LegalPopupModal from './LegalPopupModal';
-import { subscribeToPushNotifications, requestNotificationPermission } from '../../../lib/pushNotifications';
+import {
+  subscribeToPushNotifications,
+  requestNotificationPermission,
+} from '../../../lib/pushNotifications';
 import { IS_MAINNET, NOCENA_APP } from '@nocena/data/constants';
 import { useActiveAccount } from 'thirdweb/react';
 import { toast } from 'react-hot-toast';
-import { useAuthenticateMutation, useChallengeMutation, useCreateAccountWithUsernameMutation } from '@nocena/indexer';
+import {
+  useAuthenticateMutation,
+  useChallengeMutation,
+  useCreateAccountWithUsernameMutation,
+} from '@nocena/indexer';
 import { signMessage } from 'thirdweb/utils';
 import { uploadMetadataToGrove } from '@utils/groveUtils';
 import { account as accountMetadata } from '@lens-protocol/metadata';
@@ -19,12 +26,9 @@ interface Props {
 }
 
 const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = false }: Props) => {
-  const {
-    setChoosedUsername,
-    setTransactionHash,
-    setOnboardingToken
-  } = useSignupStore();
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+  const { setChoosedUsername, setTransactionHash, setOnboardingToken } = useSignupStore();
+  const [notificationPermission, setNotificationPermission] =
+    useState<NotificationPermission>('default');
   const [pushSubscription, setPushSubscription] = useState<string | null>(null);
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [error, setError] = useState('');
@@ -124,7 +128,9 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
     const isPrivate = await isPrivateBrowsing();
     if (isPrivate) {
       console.log('🕵️ Private browsing detected');
-      setError('Notifications may not work in private/incognito mode. You can enable them later in settings.');
+      setError(
+        'Notifications may not work in private/incognito mode. You can enable them later in settings.'
+      );
       setHasTriedNotifications(true);
       return;
     }
@@ -150,11 +156,15 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
             console.log('🎉 Notification setup completed successfully!');
           } else {
             console.warn('⚠️ Failed to get push subscription, but permission was granted');
-            setError('Notifications enabled but subscription failed. You can try again later in settings.');
+            setError(
+              'Notifications enabled but subscription failed. You can try again later in settings.'
+            );
           }
         } catch (subscriptionError) {
           console.error('❌ Push subscription error:', subscriptionError);
-          setError('Notifications enabled but subscription failed. You can try again later in settings.');
+          setError(
+            'Notifications enabled but subscription failed. You can try again later in settings.'
+          );
         }
       } else if (permission === 'denied') {
         console.log('🚫 Permission denied by user');
@@ -174,8 +184,7 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
   };
 
   const handleSignupLensAccount = async () => {
-    if (!thirdWebAccount || !username)
-      return
+    if (!thirdWebAccount || !username) return;
 
     try {
       setIsSubmitting(true);
@@ -185,10 +194,10 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
           request: {
             onboardingUser: {
               app: IS_MAINNET ? NOCENA_APP : undefined,
-              wallet: thirdWebAccount.address
-            }
-          }
-        }
+              wallet: thirdWebAccount.address,
+            },
+          },
+        },
       });
 
       if (!challenge?.data?.challenge?.text) {
@@ -203,34 +212,30 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
 
       // Auth account
       const auth = await authenticate({
-        variables: { request: { id: challenge.data.challenge.id, signature } }
+        variables: { request: { id: challenge.data.challenge.id, signature } },
       });
 
-      if (auth.data?.authenticate.__typename === "AuthenticationTokens") {
+      if (auth.data?.authenticate.__typename === 'AuthenticationTokens') {
         const accessToken = auth.data?.authenticate.accessToken;
-        const metadataUri = await uploadMetadataToGrove(
-          accountMetadata({ name: username }),
-        );
+        const metadataUri = await uploadMetadataToGrove(accountMetadata({ name: username }));
 
         setOnboardingToken(accessToken);
         return await createAccountWithUsername({
-          context: { headers: { "X-Access-Token": accessToken } },
+          context: { headers: { 'X-Access-Token': accessToken } },
           variables: {
             request: {
               username: { localName: username.toLowerCase() },
               metadataUri: metadataUri.uri,
-            }
+            },
           },
           onCompleted: ({ createAccountWithUsername }) => {
-            if (
-              createAccountWithUsername.__typename === "CreateAccountResponse"
-            ) {
-              console.log("createAccountWithUsername", createAccountWithUsername)
+            if (createAccountWithUsername.__typename === 'CreateAccountResponse') {
+              console.log('createAccountWithUsername', createAccountWithUsername);
               setTransactionHash(createAccountWithUsername.hash);
               setChoosedUsername(username);
               onNotificationsReady(pushSubscription);
             }
-          }
+          },
         });
       }
 
@@ -242,7 +247,6 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
     }
   };
 
-
   const handleComplete = () => {
     if (disabled) {
       console.log('⚠️ Registration disabled, ignoring complete request');
@@ -251,7 +255,7 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
 
     if (allAgreementsAccepted) {
       // Pass the subscription (which could be null if notifications failed/were blocked)
-      handleSignupLensAccount()
+      handleSignupLensAccount();
     }
   };
 
@@ -260,7 +264,13 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
-      <ThematicContainer color="nocenaPink" glassmorphic={true} asButton={false} rounded="2xl" className="p-8">
+      <ThematicContainer
+        color="nocenaPink"
+        glassmorphic={true}
+        asButton={false}
+        rounded="2xl"
+        className="p-8"
+      >
         {/* Registration Status */}
         {disabled && (
           <div className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4 mb-6">
@@ -314,7 +324,9 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
           {/* Notification controls */}
           {!notificationsEnabled && (
             <PrimaryButton
-              text={isSettingUp ? 'Setting up notifications...' : 'Try enabling notifications again'}
+              text={
+                isSettingUp ? 'Setting up notifications...' : 'Try enabling notifications again'
+              }
               onClick={handleEnableNotifications}
               disabled={isInteractionDisabled}
               className="w-full mb-4"
@@ -340,7 +352,9 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
                 />
                 <div
                   className={`w-5 h-5 rounded border-2 transition-all duration-200 ${
-                    termsAgreed ? 'bg-nocenaPink border-nocenaPink' : 'border-gray-500 group-hover:border-gray-400'
+                    termsAgreed
+                      ? 'bg-nocenaPink border-nocenaPink'
+                      : 'border-gray-500 group-hover:border-gray-400'
                   } ${isInteractionDisabled ? 'opacity-50' : ''}`}
                 >
                   {termsAgreed && (
@@ -376,7 +390,9 @@ const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = 
                 />
                 <div
                   className={`w-5 h-5 rounded border-2 transition-all duration-200 ${
-                    privacyAgreed ? 'bg-nocenaPink border-nocenaPink' : 'border-gray-500 group-hover:border-gray-400'
+                    privacyAgreed
+                      ? 'bg-nocenaPink border-nocenaPink'
+                      : 'border-gray-500 group-hover:border-gray-400'
                   } ${isInteractionDisabled ? 'opacity-50' : ''}`}
                 >
                   {privacyAgreed && (

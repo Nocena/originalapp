@@ -112,7 +112,7 @@ const InboxView = () => {
       '[PERF] Found notifications in PageManager:',
       getPageState().notifications.data.length,
       'Last fetched:',
-      new Date(getPageState().notifications.lastFetched).toLocaleString(),
+      new Date(getPageState().notifications.lastFetched).toLocaleString()
     );
   }
 
@@ -275,7 +275,7 @@ const InboxView = () => {
             JSON.stringify({
               data: sortedNotifications,
               timestamp: Date.now(),
-            }),
+            })
           );
         } catch (storageError) {
           console.error('[PERF] LocalStorage write failed', storageError);
@@ -294,13 +294,15 @@ const InboxView = () => {
         console.timeEnd('fetch-notifications-total');
       }
     },
-    [user?.id],
+    [user?.id]
   );
 
   // Handle data fetching based on component visibility and data freshness
   useEffect(() => {
     if (!user?.id || !initialRenderComplete) {
-      console.log(`[PERF] Data fetch check skipped - user: ${!!user?.id}, initialRender: ${initialRenderComplete}`);
+      console.log(
+        `[PERF] Data fetch check skipped - user: ${!!user?.id}, initialRender: ${initialRenderComplete}`
+      );
       return;
     }
 
@@ -519,7 +521,9 @@ const InboxView = () => {
   }, [notifications]);
 
   // For initial render with no data, show skeletons
-  console.log(`[PERF] Render decision - isLoading: ${isLoading}, notifications: ${notifications.length}`);
+  console.log(
+    `[PERF] Render decision - isLoading: ${isLoading}, notifications: ${notifications.length}`
+  );
 
   if (isLoading) {
     console.log('[PERF] Rendering skeleton view');

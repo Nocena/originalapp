@@ -1,8 +1,8 @@
-import { isAddress } from "viem";
+import { isAddress } from 'viem';
 
 const formatAddress = (address: string | null, sliceSize = 4): string => {
   if (!address) {
-    return "";
+    return '';
   }
 
   const formattedAddress = address.toLowerCase();

@@ -28,7 +28,12 @@ interface FollowersPopupProps {
   isFollowers?: boolean; // true for followers, false for following
 }
 
-const FollowersPopup: React.FC<FollowersPopupProps> = ({ isOpen, onClose, followers, isFollowers = true }) => {
+const FollowersPopup: React.FC<FollowersPopupProps> = ({
+  isOpen,
+  onClose,
+  followers,
+  isFollowers = true,
+}) => {
   const [followerUsers, setFollowerUsers] = useState<FollowerUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingFollowActions, setPendingFollowActions] = useState<Set<string>>(new Set());
@@ -178,7 +183,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({ isOpen, onClose, follow
         currentUser.following.includes(userId)
       );
     },
-    [currentUser],
+    [currentUser]
   );
 
   const handleFollow = async (targetUserId: string) => {
@@ -198,13 +203,17 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({ isOpen, onClose, follow
                 ? u.followers.filter((id) => id !== currentUser.id)
                 : [...u.followers, currentUser.id],
             }
-          : u,
-      ),
+          : u
+      )
     );
 
     try {
       // Make API call in the background
-      const success = await toggleFollowUser(currentUser.id, targetUserId, currentUser.username);
+      const success = await toggleFollowUser(
+        currentUser.id,
+        targetUserId,
+        getIsFollowing(targetUserId)
+      );
 
       // If API call fails, revert the UI change
       if (!success) {
@@ -217,8 +226,8 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({ isOpen, onClose, follow
                     ? u.followers.filter((id) => id !== currentUser.id)
                     : [...u.followers, currentUser.id],
                 }
-              : u,
-          ),
+              : u
+          )
         );
       }
     } catch (error) {
@@ -234,8 +243,8 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({ isOpen, onClose, follow
                   ? u.followers.filter((id) => id !== currentUser.id)
                   : [...u.followers, currentUser.id],
               }
-            : u,
-        ),
+            : u
+        )
       );
     } finally {
       // Remove from pending actions
@@ -259,7 +268,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({ isOpen, onClose, follow
   // Show empty or partial results while loading
   const showPartialResults = useMemo(
     () => !isLoading || (followerUsers.length > 0 && isLoading),
-    [isLoading, followerUsers.length],
+    [isLoading, followerUsers.length]
   );
 
   if (!isOpen) return null;
@@ -275,12 +284,22 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({ isOpen, onClose, follow
       >
         {/* Header */}
         <div className="relative p-6 pb-3">
-          <h2 className="text-2xl font-bold text-center">{isFollowers ? 'Followers' : 'Following'}</h2>
+          <h2 className="text-2xl font-bold text-center">
+            {isFollowers ? 'Followers' : 'Following'}
+          </h2>
 
           {/* Close button */}
-          <button onClick={onClose} className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors">
+          <button
+            onClick={onClose}
+            className="absolute top-6 right-6 text-white hover:text-gray-300 transition-colors"
+          >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -333,7 +352,9 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({ isOpen, onClose, follow
                           <div className="text-lg font-bold truncate">{userData.username}</div>
                           <div className="flex items-center mt-0.5">
                             <Image src={nocenixIcon} alt="Nocenix" width={16} height={16} />
-                            <span className="text-sm ml-1 text-gray-400">{userData.earnedTokens} NOCENIX</span>
+                            <span className="text-sm ml-1 text-gray-400">
+                              {userData.earnedTokens} NOCENIX
+                            </span>
                           </div>
                         </div>
                       </div>

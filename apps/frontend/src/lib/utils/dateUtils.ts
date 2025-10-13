@@ -44,7 +44,9 @@ export const isSameDay = (date1: Date, date2: Date): boolean => {
  * Check if two dates are in the same week
  */
 export const isSameWeek = (date1: Date, date2: Date): boolean => {
-  return date1.getFullYear() === date2.getFullYear() && getWeekOfYear(date1) === getWeekOfYear(date2);
+  return (
+    date1.getFullYear() === date2.getFullYear() && getWeekOfYear(date1) === getWeekOfYear(date2)
+  );
 };
 
 /**

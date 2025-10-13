@@ -21,7 +21,7 @@ export const validateRealMojiCreation = (
   userId?: string,
   completionId?: string,
   reactionType?: string,
-  imageBlob?: Blob,
+  imageBlob?: Blob
 ): RealMojiValidationResult => {
   // Check user authentication
   if (!userId) {
@@ -109,7 +109,7 @@ export const testRealMojiCreation = async (): Promise<boolean> => {
       testData.userId,
       testData.completionId,
       testData.reactionType,
-      testData.imageBlob,
+      testData.imageBlob
     );
 
     if (!validation.isValid) {
@@ -187,7 +187,10 @@ export const getRealMojiErrorMessage = (error: any): string => {
 /**
  * Create a test RealMoji capture function for development
  */
-export const createTestRealMoji = async (completionId: string, reactionType: string = 'thumbsUp'): Promise<void> => {
+export const createTestRealMoji = async (
+  completionId: string,
+  reactionType: string = 'thumbsUp'
+): Promise<void> => {
   try {
     console.log('🧪 [RealMoji Test] Creating test RealMoji...');
 
@@ -266,7 +269,7 @@ export const useRealMoji = () => {
   const createRealMoji = async (
     imageBlob: Blob,
     reactionType: string,
-    completionId: string,
+    completionId: string
   ): Promise<{ success: boolean; data?: any; error?: string }> => {
     try {
       // Validate prerequisites

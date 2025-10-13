@@ -7,7 +7,7 @@ import webpush from 'web-push';
 webpush.setVapidDetails(
   'mailto:your-email@example.com', // Replace with your email
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!, // This should be in your .env.local, not public
+  process.env.VAPID_PRIVATE_KEY! // This should be in your .env.local, not public
 );
 
 interface PushNotificationPayload {
@@ -38,7 +38,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { userId, userIds, subscription, subscriptions, notification }: SendPushRequest = req.body;
+    const { userId, userIds, subscription, subscriptions, notification }: SendPushRequest =
+      req.body;
 
     if (!notification || !notification.title || !notification.body) {
       return res.status(400).json({ error: 'Notification title and body are required' });
@@ -236,7 +237,7 @@ export async function sendFollowNotification(targetUserId: string, followerUsern
 export async function sendPrivateChallengeNotification(
   targetUserId: string,
   challengerUsername: string,
-  challengeTitle: string,
+  challengeTitle: string
 ) {
   try {
     const response = await fetch('/api/notifications/send-push', {

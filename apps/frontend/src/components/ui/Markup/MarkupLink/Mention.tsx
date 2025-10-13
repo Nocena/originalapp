@@ -2,7 +2,7 @@ import AccountPreview from '@components/Account/AccountPreview';
 import { Slug } from '@components/ui';
 import stopEventPropagation from '../../../../helpers/stopEventPropagation';
 import type { MarkupLinkProps } from '@components/ui/Markup/MarkupLink/index';
-import Link from "next/link";
+import Link from 'next/link';
 
 const Mention = ({ mentions, title }: MarkupLinkProps) => {
   const username = title;
@@ -18,29 +18,21 @@ const Mention = ({ mentions, title }: MarkupLinkProps) => {
   }
 
   const canShowUserPreview = (username: string) => {
-    const foundMention = mentions?.find(
-      (mention) => mention.replace.from === username
-    );
+    const foundMention = mentions?.find((mention) => mention.replace.from === username);
 
     return Boolean(foundMention?.replace);
   };
 
   const getNameFromMention = (username: string): string => {
-    const foundMention = mentions?.find(
-      (mention) => mention.replace.from === username
-    );
+    const foundMention = mentions?.find((mention) => mention.replace.from === username);
 
-    return foundMention?.replace.from.split("/")[1] || "";
+    return foundMention?.replace.from.split('/')[1] || '';
   };
 
   const getAddressFromMention = (username: string): string => {
-    const foundMention = mentions?.find(
-      (mention) => mention.replace.from === username
-    );
+    const foundMention = mentions?.find((mention) => mention.replace.from === username);
 
-    return foundMention?.__typename === "AccountMention"
-      ? foundMention.account
-      : "";
+    return foundMention?.__typename === 'AccountMention' ? foundMention.account : '';
   };
 
   return canShowUserPreview(username) ? (

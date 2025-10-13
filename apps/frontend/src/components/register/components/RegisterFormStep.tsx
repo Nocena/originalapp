@@ -2,9 +2,7 @@
 import { Control, useWatch, useFormContext } from 'react-hook-form';
 import { useEffect, useState, useCallback } from 'react';
 import { NocenaInput } from '@components/form';
-import {
-  useAccountQuery,
-} from "@nocena/indexer";
+import { useAccountQuery } from '@nocena/indexer';
 import PrimaryButton from '../../ui/PrimaryButton';
 import ThematicContainer from '../../ui/ThematicContainer';
 
@@ -41,12 +39,17 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
   });
 
   useAccountQuery({
-    fetchPolicy: "no-cache",
+    fetchPolicy: 'no-cache',
     variables: {
-      request: { username: { localName: username?.trim()?.toLowerCase() } }
+      request: { username: { localName: username?.trim()?.toLowerCase() } },
     },
-    onCompleted: (data) => setLensUsernameError(data.account ? `Username "${username?.trim()}" is already taken. Please choose a different name.` : null),
-    skip: !(username && username.length > 2)
+    onCompleted: (data) =>
+      setLensUsernameError(
+        data.account
+          ? `Username "${username?.trim()}" is already taken. Please choose a different name.`
+          : null
+      ),
+    skip: !(username && username.length > 2),
   });
 
   // Simple local username validation
@@ -62,7 +65,9 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
     }
 
     if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(username)) {
-      errors.push('Username must start with a letter and contain only letters, numbers, and underscores');
+      errors.push(
+        'Username must start with a letter and contain only letters, numbers, and underscores'
+      );
     }
 
     return {
@@ -138,7 +143,9 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
           try {
             const exists = await checkUsernameInDatabase(trimmedUsername);
             if (exists) {
-              setDbUsernameError(`Username "${trimmedUsername}" is already taken. Please choose a different name.`);
+              setDbUsernameError(
+                `Username "${trimmedUsername}" is already taken. Please choose a different name.`
+              );
             } else {
               setDbUsernameError(null);
             }
@@ -173,7 +180,12 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
 
   // Check if form is valid
   const isFormValid = Boolean(
-    username && username.trim().length >= 3 && localValidation.isValid && !isCheckingDbUsername && !dbUsernameError && !lensUsernameError,
+    username &&
+      username.trim().length >= 3 &&
+      localValidation.isValid &&
+      !isCheckingDbUsername &&
+      !dbUsernameError &&
+      !lensUsernameError
   );
 
   // Simple continue function - just validate and move on
@@ -185,7 +197,13 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <ThematicContainer color="nocenaBlue" glassmorphic={true} asButton={false} rounded="2xl" className="p-8">
+      <ThematicContainer
+        color="nocenaBlue"
+        glassmorphic={true}
+        asButton={false}
+        rounded="2xl"
+        className="p-8"
+      >
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">Create Your Account</h1>
@@ -195,7 +213,12 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
         {/* Username Input */}
         <div className="mb-6">
           <div className="bg-gray-700/50 rounded-full overflow-hidden border border-gray-600/50">
-            <NocenaInput control={control} name="username" placeholder="Choose your username" required />
+            <NocenaInput
+              control={control}
+              name="username"
+              placeholder="Choose your username"
+              required
+            />
           </div>
         </div>
 

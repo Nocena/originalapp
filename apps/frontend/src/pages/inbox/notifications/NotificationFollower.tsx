@@ -42,7 +42,12 @@ interface NotificationFollowerProps {
   notification?: NotificationBase; // Use full notification type
 }
 
-const NotificationFollower: React.FC<NotificationFollowerProps> = ({ username, profilePicture, id, notification }) => {
+const NotificationFollower: React.FC<NotificationFollowerProps> = ({
+  username,
+  profilePicture,
+  id,
+  notification,
+}) => {
   const router = useRouter();
   const { user } = useAuth();
 

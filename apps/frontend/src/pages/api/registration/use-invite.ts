@@ -1,6 +1,11 @@
 // /api/registration/use-invite.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { validateInviteCode, markInviteAsUsed, updateUserTokens, createNotification } from '../../../lib/graphql';
+import {
+  validateInviteCode,
+  markInviteAsUsed,
+  updateUserTokens,
+  createNotification,
+} from '../../../lib/graphql';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -38,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           validation.ownerId,
           newUserId,
           `Someone joined Nocena using your invite code ${inviteCode}! You earned 50 Nocenix tokens.`,
-          'invite_used',
+          'invite_used'
         );
       } catch (tokenError) {
         console.error('Error awarding tokens:', tokenError);

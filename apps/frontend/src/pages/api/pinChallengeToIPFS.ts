@@ -52,13 +52,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Upload video file to Pinata
     console.log('Uploading video file to Pinata...');
-    const videoCID = await uploadSingleFileToPinata(videoBuffer, videoFileName, safeUserId, timestamp);
+    const videoCID = await uploadSingleFileToPinata(
+      videoBuffer,
+      videoFileName,
+      safeUserId,
+      timestamp
+    );
 
     // Upload selfie if exists
     let selfieCID = null;
     if (selfieBuffer) {
       console.log('Uploading selfie file to Pinata...');
-      selfieCID = await uploadSingleFileToPinata(selfieBuffer, selfieFileName, safeUserId, timestamp);
+      selfieCID = await uploadSingleFileToPinata(
+        selfieBuffer,
+        selfieFileName,
+        safeUserId,
+        timestamp
+      );
     }
 
     // Successful response
@@ -104,7 +114,7 @@ async function uploadSingleFileToPinata(
   fileBuffer: Buffer,
   fileName: string,
   userId: string,
-  timestamp: number,
+  timestamp: number
 ): Promise<string> {
   const pinataApiKey = process.env.PINATA_API_KEY;
   const pinataSecretKey = process.env.PINATA_SECRET_KEY;
@@ -146,15 +156,19 @@ async function uploadSingleFileToPinata(
 
       console.log(`Attempting upload attempt ${retryCount + 1}/${maxRetries}`);
 
-      const response = await axios.post<PinataResponse>('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
-        maxBodyLength: Infinity,
-        headers: {
-          'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`,
-          'pinata_api_key': pinataApiKey,
-          'pinata_secret_api_key': pinataSecretKey,
-        },
-        timeout: 120000,
-      });
+      const response = await axios.post<PinataResponse>(
+        'https://api.pinata.cloud/pinning/pinFileToIPFS',
+        formData,
+        {
+          maxBodyLength: Infinity,
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`,
+            pinata_api_key: pinataApiKey,
+            pinata_secret_api_key: pinataSecretKey,
+          },
+          timeout: 120000,
+        }
+      );
 
       console.log('Pinata upload successful:', response.data);
       return response.data.IpfsHash;

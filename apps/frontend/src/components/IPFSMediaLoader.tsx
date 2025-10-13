@@ -10,7 +10,12 @@ interface IPFSMediaLoaderProps {
   loop: boolean;
 }
 
-const IPFSMediaLoader: React.FC<IPFSMediaLoaderProps> = ({ videoUrl, selfieUrl, className = '', loop = false }) => {
+const IPFSMediaLoader: React.FC<IPFSMediaLoaderProps> = ({
+  videoUrl,
+  selfieUrl,
+  className = '',
+  loop = false,
+}) => {
   const [videoError, setVideoError] = useState<boolean>(false);
   const [selfieError, setSelfieError] = useState<boolean>(false);
   const [videoLoading, setVideoLoading] = useState<boolean>(true);
@@ -384,7 +389,11 @@ const IPFSMediaLoader: React.FC<IPFSMediaLoaderProps> = ({ videoUrl, selfieUrl, 
                   >
                     {!isPlaying && (
                       <div className="w-26 h-26 rounded-full bg-black bg-opacity-60 flex items-center justify-center">
-                        <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <svg
+                          className="w-12 h-12 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       </div>
@@ -474,7 +483,12 @@ const IPFSMediaLoader: React.FC<IPFSMediaLoaderProps> = ({ videoUrl, selfieUrl, 
 
               {selfieError ? (
                 <div className="flex items-center justify-center h-full w-full bg-gray-800">
-                  <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg
+                    className="h-6 w-6 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

@@ -1,5 +1,5 @@
-import cn from "../../helpers/cn"
-import { memo } from "react";
+import cn from '../../helpers/cn';
+import { memo } from 'react';
 
 interface ErrorMessageProps {
   className?: string;
@@ -7,7 +7,7 @@ interface ErrorMessageProps {
   title?: string;
 }
 
-const ErrorMessage = ({ className = "", error, title }: ErrorMessageProps) => {
+const ErrorMessage = ({ className = '', error, title }: ErrorMessageProps) => {
   if (!error) {
     return null;
   }
@@ -15,13 +15,11 @@ const ErrorMessage = ({ className = "", error, title }: ErrorMessageProps) => {
   return (
     <div
       className={cn(
-        "space-y-1 rounded-xl border-2 border-red-500/50 bg-red-50 p-4 text-red-800 text-sm dark:bg-red-900/10 dark:text-red-200",
+        'space-y-1 rounded-xl border-2 border-red-500/50 bg-red-50 p-4 text-red-800 text-sm dark:bg-red-900/10 dark:text-red-200',
         className
       )}
     >
-      <div className="flex flex-wrap items-center gap-2">
-        {title ? <h6>{title}</h6> : null}
-      </div>
+      <div className="flex flex-wrap items-center gap-2">{title ? <h6>{title}</h6> : null}</div>
       <div className="break-words">{error?.message}</div>
     </div>
   );

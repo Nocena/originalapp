@@ -1,6 +1,6 @@
 const humanize = (number: number): string => {
-  if (typeof number !== "number" || Number.isNaN(number)) {
-    return "";
+  if (typeof number !== 'number' || Number.isNaN(number)) {
+    return '';
   }
 
   return number.toLocaleString();

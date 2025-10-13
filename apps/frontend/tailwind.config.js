@@ -55,9 +55,12 @@ module.exports = {
         'nocena-brand-reverse': 'linear-gradient(135deg, #FF15C9 0%, #6024FB 50%, #2353FF 100%)',
 
         // Subtle variants with transparency
-        'nocena-blue-fade': 'linear-gradient(135deg, rgba(35, 83, 255, 0.8) 0%, rgba(0, 46, 211, 0.6) 100%)',
-        'nocena-purple-fade': 'linear-gradient(135deg, rgba(96, 36, 251, 0.8) 0%, rgba(74, 31, 184, 0.6) 100%)',
-        'nocena-pink-fade': 'linear-gradient(135deg, rgba(255, 21, 201, 0.8) 0%, rgba(224, 16, 182, 0.6) 100%)',
+        'nocena-blue-fade':
+          'linear-gradient(135deg, rgba(35, 83, 255, 0.8) 0%, rgba(0, 46, 211, 0.6) 100%)',
+        'nocena-purple-fade':
+          'linear-gradient(135deg, rgba(96, 36, 251, 0.8) 0%, rgba(74, 31, 184, 0.6) 100%)',
+        'nocena-pink-fade':
+          'linear-gradient(135deg, rgba(255, 21, 201, 0.8) 0%, rgba(224, 16, 182, 0.6) 100%)',
 
         // NFT Rarity gradients for special effects
         'rarity-common': 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)',
@@ -67,8 +70,8 @@ module.exports = {
         'rarity-legendary': 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
       },
       animation: {
-        'glitchPink': 'glitchPink 1s infinite',
-        'glitchBlue': 'glitchBlue 1s infinite',
+        glitchPink: 'glitchPink 1s infinite',
+        glitchBlue: 'glitchBlue 1s infinite',
         'fade-in': 'fadeIn 0.5s ease-in',
         'legendary-glow': 'legendaryGlow 2s ease-in-out infinite alternate',
         'epic-pulse': 'epicPulse 1.5s ease-in-out infinite',

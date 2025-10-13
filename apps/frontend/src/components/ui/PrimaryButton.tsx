@@ -12,14 +12,14 @@ interface Props {
 }
 
 const PrimaryButton: React.FC<Props> = ({
-                                          text,
-                                          onClick,
-                                          className = '',
-                                          isActive = false,
-                                          loading = false,
-                                          disabled = false,
-                                          type = 'button',
-                                        }) => {
+  text,
+  onClick,
+  className = '',
+  isActive = false,
+  loading = false,
+  disabled = false,
+  type = 'button',
+}) => {
   return (
     <div
       className={`w-full h-12 rounded-full flex items-center justify-center transition-all duration-300 ${

@@ -6,7 +6,12 @@ import UserLocationMarker from './components/UserLocationMarker';
 import ChallengeMarker from './components/ChallengeMarker';
 import MapControls from './components/MapControls';
 import LoadingOverlay from './components/LoadingOverlay';
-import { fetchNearbyChallenge, getMapStyleURL, getUserLocation, loadMapLibreCSS } from '../../lib/map/mapService';
+import {
+  fetchNearbyChallenge,
+  getMapStyleURL,
+  getUserLocation,
+  loadMapLibreCSS,
+} from '../../lib/map/mapService';
 
 // Define the interface for our custom event
 interface BrowsingNavigationDetail {
@@ -157,7 +162,7 @@ const MapView = () => {
           new MapLibre.AttributionControl({
             compact: true,
           }),
-          'bottom-left',
+          'bottom-left'
         );
 
         // When map loads, load challenges

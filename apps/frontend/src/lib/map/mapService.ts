@@ -3,7 +3,9 @@ import { ChallengeData, LocationData } from './types';
 import axios from 'axios';
 
 // Function to fetch public challenges from Dgraph - UPDATED to include completions
-export const fetchNearbyChallenge = async (userLocation: LocationData): Promise<ChallengeData[]> => {
+export const fetchNearbyChallenge = async (
+  userLocation: LocationData
+): Promise<ChallengeData[]> => {
   try {
     // Query Dgraph directly - UPDATED to include completions
     const query = `
@@ -40,7 +42,11 @@ export const fetchNearbyChallenge = async (userLocation: LocationData): Promise<
 
     const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
 
-    const response = await axios.post(DGRAPH_ENDPOINT, { query }, { headers: { 'Content-Type': 'application/json' } });
+    const response = await axios.post(
+      DGRAPH_ENDPOINT,
+      { query },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
 
     if (response.data.errors) {
       console.error('Dgraph query error:', response.data.errors);
@@ -55,7 +61,7 @@ export const fetchNearbyChallenge = async (userLocation: LocationData): Promise<
         userLocation.latitude,
         userLocation.longitude,
         challenge.location.latitude,
-        challenge.location.longitude,
+        challenge.location.longitude
       );
 
       return distance <= 1000; // 1000km radius
@@ -78,7 +84,10 @@ export const fetchNearbyChallenge = async (userLocation: LocationData): Promise<
       completionCount: challenge.completions?.length || 0,
       recentCompletions:
         challenge.completions
-          ?.sort((a: any, b: any) => new Date(b.completionDate).getTime() - new Date(a.completionDate).getTime())
+          ?.sort(
+            (a: any, b: any) =>
+              new Date(b.completionDate).getTime() - new Date(a.completionDate).getTime()
+          )
           ?.slice(0, 5) // Get most recent 5 completions
           ?.map((completion: any) => ({
             userId: completion.user.id,
@@ -161,7 +170,7 @@ export const getUserLocation = (): Promise<LocationData> => {
             JSON.stringify({
               location: locationData,
               timestamp: Date.now(),
-            }),
+            })
           );
         } catch (e) {
           console.warn('Error caching location:', e);
@@ -177,7 +186,7 @@ export const getUserLocation = (): Promise<LocationData> => {
         enableHighAccuracy: true,
         timeout: 8000,
         maximumAge: 60000, // Accept positions up to 1 minute old
-      },
+      }
     );
   });
 };

@@ -271,7 +271,7 @@ export class SimpleNFTService {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -306,7 +306,7 @@ export class SimpleNFTService {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -352,7 +352,7 @@ export class SimpleNFTService {
         },
         {
           headers: { 'Content-Type': 'application/json' },
-        },
+        }
       );
 
       if (response.data.errors) {
@@ -391,7 +391,7 @@ export class SimpleNFTService {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -419,7 +419,7 @@ export class SimpleNFTService {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (queryResponse.data.errors) {
@@ -450,7 +450,7 @@ export class SimpleNFTService {
       },
       {
         headers: { 'Content-Type': 'application/json' },
-      },
+      }
     );
 
     if (mutationResponse.data.errors) {

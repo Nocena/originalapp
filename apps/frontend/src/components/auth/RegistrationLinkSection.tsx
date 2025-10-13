@@ -4,7 +4,7 @@ import React from 'react';
 export interface RegistrationLinkSectionProps {
   error: string;
 }
-const RegistrationLinkSection = ({error}: RegistrationLinkSectionProps) => {
+const RegistrationLinkSection = ({ error }: RegistrationLinkSectionProps) => {
   return (
     <div className="text-center">
       <p className="text-sm text-gray-400">
@@ -25,7 +25,7 @@ const RegistrationLinkSection = ({error}: RegistrationLinkSectionProps) => {
         )}
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default RegistrationLinkSection
+export default RegistrationLinkSection;

@@ -3,16 +3,16 @@
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  
+
   // Skip problematic URLs that cause infinite refresh
-  const shouldSkip = 
+  const shouldSkip =
     url.protocol === 'chrome-extension:' ||
     url.pathname.includes('hot-update') ||
     url.pathname.includes('webpack-hmr') ||
     url.pathname.includes('_next/webpack-hmr') ||
     url.pathname.includes('__nextjs') ||
     url.search.includes('_rsc=');
-  
+
   if (shouldSkip) {
     return;
   }
@@ -33,4 +33,3 @@ self.addEventListener('activate', (event) => {
     })
   );
 });
-

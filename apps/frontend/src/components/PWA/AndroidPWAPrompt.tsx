@@ -45,7 +45,9 @@ const AndroidPWAPrompt: React.FC = () => {
       <div className="flex items-center justify-between text-white">
         <div>
           <strong className="text-lg">Install Nocena</strong>
-          <p className="text-sm">To install this app: tap the menu (⋮) and select "Add to Home screen"</p>
+          <p className="text-sm">
+            To install this app: tap the menu (⋮) and select "Add to Home screen"
+          </p>
         </div>
         <button
           onClick={handleDismiss}

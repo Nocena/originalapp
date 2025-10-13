@@ -11,7 +11,7 @@ const verifySid = process.env.TWILIO_VERIFY_SERVICE_SID;
 // If environment variables are missing, log an error
 if (!accountSid || !authToken || !verifySid) {
   console.error(
-    'Twilio credentials missing. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_VERIFY_SERVICE_SID in .env.local',
+    'Twilio credentials missing. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_VERIFY_SERVICE_SID in .env.local'
   );
 }
 

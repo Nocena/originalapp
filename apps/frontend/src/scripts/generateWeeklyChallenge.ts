@@ -16,7 +16,7 @@ const openai = new OpenAI({
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT || 'mailto:lustykjakub@gmail.com',
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || '',
+  process.env.VAPID_PRIVATE_KEY || ''
 );
 
 const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
@@ -62,7 +62,7 @@ export const getAllUserPushSubscriptions = async (): Promise<string[]> => {
       },
       {
         headers,
-      },
+      }
     );
 
     if (response.data.errors) {
@@ -76,7 +76,7 @@ export const getAllUserPushSubscriptions = async (): Promise<string[]> => {
       .filter((sub: string) => sub && sub.length > 0 && sub !== 'null' && sub.trim() !== '');
 
     console.log(
-      `🔔 BULK: Found ${users.length} total users, ${pushSubscriptions.length} with valid push subscriptions`,
+      `🔔 BULK: Found ${users.length} total users, ${pushSubscriptions.length} with valid push subscriptions`
     );
     return pushSubscriptions;
   } catch (error) {
@@ -122,7 +122,7 @@ class WeeklyChallengeGenerator {
         },
         {
           headers,
-        },
+        }
       );
 
       if (response.data.errors) {
@@ -173,7 +173,7 @@ class WeeklyChallengeGenerator {
         },
         {
           headers,
-        },
+        }
       );
 
       if (response.data.errors) {
@@ -304,7 +304,9 @@ IMPORTANT: Analyze the recent experiments above and generate something DIFFERENT
     const randomIndex = Math.floor(Math.random() * weeklyChallenges.length);
     const selectedChallenge = weeklyChallenges[randomIndex];
 
-    console.log(`🎯 Selected challenge ${randomIndex + 1} of ${weeklyChallenges.length}: ${selectedChallenge.title}`);
+    console.log(
+      `🎯 Selected challenge ${randomIndex + 1} of ${weeklyChallenges.length}: ${selectedChallenge.title}`
+    );
 
     return {
       title: selectedChallenge.title,
@@ -324,7 +326,9 @@ IMPORTANT: Analyze the recent experiments above and generate something DIFFERENT
         return !usedChallengeIds.includes(challengeId);
       });
 
-      console.log(`📊 Available challenges: ${availableChallenges.length} of ${weeklyChallenges.length} total`);
+      console.log(
+        `📊 Available challenges: ${availableChallenges.length} of ${weeklyChallenges.length} total`
+      );
 
       // If no unused challenges, reset and use all challenges
       if (availableChallenges.length === 0) {
@@ -343,7 +347,10 @@ IMPORTANT: Analyze the recent experiments above and generate something DIFFERENT
         description: selectedChallenge.description,
       };
     } catch (error) {
-      console.error('⚠️ Error selecting unused challenge, falling back to random selection:', error);
+      console.error(
+        '⚠️ Error selecting unused challenge, falling back to random selection:',
+        error
+      );
       return this.selectWeeklyChallenge();
     }
   }
@@ -354,7 +361,10 @@ IMPORTANT: Analyze the recent experiments above and generate something DIFFERENT
     return Math.ceil((days + start.getDay() + 1) / 7);
   }
 
-  async generateChallengeForDate(date: Date = new Date(), useAI: boolean = false): Promise<WeeklyAIChallenge> {
+  async generateChallengeForDate(
+    date: Date = new Date(),
+    useAI: boolean = false
+  ): Promise<WeeklyAIChallenge> {
     let title: string;
     let description: string;
 
@@ -470,7 +480,7 @@ const sendPushNotifications = async (challenge: WeeklyAIChallenge): Promise<void
       const batch = pushSubscriptions.slice(i, i + batchSize);
 
       console.log(
-        `🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(pushSubscriptions.length / batchSize)}`,
+        `🔄 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(pushSubscriptions.length / batchSize)}`
       );
 
       const batchPromises = batch.map(async (pushSubscription, index) => {
@@ -481,7 +491,10 @@ const sendPushNotifications = async (challenge: WeeklyAIChallenge): Promise<void
           console.log(`✅ Sent notification ${i + index + 1}/${pushSubscriptions.length}`);
         } catch (error: any) {
           failureCount++;
-          console.error(`❌ Failed to send notification ${i + index + 1}:`, error?.message || error);
+          console.error(
+            `❌ Failed to send notification ${i + index + 1}:`,
+            error?.message || error
+          );
         }
       });
 
@@ -502,7 +515,9 @@ const sendPushNotifications = async (challenge: WeeklyAIChallenge): Promise<void
 };
 
 // Function to save the weekly challenge to Dgraph database
-export const saveWeeklyChallengeToDatabase = async (challenge: WeeklyAIChallenge): Promise<boolean> => {
+export const saveWeeklyChallengeToDatabase = async (
+  challenge: WeeklyAIChallenge
+): Promise<boolean> => {
   if (!DGRAPH_ENDPOINT) {
     console.error('DGRAPH_ENDPOINT is not configured');
     return false;
@@ -546,7 +561,7 @@ export const saveWeeklyChallengeToDatabase = async (challenge: WeeklyAIChallenge
       },
       {
         headers,
-      },
+      }
     );
 
     if (response.data.errors) {

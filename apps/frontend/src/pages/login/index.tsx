@@ -12,7 +12,6 @@ import { wallets } from '../../lib/thirdweb/wallets';
 import Login from '@components/auth/Login';
 import RegistrationLinkSection from '@components/auth/RegistrationLinkSection';
 
-
 const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
@@ -89,9 +88,9 @@ const LoginPage = () => {
           coverPhoto: userData.coverPhoto || '/images/cover.jpg',
           trailerVideo: userData.trailerVideo || '/trailer.mp4',
           earnedTokens: userData.earnedTokens || 0,
-          earnedTokensDay: userData.earnedTokensDay/* || userData.earnedTokensToday*/ || 0,
-          earnedTokensWeek: userData.earnedTokensWeek/* || userData.earnedTokensThisWeek*/ || 0,
-          earnedTokensMonth: userData.earnedTokensMonth/* || userData.earnedTokensThisMonth*/ || 0,
+          earnedTokensDay: userData.earnedTokensDay /* || userData.earnedTokensToday*/ || 0,
+          earnedTokensWeek: userData.earnedTokensWeek /* || userData.earnedTokensThisWeek*/ || 0,
+          earnedTokensMonth: userData.earnedTokensMonth /* || userData.earnedTokensThisMonth*/ || 0,
           personalField1Type: userData.personalField1Type || '',
           personalField1Value: userData.personalField1Value || '',
           personalField1Metadata: userData.personalField1Metadata || '',
@@ -112,7 +111,9 @@ const LoginPage = () => {
           followers: Array.isArray(userData.followers) ? userData.followers : [],
           following: Array.isArray(userData.following) ? userData.following : [],
           notifications: Array.isArray(userData.notifications) ? userData.notifications : [],
-          completedChallenges: Array.isArray(userData.completedChallenges) ? userData.completedChallenges : [],
+          completedChallenges: Array.isArray(userData.completedChallenges)
+            ? userData.completedChallenges
+            : [],
           receivedPrivateChallenges: Array.isArray(userData.receivedPrivateChallenges)
             ? userData.receivedPrivateChallenges
             : [],
@@ -263,7 +264,7 @@ const LoginPage = () => {
           </div>
         )}
 
-        <Login/>
+        <Login />
 
         {/* Registration Link */}
         <RegistrationLinkSection error={error} />

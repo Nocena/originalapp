@@ -17,7 +17,7 @@ export interface BasicFileCheckResult {
 export async function runBasicFileCheck(
   videoBlob: Blob,
   photoBlob: Blob,
-  onProgress?: (progress: number, message: string) => void,
+  onProgress?: (progress: number, message: string) => void
 ): Promise<BasicFileCheckResult> {
   console.group('🔍 BASIC FILE CHECK');
   console.log('Video:', {
@@ -30,7 +30,8 @@ export async function runBasicFileCheck(
   });
 
   // Check if photoBlob is a placeholder (empty or very small)
-  const isPlaceholderPhoto = !photoBlob || photoBlob.size === 0 || photoBlob.type === '' || photoBlob.size < 100;
+  const isPlaceholderPhoto =
+    !photoBlob || photoBlob.size === 0 || photoBlob.type === '' || photoBlob.size < 100;
 
   if (isPlaceholderPhoto) {
     console.log('📷 Placeholder photo detected - deferring selfie validation');

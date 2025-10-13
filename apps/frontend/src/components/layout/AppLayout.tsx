@@ -265,12 +265,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
     };
 
     if (isBrowser) {
-      window.addEventListener('nocena_register_custom_back', handleCustomBackRegistration as EventListener);
+      window.addEventListener(
+        'nocena_register_custom_back',
+        handleCustomBackRegistration as EventListener
+      );
     }
 
     return () => {
       if (isBrowser) {
-        window.removeEventListener('nocena_register_custom_back', handleCustomBackRegistration as EventListener);
+        window.removeEventListener(
+          'nocena_register_custom_back',
+          handleCustomBackRegistration as EventListener
+        );
       }
     };
   }, []);
@@ -288,7 +294,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
       try {
         const fetchStart = performance.now();
         const count = await fetchUnreadNotificationsCount(user.id);
-        logPerf(`Fetched unread count in ${(performance.now() - fetchStart).toFixed(2)}ms: ${count}`);
+        logPerf(
+          `Fetched unread count in ${(performance.now() - fetchStart).toFixed(2)}ms: ${count}`
+        );
 
         setUnreadCount(count);
 
@@ -413,9 +421,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
   }, [isRouterReady, currentPathname, currentQuery, user?.wallet]);
 
   // Safe checks for special page determination
-  const isUserProfile = currentPathname.startsWith('/profile/') && currentQuery.walletAddress !== user?.wallet;
+  const isUserProfile =
+    currentPathname.startsWith('/profile/') && currentQuery.walletAddress !== user?.wallet;
   const isSpecialPage =
-    currentPathname === '/completing' || currentPathname === '/createchallenge' || currentPathname === '/browsing';
+    currentPathname === '/completing' ||
+    currentPathname === '/createchallenge' ||
+    currentPathname === '/browsing';
 
   // Memoized navigation handler to prevent unnecessary rerenders
   const handleNavClick = useCallback(
@@ -443,7 +454,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
         8: '/browsing',
       };
 
-      const targetRoute = index === 6 && user?.wallet ? `/profile/${user.id}` : routeMapping[index] || '/home';
+      const targetRoute =
+        index === 6 && user?.wallet ? `/profile/${user.id}` : routeMapping[index] || '/home';
       const isGoingToCameraPage = cameraPages.some((page) => targetRoute.startsWith(page));
 
       if (!isGoingToCameraPage) {
@@ -515,7 +527,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
 
       logPerf(`Navigation completed in ${(performance.now() - navigationStart).toFixed(2)}ms`);
     },
-    [router?.push, user?.id, user?.wallet, stopAllCameraStreams],
+    [router?.push, user?.id, user?.wallet, stopAllCameraStreams]
   );
 
   const handleMenuToggle = useCallback(() => {
@@ -647,7 +659,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
               rounded="full"
               className="w-12 h-12 flex items-center justify-center"
             >
-              <ArrowBackIcon className="transition-colors duration-300" style={{ color: 'white' }} />
+              <ArrowBackIcon
+                className="transition-colors duration-300"
+                style={{ color: 'white' }}
+              />
             </ThematicContainer>
           </button>
           {/* Empty middle and right sections to match TopNavbar layout */}
