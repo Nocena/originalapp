@@ -1,6 +1,6 @@
-import stopEventPropagation from "@/helpers/stopEventPropagation";
-import type { MarkupLinkProps } from "@hey/types/misc";
-import { Link } from "react-router";
+import stopEventPropagation from '../../../../helpers/stopEventPropagation';
+import type { MarkupLinkProps } from '@components/ui/Markup/MarkupLink/ExternalLink';
+import Link from "next/link";
 
 const Hashtag = ({ title }: MarkupLinkProps) => {
   if (!title) {
@@ -12,7 +12,7 @@ const Hashtag = ({ title }: MarkupLinkProps) => {
       <span>
         <Link
           className="outline-hidden focus:underline"
-          to={`/search?q=${title}&src=link_click&type=posts`}
+          href={`/search?q=${title}&src=link_click&type=posts`}
           onClick={stopEventPropagation}
         >
           {title}

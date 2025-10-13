@@ -1,18 +1,20 @@
-// pages/login.tsx - Minimalist design aligned with other screens
+// pages/index.tsx - Minimalist design aligned with other screens
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { ConnectButton, useActiveAccount } from 'thirdweb/react';
-import { getUserFromDgraph } from '../lib/api/dgraph';
-import { useAuth, User } from '../contexts/AuthContext';
-import AuthenticationLayout from '../components/layout/AuthenticationLayout';
-import ThematicContainer from '../components/ui/ThematicContainer';
-import { chain, client } from '../lib/thirdweb';
-import { wallets } from 'src/lib/thirdweb/wallets';
+import { getUserFromDgraph } from '../../lib/api/dgraph';
+import { useAuth, User } from '../../contexts/AuthContext';
+import AuthenticationLayout from '@components/layout/AuthenticationLayout';
+import ThematicContainer from '@components/ui/ThematicContainer';
+import { chain, client } from '../../lib/thirdweb';
+import { wallets } from '../../lib/thirdweb/wallets';
+import Login from '@components/auth/Login';
 
 const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
+  const [hasAccounts, setHasAccounts] = useState(true);
   const [loading, setLoading] = useState(false);
   const [walletChecked, setWalletChecked] = useState(false);
 
@@ -22,7 +24,6 @@ const LoginPage = () => {
   const router = useRouter();
   const { login, isAuthenticated, user } = useAuth();
   const account = useActiveAccount();
-
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -323,6 +324,7 @@ const LoginPage = () => {
           </p>
         </div>
       </div>
+      <Login setHasAccounts={setHasAccounts} />
     </AuthenticationLayout>
   );
 };

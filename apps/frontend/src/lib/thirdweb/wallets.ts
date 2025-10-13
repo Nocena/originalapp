@@ -1,4 +1,4 @@
-import { createWallet, inAppWallet } from 'thirdweb/dist/types/exports/wallets';
+import { inAppWallet, createWallet } from 'thirdweb/wallets';
 
 export const wallets = [
   inAppWallet({

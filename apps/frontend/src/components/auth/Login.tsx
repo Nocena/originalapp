@@ -14,7 +14,8 @@ import { AnimatePresence, motion } from "motion/react";
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { toast } from 'react-hot-toast';
-import { useAccount, useDisconnect, useSignMessage } from "wagmi";
+import { useActiveAccount, useDisconnect, useActiveWallet} from 'thirdweb/react';
+import { signMessage } from "thirdweb/utils";
 import SingleAccount from "../Account/SingleAccount";
 import { Loader } from '@components/ui';
 
@@ -36,8 +37,8 @@ const Login = ({ setHasAccounts }: LoginProps) => {
   };
 
   const { disconnect } = useDisconnect();
-  const { address, connector: activeConnector } = useAccount();
-  const { signMessageAsync } = useSignMessage({ mutation: { onError } });
+  const activeWallet = useActiveWallet();
+  const activeAccount = useActiveAccount();
   const [loadChallenge, { error: errorChallenge }] = useChallengeMutation({
     onError
   });
@@ -50,10 +51,10 @@ const Login = ({ setHasAccounts }: LoginProps) => {
       setHasAccounts(data?.accountsAvailable.items.length > 0);
       setIsExpanded(true);
     },
-    skip: !address,
+    skip: !activeAccount?.address,
     variables: {
-      accountsAvailableRequest: { managedBy: address },
-      lastLoggedInAccountRequest: { address }
+      accountsAvailableRequest: { managedBy: activeAccount?.address },
+      lastLoggedInAccountRequest: { address: activeAccount?.address }
     }
   });
 
@@ -71,6 +72,9 @@ const Login = ({ setHasAccounts }: LoginProps) => {
     : remainingAccounts;
 
   const handleSign = async (account: string) => {
+    if (!activeAccount)
+      return
+
     const isManager = allAccounts.some(
       ({ account: a, __typename }) =>
         __typename === "AccountManaged" && a.address === account
@@ -78,8 +82,8 @@ const Login = ({ setHasAccounts }: LoginProps) => {
 
     const meta = { app: IS_MAINNET ? HEY_APP : undefined, account };
     const request: ChallengeRequest = isManager
-      ? { accountManager: { manager: address, ...meta } }
-      : { accountOwner: { owner: address, ...meta } };
+      ? { accountManager: { manager: activeAccount?.address, ...meta } }
+      : { accountOwner: { owner: activeAccount?.address, ...meta } };
 
     try {
       setLoggingInAccountId(account || null);
@@ -94,8 +98,9 @@ const Login = ({ setHasAccounts }: LoginProps) => {
       }
 
       // Get signature
-      const signature = await signMessageAsync({
-        message: challenge?.data?.challenge?.text
+      const signature = await signMessage({
+        message: challenge?.data?.challenge?.text,
+        account: activeAccount,
       });
 
       // Auth account
@@ -116,7 +121,7 @@ const Login = ({ setHasAccounts }: LoginProps) => {
     }
   };
 
-  return activeConnector?.id ? (
+  return activeAccount ? (
     <div className="space-y-3">
       <div className="space-y-2.5">
         {errorChallenge || errorAuthenticate ? (
@@ -198,7 +203,7 @@ const Login = ({ setHasAccounts }: LoginProps) => {
         )}
         <button
           className="flex items-center space-x-1 text-sm underline"
-          onClick={() => disconnect?.()}
+          onClick={() => disconnect?.(activeWallet!)}
           type="reset"
         >
           {/*<KeyIcon className="size-4" />*/}

@@ -15,9 +15,11 @@ const MarkupLink = ({ mentions, title }: MarkupLinkProps) => {
     return null;
   }
 
+/*
   if (title.startsWith("@")) {
     return <Mention mentions={mentions} title={title} />;
   }
+*/
 
   if (title.startsWith("#")) {
     return <Hashtag title={title} />;
