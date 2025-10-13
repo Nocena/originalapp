@@ -3,18 +3,34 @@ import PrimaryButton from '../../ui/PrimaryButton';
 import ThematicContainer from '../../ui/ThematicContainer';
 import LegalPopupModal from './LegalPopupModal';
 import { subscribeToPushNotifications, requestNotificationPermission } from '../../../lib/pushNotifications';
+import { IS_MAINNET, NOCENA_APP } from '@nocena/data/constants';
+import { useActiveAccount } from 'thirdweb/react';
+import { toast } from 'react-hot-toast';
+import { useAuthenticateMutation, useChallengeMutation, useCreateAccountWithUsernameMutation } from '@nocena/indexer';
+import { signMessage } from 'thirdweb/dist/types/exports/utils';
+import { uploadMetadataToGrove } from '@utils/groveUtils';
+import { account as accountMetadata } from '@lens-protocol/metadata';
+import { useSignupStore } from '../../../store/non-persisted/useSignupStore';
 
 interface Props {
   onNotificationsReady: (pushSubscription: string | null) => void;
+  username?: string;
   disabled?: boolean;
 }
 
-const RegisterNotificationsStep = ({ onNotificationsReady, disabled = false }: Props) => {
+const RegisterNotificationsStep = ({ onNotificationsReady, username, disabled = false }: Props) => {
+  const {
+    setChoosedUsername,
+    setTransactionHash,
+    setOnboardingToken
+  } = useSignupStore();
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const [pushSubscription, setPushSubscription] = useState<string | null>(null);
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [error, setError] = useState('');
   const [hasTriedNotifications, setHasTriedNotifications] = useState(false);
+  const thirdWebAccount = useActiveAccount();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Legal agreement states
   const [termsAgreed, setTermsAgreed] = useState(false);
@@ -26,6 +42,16 @@ const RegisterNotificationsStep = ({ onNotificationsReady, disabled = false }: P
 
   const allAgreementsAccepted = termsAgreed && privacyAgreed;
   const notificationsEnabled = pushSubscription !== null;
+
+  const onError = (error?: any) => {
+    setIsSubmitting(false);
+    toast.error(error);
+  };
+  const [loadChallenge] = useChallengeMutation({ onError });
+  const [authenticate] = useAuthenticateMutation({ onError });
+  const [createAccountWithUsername] = useCreateAccountWithUsernameMutation({
+    onError,
+  });
 
   useEffect(() => {
     console.log('🔍 Component mounted, checking notification status...');
@@ -147,6 +173,75 @@ const RegisterNotificationsStep = ({ onNotificationsReady, disabled = false }: P
     }
   };
 
+  const handleSignupLensAccount = async () => {
+    if (!thirdWebAccount || !username)
+      return
+
+    try {
+      setIsSubmitting(true);
+
+      const challenge = await loadChallenge({
+        variables: {
+          request: {
+            onboardingUser: {
+              app: IS_MAINNET ? NOCENA_APP : undefined,
+              wallet: thirdWebAccount.address
+            }
+          }
+        }
+      });
+
+      if (!challenge?.data?.challenge?.text) {
+        return toast.error('Something went wrong!');
+      }
+
+      // Get signature
+      const signature = await signMessage({
+        message: challenge?.data?.challenge?.text,
+        account: thirdWebAccount,
+      });
+
+      // Auth account
+      const auth = await authenticate({
+        variables: { request: { id: challenge.data.challenge.id, signature } }
+      });
+
+      if (auth.data?.authenticate.__typename === "AuthenticationTokens") {
+        const accessToken = auth.data?.authenticate.accessToken;
+        const metadataUri = await uploadMetadataToGrove(
+          accountMetadata({ name: username }),
+        );
+
+        setOnboardingToken(accessToken);
+        return await createAccountWithUsername({
+          context: { headers: { "X-Access-Token": accessToken } },
+          variables: {
+            request: {
+              username: { localName: username.toLowerCase() },
+              metadataUri
+            }
+          },
+          onCompleted: ({ createAccountWithUsername }) => {
+            if (
+              createAccountWithUsername.__typename === "CreateAccountResponse"
+            ) {
+              setTransactionHash(createAccountWithUsername.hash);
+              setChoosedUsername(username);
+              onNotificationsReady(pushSubscription);
+            }
+          }
+        });
+      }
+
+      return onError({ message: 'Something went wrong!' });
+    } catch {
+      onError();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
   const handleComplete = () => {
     if (disabled) {
       console.log('⚠️ Registration disabled, ignoring complete request');
@@ -155,7 +250,7 @@ const RegisterNotificationsStep = ({ onNotificationsReady, disabled = false }: P
 
     if (allAgreementsAccepted) {
       // Pass the subscription (which could be null if notifications failed/were blocked)
-      onNotificationsReady(pushSubscription);
+      handleSignupLensAccount()
     }
   };
 
@@ -320,6 +415,7 @@ const RegisterNotificationsStep = ({ onNotificationsReady, disabled = false }: P
                 : 'Complete setup'
           }
           onClick={canProceed ? handleComplete : undefined}
+          loading={isSubmitting}
           disabled={!canProceed}
           className="w-full"
           isActive={!canProceed}
