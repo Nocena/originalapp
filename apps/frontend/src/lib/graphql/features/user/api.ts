@@ -1,6 +1,6 @@
 import graphqlClient from '../../client';
 import { generateId, normalizeWallet } from '../../utils';
-import type { User } from '@/contexts/AuthContext';
+import type { User } from '../../../../contexts/AuthContext';
 import * as queries from './queries';
 import * as mutations from './mutations';
 
