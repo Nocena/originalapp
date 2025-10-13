@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { ConnectButton, useActiveAccount, useDisconnect, useActiveWallet } from 'thirdweb/react';
-import { getUserFromDgraph } from '../../lib/api/dgraph';
+import { getUserByWallet } from '../../lib/graphql';
 import { useAuth, User } from '../../contexts/AuthContext';
 import AuthenticationLayout from '@components/layout/AuthenticationLayout';
 import ThematicContainer from '@components/ui/ThematicContainer';
@@ -16,7 +16,6 @@ import RegistrationLinkSection from '@components/auth/RegistrationLinkSection';
 const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
-  const [hasAccounts, setHasAccounts] = useState(true);
   const [loading, setLoading] = useState(false);
   const [walletChecked, setWalletChecked] = useState(false);
   const { disconnect } = useDisconnect();
@@ -69,7 +68,7 @@ const LoginPage = () => {
       setWalletChecked(false);
 
       try {
-        const userData = await getUserFromDgraph(currentAddress);
+        const userData = await getUserByWallet(currentAddress);
         checkedAddresses.current.add(currentAddress);
         setWalletChecked(true);
 
@@ -148,56 +147,6 @@ const LoginPage = () => {
       checkedAddresses.current.clear();
     }
   }, [thirdWebAccount?.address]);
-
-  const renderErrorState = () => {
-    if (error === 'account_not_found') {
-      return (
-        <ThematicContainer
-          color="nocenaPink"
-          glassmorphic={true}
-          asButton={false}
-          rounded="2xl"
-          className="p-6 text-center"
-        >
-          <h3 className="text-lg font-bold text-white mb-2">Account Not Found</h3>
-          <p className="text-sm text-gray-300 mb-4">
-            Your wallet is connected, but you need an invite code to create your profile.
-          </p>
-          <Link href="/register">
-            <button className="text-nocenaPink hover:text-nocenaPink/80 font-medium">Go create profile →</button>
-          </Link>
-        </ThematicContainer>
-      );
-    }
-
-    if (error === 'network_error') {
-      return (
-        <ThematicContainer
-          color="nocenaPink"
-          glassmorphic={true}
-          asButton={false}
-          rounded="2xl"
-          className="p-6 text-center"
-        >
-          <h3 className="text-lg font-bold text-white mb-2">Network Error</h3>
-          <p className="text-sm text-gray-300 mb-4">Failed to check your profile. Please try again.</p>
-          <button
-            onClick={() => {
-              setError('');
-              if (thirdWebAccount?.address) {
-                checkedAddresses.current.delete(thirdWebAccount.address);
-              }
-            }}
-            className="text-nocenaPink hover:text-nocenaPink/80 font-medium"
-          >
-            Retry Connection
-          </button>
-        </ThematicContainer>
-      );
-    }
-
-    return null;
-  };
 
   return (
     <AuthenticationLayout title="Welcome challenger" subtitle="It's time to lock in">
@@ -306,7 +255,6 @@ const LoginPage = () => {
                     onClick={() => disconnect?.(activeWallet!)}
                     type="reset"
                   >
-                    {/*<KeyIcon className="size-4" />*/}
                     <div>Change wallet</div>
                   </button>
                 </div>
@@ -315,13 +263,11 @@ const LoginPage = () => {
           </div>
         )}
 
-        {/* Error State */}
-        {error && renderErrorState()}
+        <Login/>
 
         {/* Registration Link */}
         <RegistrationLinkSection error={error} />
       </div>
-      <Login setHasAccounts={setHasAccounts} />
     </AuthenticationLayout>
   );
 };

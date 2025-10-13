@@ -4,7 +4,7 @@ import formidable from 'formidable';
 import fs from 'fs';
 
 // Import your existing functions from dgraph.ts
-import { createRealMojiReaction, uploadRealMojiToIPFS } from '../../../lib/api/dgraph';
+import { createRealMojiReaction, uploadRealMojiToIPFS } from '../../../lib/graphql';
 
 // Disable default body parser to handle multipart/form-data
 export const config = {

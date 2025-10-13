@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 
-import { getUserByIdFromDgraph, toggleFollowUser } from '../../lib/api/dgraph';
+import { getUserById, toggleFollowUser } from '../../lib/graphql';
 import { useAuth, User as AuthUser } from '../../contexts/AuthContext';
 import { getPageState, updatePageState } from '../../components/PageManager';
 import PrimaryButton from '../../components/ui/PrimaryButton';
@@ -131,7 +131,7 @@ const OtherProfileView: React.FC = () => {
       }
 
       // If no fresh data or forced refresh, get from API
-      const fullUser = await getUserByIdFromDgraph(userId);
+      const fullUser = await getUserById(userId);
 
       if (fullUser) {
         // Convert the AuthUser to ProfileUser format

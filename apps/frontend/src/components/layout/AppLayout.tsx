@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchUnreadNotificationsCount, markNotificationsAsRead } from '../../lib/api/dgraph';
+import { fetchUnreadNotificationsCount, markNotificationsAsRead } from '../../lib/graphql';
 
 import Menu from './Menu';
 import MemoryOptimizer from '../MemoryOptimizer';

@@ -1,6 +1,6 @@
 // /api/registration/validate-invite.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { validateInviteCode } from '../../../lib/api/dgraph';
+import { validateInviteCode } from '../../../lib/graphql';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

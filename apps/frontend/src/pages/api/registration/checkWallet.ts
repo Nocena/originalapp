@@ -1,6 +1,6 @@
 // pages/api/registration/checkWallet.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { checkWalletExists } from '../../../lib/api/dgraph';
+import { checkWalletExists } from '../../../lib/graphql';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log('🔍 [API] checkWallet endpoint hit');

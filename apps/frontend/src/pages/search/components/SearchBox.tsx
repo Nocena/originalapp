@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { searchUsers } from '../../../lib/api/dgraph';
+import { searchUsers } from '../../../lib/graphql';
 import { sanitizeInput } from '../../../lib/utils/security';
 import { useAuth, User as AuthUser } from '../../../contexts/AuthContext';
 

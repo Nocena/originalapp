@@ -1,6 +1,6 @@
 // /api/invite/user-invites.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getUserInviteStats } from '../../../lib/api/dgraph';
+import { getUserInviteStats } from '../../../lib/graphql';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

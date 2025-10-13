@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import webpush from 'web-push';
 import axios from 'axios';
 import { dailyChallenges, ChallengeFrequency, ChallengeCategory } from '../data/challenges';
-import { resetTimeBasedEarnings } from '../lib/api/dgraph';
+import { resetTimeBasedEarnings } from '../lib/graphql';
 
 // Initialize OpenAI client
 const openai = new OpenAI({

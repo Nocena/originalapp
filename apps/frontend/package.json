@@ -21,7 +21,8 @@
     "format:fix": "prettier '**/*.{js,jsx,ts,tsx}' --config .prettierrc.json --write",
     "challenge:daily": "tsx src/scripts/generateDailyChallenge.ts",
     "challenge:weekly": "tsx src/scripts/generateWeeklyChallenge.ts",
-    "challenge:monthly": "tsx src/scripts/generateMonthlyChallenge.ts"
+    "challenge:monthly": "tsx src/scripts/generateMonthlyChallenge.ts",
+    "dgraph:codegen": "graphql-codegen --config src/lib/dgraph/codegen.ts"
   },
   "dependencies": {
     "@apollo/client": "^3.12.11",
@@ -100,6 +101,10 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.6",
+    "@graphql-codegen/typescript": "^4.1.6",
+    "@graphql-codegen/typescript-operations": "^4.6.1",
+    "@graphql-codegen/typescript-react-apollo": "^4.3.2",
     "@types/form-data": "^2.5.2",
     "@types/formidable": "^3.4.5",
     "@types/node": "^22.10.5",

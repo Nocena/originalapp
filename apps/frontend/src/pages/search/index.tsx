@@ -6,7 +6,7 @@ import ThematicImage from '../../components/ui/ThematicImage';
 import ThematicContainer from '../../components/ui/ThematicContainer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import { toggleFollowUser } from '../../lib/api/dgraph';
+import { toggleFollowUser } from '../../lib/graphql';
 import SearchBox, { SearchUser } from './components/SearchBox';
 import Image from 'next/image';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import type { StaticImageData } from 'next/image';
-import { getUserNFTsByType, updateUserEquippedItems } from '../../../lib/api/dgraph';
+import { getUserNFTsByType, updateUserEquippedItems } from '../../../lib/graphql';
 import { useAuth } from '../../../contexts/AuthContext';
 import ThematicContainer from '../../../components/ui/ThematicContainer';
 import PrimaryButton from '../../../components/ui/PrimaryButton';

@@ -7,7 +7,7 @@ import ThematicImage from '../../../components/ui/ThematicImage';
 import PrimaryButton from '../../../components/ui/PrimaryButton';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { useAuth, User as AuthUser } from '../../../contexts/AuthContext';
-import { getUserByIdFromDgraph, toggleFollowUser } from '../../../lib/api/dgraph';
+import { getUserById, toggleFollowUser } from '../../../lib/graphql';
 
 const nocenixIcon = '/nocenix.ico';
 
@@ -132,7 +132,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({ isOpen, onClose, follow
 
         for (let i = 0; i < followers.length; i += batchSize) {
           const batch = followers.slice(i, i + batchSize);
-          const userPromises = batch.map((id) => getUserByIdFromDgraph(id));
+          const userPromises = batch.map((id) => getUserById(id));
           const batchResults = await Promise.all(userPromises);
 
           // Process batch results

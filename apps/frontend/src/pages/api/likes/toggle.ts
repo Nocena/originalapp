@@ -1,6 +1,6 @@
 // pages/api/likes/toggle.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { toggleCompletionLike } from '../../../../src/lib/api/dgraph';
+import { toggleCompletionLike } from '../../../../src/lib/graphql';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

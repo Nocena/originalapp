@@ -1,5 +1,5 @@
 // pages/api/leaderboard.ts
-import { getLeaderboard } from '../../lib/api/dgraph';
+import { getLeaderboard } from '../../lib/graphql';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {

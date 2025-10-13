@@ -1,7 +1,7 @@
 // pages/inbox/index.tsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchNotifications } from '../../lib/api/dgraph';
+import { fetchNotifications } from '../../lib/graphql';
 import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';

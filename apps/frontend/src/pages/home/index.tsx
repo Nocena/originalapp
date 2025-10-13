@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchFollowerCompletions, fetchLatestUserCompletion } from '../../lib/api/dgraph';
+import { fetchFollowerCompletions, fetchLatestUserCompletion } from '../../lib/graphql';
 import {
   getCurrentChallenge,
   getChallengeReward,

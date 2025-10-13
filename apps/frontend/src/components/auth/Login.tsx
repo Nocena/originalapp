@@ -1,59 +1,54 @@
-import Button from "../../components/ui/Button";
-import Card from "../../components/ui/Card";
-import ErrorMessage from "../../components/ui/ErrorMessage";
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import ErrorMessage from '../../components/ui/ErrorMessage';
 import { signIn } from '../../store/persisted/useAuthStore';
-import { HEY_APP, IS_MAINNET } from "@nocena/data/constants";
-import { Errors } from "@nocena/data/errors";
+import { HEY_APP, IS_MAINNET } from '@nocena/data/constants';
+import { Errors } from '@nocena/data/errors';
 import {
   type ChallengeRequest,
   useAccountsAvailableQuery,
   useAuthenticateMutation,
-  useChallengeMutation
-} from "@nocena/indexer";
-import { AnimatePresence, motion } from "motion/react";
-import type { Dispatch, SetStateAction } from "react";
-import { useState } from "react";
+  useChallengeMutation,
+} from '@nocena/indexer';
+import { AnimatePresence, motion } from 'motion/react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useActiveAccount} from 'thirdweb/react';
-import { signMessage } from "thirdweb/utils";
-import SingleAccount from "../Account/SingleAccount";
+import { useActiveAccount } from 'thirdweb/react';
+import { signMessage } from 'thirdweb/utils';
+import SingleAccount from '../Account/SingleAccount';
 import { Loader } from '@components/ui';
+import AuthMessage from '@components/auth/AuthMessage';
+import AccountNotFound from '@components/auth/AccountNotFound';
 
-interface LoginProps {
-  setHasAccounts: Dispatch<SetStateAction<boolean>>;
-}
-
-const Login = ({ setHasAccounts }: LoginProps) => {
+const Login = () => {
+  const [hasAccounts, setHasAccounts] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loggingInAccountId, setLoggingInAccountId] = useState<null | string>(
-    null
+    null,
   );
-  const [isExpanded, setIsExpanded] = useState(true);
-
   const onError = (error?: any) => {
     setIsSubmitting(false);
     setLoggingInAccountId(null);
     toast.error(error);
   };
 
-  const activeAccount = useActiveAccount();
+  const thirdWebAccount = useActiveAccount();
   const [loadChallenge, { error: errorChallenge }] = useChallengeMutation({
-    onError
+    onError,
   });
   const [authenticate, { error: errorAuthenticate }] = useAuthenticateMutation({
-    onError
+    onError,
   });
 
   const { data, loading } = useAccountsAvailableQuery({
     onCompleted: (data) => {
       setHasAccounts(data?.accountsAvailable.items.length > 0);
-      setIsExpanded(true);
     },
-    skip: !activeAccount?.address,
+    skip: !thirdWebAccount?.address,
     variables: {
-      accountsAvailableRequest: { managedBy: activeAccount?.address },
-      lastLoggedInAccountRequest: { address: activeAccount?.address }
-    }
+      accountsAvailableRequest: { managedBy: thirdWebAccount?.address },
+      lastLoggedInAccountRequest: { address: thirdWebAccount?.address },
+    },
   });
 
   const allAccounts = data?.accountsAvailable.items || [];
@@ -61,8 +56,8 @@ const Login = ({ setHasAccounts }: LoginProps) => {
 
   const remainingAccounts = lastLogin
     ? allAccounts
-        .filter(({ account }) => account.address !== lastLogin.address)
-        .map(({ account }) => account)
+      .filter(({ account }) => account.address !== lastLogin.address)
+      .map(({ account }) => account)
     : allAccounts.map(({ account }) => account);
 
   const accounts = lastLogin
@@ -70,25 +65,25 @@ const Login = ({ setHasAccounts }: LoginProps) => {
     : remainingAccounts;
 
   const handleSign = async (account: string) => {
-    if (!activeAccount)
-      return
+    if (!thirdWebAccount)
+      return;
 
     const isManager = allAccounts.some(
       ({ account: a, __typename }) =>
-        __typename === "AccountManaged" && a.address === account
+        __typename === 'AccountManaged' && a.address === account,
     );
 
     const meta = { app: IS_MAINNET ? HEY_APP : undefined, account };
     const request: ChallengeRequest = isManager
-      ? { accountManager: { manager: activeAccount?.address, ...meta } }
-      : { accountOwner: { owner: activeAccount?.address, ...meta } };
+      ? { accountManager: { manager: thirdWebAccount?.address, ...meta } }
+      : { accountOwner: { owner: thirdWebAccount?.address, ...meta } };
 
     try {
       setLoggingInAccountId(account || null);
       setIsSubmitting(true);
       // Get challenge
       const challenge = await loadChallenge({
-        variables: { request }
+        variables: { request },
       });
 
       if (!challenge?.data?.challenge?.text) {
@@ -98,15 +93,15 @@ const Login = ({ setHasAccounts }: LoginProps) => {
       // Get signature
       const signature = await signMessage({
         message: challenge?.data?.challenge?.text,
-        account: activeAccount,
+        account: thirdWebAccount,
       });
 
       // Auth account
       const auth = await authenticate({
-        variables: { request: { id: challenge.data.challenge.id, signature } }
+        variables: { request: { id: challenge.data.challenge.id, signature } },
       });
 
-      if (auth.data?.authenticate.__typename === "AuthenticationTokens") {
+      if (auth.data?.authenticate.__typename === 'AuthenticationTokens') {
         const accessToken = auth.data?.authenticate.accessToken;
         const refreshToken = auth.data?.authenticate.refreshToken;
         signIn({ accessToken, refreshToken });
@@ -139,65 +134,67 @@ const Login = ({ setHasAccounts }: LoginProps) => {
           </Card>
         ) : accounts.length > 0 ? (
           <AnimatePresence mode="popLayout">
-            {isExpanded && (
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  hidden: { opacity: 0, height: 0, overflow: "hidden" },
-                  visible: {
-                    opacity: 1,
-                    height: "auto",
-                    transition: { duration: 0.2, ease: [0.075, 0.82, 0.165, 1] }
-                  }
-                }}
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0, height: 0, overflow: 'hidden' },
+                visible: {
+                  opacity: 1,
+                  height: 'auto',
+                  transition: { duration: 0.2, ease: [0.075, 0.82, 0.165, 1] },
+                },
+              }}
+            >
+              <Card
+                className="max-h-[50vh] w-full overflow-y-auto dark:divide-gray-700"
+                forceRounded
               >
-                <Card
-                  className="max-h-[50vh] w-full overflow-y-auto dark:divide-gray-700"
-                  forceRounded
-                >
-                  {accounts.map((account, index) => (
-                    <motion.div
-                      key={account.address}
-                      variants={{
-                        hidden: { opacity: 0, y: 20 },
-                        visible: {
-                          opacity: 1,
-                          y: 0,
-                          transition: { duration: 0.1 }
-                        }
-                      }}
-                      custom={index}
-                      className="flex items-center justify-between p-3"
-                      whileHover={{
-                        backgroundColor: "rgba(0, 0, 0, 0.05)",
-                        transition: { duration: 0.2 }
-                      }}
+                <AuthMessage
+                  description="Nocena uses this signature to verify that you're the owner of this address."
+                  title="Please sign the message."
+                />
+                {accounts.map((account, index) => (
+                  <motion.div
+                    key={account.address}
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: { duration: 0.1 },
+                      },
+                    }}
+                    custom={index}
+                    className="flex items-center justify-between p-3"
+                    whileHover={{
+                      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                      transition: { duration: 0.2 },
+                    }}
+                  >
+                    <SingleAccount
+                      account={account}
+                      showUserPreview={false}
+                    />
+                    <Button
+                      disabled={
+                        isSubmitting && loggingInAccountId === account.address
+                      }
+                      loading={
+                        isSubmitting && loggingInAccountId === account.address
+                      }
+                      onClick={() => handleSign(account.address)}
+                      outline
                     >
-                      <SingleAccount
-                        account={account}
-                        showUserPreview={false}
-                      />
-                      <Button
-                        disabled={
-                          isSubmitting && loggingInAccountId === account.address
-                        }
-                        loading={
-                          isSubmitting && loggingInAccountId === account.address
-                        }
-                        onClick={() => handleSign(account.address)}
-                        outline
-                      >
-                        Use
-                      </Button>
-                    </motion.div>
-                  ))}
-                </Card>
-              </motion.div>
-            )}
+                      Use
+                    </Button>
+                  </motion.div>
+                ))}
+              </Card>
+            </motion.div>
           </AnimatePresence>
         ) : (
-          null
+          <AccountNotFound />
         )}
       </div>
     </div>

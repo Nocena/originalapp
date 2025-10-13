@@ -6,7 +6,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useActiveAccount } from 'thirdweb/react';
-import { registerUser, generateInviteCode } from '../lib/api/dgraph';
+import { registerUser, generateInviteCode } from '../lib/graphql';
 import PrimaryButton from '../components/ui/PrimaryButton';
 import { User, useAuth } from '../contexts/AuthContext';
 import { sanitizeInput } from '../lib/utils/security';

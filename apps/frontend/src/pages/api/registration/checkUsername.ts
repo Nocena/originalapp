@@ -1,6 +1,6 @@
 // pages/api/registration/checkUsername.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { checkUsernameExists } from '../../../lib/api/dgraph';
+import { checkUsernameExists } from '../../../lib/graphql';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log('🔍 [API] checkUsername endpoint hit');

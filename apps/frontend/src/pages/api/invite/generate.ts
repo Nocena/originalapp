@@ -1,6 +1,6 @@
 // /api/invite/generate.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { generateInviteCode } from '../../../lib/api/dgraph';
+import { generateInviteCode } from '../../../lib/graphql';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

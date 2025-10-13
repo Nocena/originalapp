@@ -1,6 +1,6 @@
 // components/home/CompletionFeed.tsx - FIXED VERSION
 import React, { useState, useEffect } from 'react';
-import { fetchUserCompletions } from '../../../lib/api/dgraph';
+import { fetchUserCompletions } from '../../../lib/graphql';
 import CompletionItem from './CompletionItem';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
 

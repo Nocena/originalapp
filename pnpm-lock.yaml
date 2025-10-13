@@ -283,6 +283,18 @@ importers:
         specifier: ^5.0.8
         version: 5.0.8(@types/react@19.2.2)(react@19.2.0)(use-sync-external-store@1.4.0(react@19.2.0))
     devDependencies:
+      '@graphql-codegen/cli':
+        specifier: ^5.0.6
+        version: 5.0.7(@types/node@22.18.9)(bufferutil@4.0.9)(crossws@0.3.5)(graphql@16.11.0)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      '@graphql-codegen/typescript':
+        specifier: ^4.1.6
+        version: 4.1.6(graphql@16.11.0)
+      '@graphql-codegen/typescript-operations':
+        specifier: ^4.6.1
+        version: 4.6.1(graphql@16.11.0)
+      '@graphql-codegen/typescript-react-apollo':
+        specifier: ^4.3.2
+        version: 4.3.3(graphql@16.11.0)
       '@types/form-data':
         specifier: ^2.5.2
         version: 2.5.2

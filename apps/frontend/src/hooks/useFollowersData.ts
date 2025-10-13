@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchUserFollowers } from '../lib/api/dgraph';
+import { fetchUserFollowers } from '../lib/graphql';
 import { getPageState, updatePageState } from '../components/PageManager';
 
 const useFollowersData = (userId?: string) => {

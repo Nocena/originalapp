@@ -2,7 +2,7 @@
 // Enhanced version with better debugging and error handling
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { generateInviteCode } from '../../../lib/api/dgraph';
+import { generateInviteCode } from '../../../lib/graphql';
 
 // You should set this as an environment variable
 const ADMIN_SECRET_KEY = process.env.ADMIN_SEED_KEY;

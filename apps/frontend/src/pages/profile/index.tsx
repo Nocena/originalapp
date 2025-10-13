@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { updateBio, updateProfilePicture, updateCoverPhoto, getUserAvatar } from '../../lib/api/dgraph';
+import { updateBio, updateProfilePicture, updateCoverPhoto, getUserAvatar } from '../../lib/graphql';
 import { unpinFromPinata } from '../../lib/api/pinata';
 import Image from 'next/image';
 import type { StaticImageData } from 'next/image';
