@@ -14,7 +14,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { toast } from 'react-hot-toast';
-import { useActiveAccount, useDisconnect, useActiveWallet} from 'thirdweb/react';
+import { useActiveAccount} from 'thirdweb/react';
 import { signMessage } from "thirdweb/utils";
 import SingleAccount from "../Account/SingleAccount";
 import { Loader } from '@components/ui';
@@ -36,8 +36,6 @@ const Login = ({ setHasAccounts }: LoginProps) => {
     toast.error(error);
   };
 
-  const { disconnect } = useDisconnect();
-  const activeWallet = useActiveWallet();
   const activeAccount = useActiveAccount();
   const [loadChallenge, { error: errorChallenge }] = useChallengeMutation({
     onError
@@ -201,14 +199,6 @@ const Login = ({ setHasAccounts }: LoginProps) => {
         ) : (
           null
         )}
-        <button
-          className="flex items-center space-x-1 text-sm underline"
-          onClick={() => disconnect?.(activeWallet!)}
-          type="reset"
-        >
-          {/*<KeyIcon className="size-4" />*/}
-          <div>Change wallet</div>
-        </button>
       </div>
     </div>
   );

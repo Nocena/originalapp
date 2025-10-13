@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { ConnectButton, useActiveAccount } from 'thirdweb/react';
+import { ConnectButton, useActiveAccount, useDisconnect, useActiveWallet } from 'thirdweb/react';
 import { getUserFromDgraph } from '../../lib/api/dgraph';
 import { useAuth, User } from '../../contexts/AuthContext';
 import AuthenticationLayout from '@components/layout/AuthenticationLayout';
@@ -12,12 +12,15 @@ import { wallets } from '../../lib/thirdweb/wallets';
 import Login from '@components/auth/Login';
 import RegistrationLinkSection from '@components/auth/RegistrationLinkSection';
 
+
 const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
   const [hasAccounts, setHasAccounts] = useState(true);
   const [loading, setLoading] = useState(false);
   const [walletChecked, setWalletChecked] = useState(false);
+  const { disconnect } = useDisconnect();
+  const activeWallet = useActiveWallet();
 
   const isProcessingLogin = useRef(false);
   const checkedAddresses = useRef<Set<string>>(new Set());
@@ -275,7 +278,7 @@ const LoginPage = () => {
                 glassmorphic={true}
                 asButton={false}
                 rounded="2xl"
-                className="p-8 text-center"
+                className="p-8 pb-4 text-center"
               >
                 <h3 className="text-xl font-bold text-white mb-2">Wallet Connected</h3>
                 <p className="text-sm text-gray-300 mb-4">Checking your profile status...</p>
@@ -296,6 +299,17 @@ const LoginPage = () => {
                     titleIcon: '/logo/LogoDark.png',
                   }}
                 />
+
+                <div className="w-full flex justify-center align-items-center">
+                  <button
+                    className="flex items-center space-x-1 text-sm underline"
+                    onClick={() => disconnect?.(activeWallet!)}
+                    type="reset"
+                  >
+                    {/*<KeyIcon className="size-4" />*/}
+                    <div>Change wallet</div>
+                  </button>
+                </div>
               </ThematicContainer>
             )}
           </div>
@@ -305,7 +319,7 @@ const LoginPage = () => {
         {error && renderErrorState()}
 
         {/* Registration Link */}
-        <RegistrationLinkSection error={error}/>
+        <RegistrationLinkSection error={error} />
       </div>
       <Login setHasAccounts={setHasAccounts} />
     </AuthenticationLayout>
