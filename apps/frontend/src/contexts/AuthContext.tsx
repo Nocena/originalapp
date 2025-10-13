@@ -1,3 +1,4 @@
+import type { Account } from '@nocena/indexer';
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef, useCallback } from 'react';
 import { useActiveAccount, useDisconnect, useActiveWallet } from 'thirdweb/react';
 
@@ -61,6 +62,10 @@ export interface User {
   dailyChallenge: string; // String of 365 characters (e.g., "000...0")
   weeklyChallenge: string; // String of 52 characters (e.g., "000...0")
   monthlyChallenge: string; // String of 12 characters (e.g., "000...0")
+}
+
+export interface CombinedUser extends User {
+  lensAccount: Account;
 }
 
 // GeoPoint for location-based challenges

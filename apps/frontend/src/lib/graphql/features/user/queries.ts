@@ -19,6 +19,35 @@ export const GET_USER_BY_WALLET = gql`
   ${CHALLENGE_COMPLETION_WITH_CHALLENGE}
 `;
 
+export const GET_USERS_BY_WALLET_AND_LENS_ACCOUNTS = gql`
+    query GetUsersByWalletAndLens(
+        $walletAddress: String!
+        $normalizedWallet: String!
+        $lensIds: [String!]
+    ) {
+        queryUser(
+            filter: {
+                and: [
+                    {
+                        or: [
+                            { wallet: { eq: $walletAddress } }
+                            { wallet: { eq: $normalizedWallet } }
+                        ]
+                    }
+                    { lensAccountId: { in: $lensIds } }
+                ]
+            }
+        ) {
+            ...UserWithRelations
+            completedChallenges {
+                ...ChallengeCompletionWithChallenge
+            }
+        }
+    }
+    ${USER_WITH_RELATIONS}
+    ${CHALLENGE_COMPLETION_WITH_CHALLENGE}
+`;
+
 export const GET_USER_BY_ID = gql`
   query GetUserById($userId: String!) {
     queryUser(filter: { id: { eq: $userId } }) {

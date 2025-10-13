@@ -345,38 +345,39 @@ const RegisterPage = () => {
 
       // STEP 2: Register the user in Dgraph with mock Lens data
       console.log('🗄️ Creating user in Dgraph with mock Lens data...');
-      const addedUser = await registerUser(
-        registrationData.username,
-        '', // bio (empty for new users)
-        '/images/profile.png', // profilePicture
-        '/images/cover.jpg', // coverPhoto
-        '/trailer.mp4', // trailerVideo
-        registrationData.walletAddress,
-        50, // earnedTokens
-        0, // earnedTokensToday
-        0, // earnedTokensThisWeek
-        0, // earnedTokensThisMonth
-        '', // personalField1Type
-        '', // personalField1Value
-        '', // personalField1Metadata
-        '', // personalField2Type
-        '', // personalField2Value
-        '', // personalField2Metadata
-        '', // personalField3Type
-        '', // personalField3Value
-        '', // personalField3Metadata
-        '0'.repeat(365), // dailyChallenge
-        '0'.repeat(52), // weeklyChallenge
-        '0'.repeat(12), // monthlyChallenge
-        registrationData.inviteCode,
+      const addedUser = await registerUser({
+        username: registrationData.username,
+        bio: '', // bio (empty for new users)
+        profilePicture: '/images/profile.png', // profilePicture
+        coverPhoto: '/images/cover.jpg', // coverPhoto
+        trailerVideo: '/trailer.mp4', // trailerVideo
+        wallet: registrationData.walletAddress,
+        earnedTokens: 50, // earnedTokens
+        earnedTokensToday: 0, // earnedTokensToday
+        earnedTokensThisWeek: 0, // earnedTokensThisWeek
+        earnedTokensThisMonth: 0, // earnedTokensThisMonth
+        personalField1Type: '', // personalField1Type
+        personalField1Value: '', // personalField1Value
+        personalField1Metadata: '', // personalField1Metadata
+        personalField2Type: '', // personalField2Type
+        personalField2Value: '', // personalField2Value
+        personalField2Metadata: '', // personalField2Metadata
+        personalField3Type: '', // personalField3Type
+        personalField3Value: '', // personalField3Value
+        personalField3Metadata: '', // personalField3Metadata
+        dailyChallenge: '0'.repeat(365), // dailyChallenge
+        weeklyChallenge: '0'.repeat(52), // weeklyChallenge
+        monthlyChallenge: '0'.repeat(12), // monthlyChallenge
+        inviteCode: registrationData.inviteCode,
         // Mock Lens data (these come BEFORE invitedById and pushSubscription according to function signature)
-        lensData.handle,
-        lensData.accountId,
-        lensData.txHash,
-        lensData.metadataUri,
+        lensHandle: lensData.handle,
+        lensAccountId: lensData.accountId,
+        lensTransactionHash: lensData.txHash,
+        lensMetadataUri: lensData.metadataUri,
         // These are the optional parameters at the end
-        registrationData.invitedById || '',
-        pushSubscription || '', // Convert null to empty string for the API
+        invitedById: registrationData.invitedById || '',
+        pushSubscription: pushSubscription || '', // Convert null to empty string for the API
+        }
       );
 
       if (!addedUser) {
