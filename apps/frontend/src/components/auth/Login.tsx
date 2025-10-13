@@ -174,8 +174,6 @@ const Login = ({ setHasAccounts }: LoginProps) => {
                       }}
                     >
                       <SingleAccount
-                        hideFollowButton
-                        hideUnfollowButton
                         linkToAccount={false}
                         account={account}
                         showUserPreview={false}
