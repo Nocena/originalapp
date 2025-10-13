@@ -3,7 +3,7 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 import { signIn } from '../../store/persisted/useAuthStore';
-import { HEY_APP, IS_MAINNET } from '@nocena/data/constants';
+import { NOCENA_APP, IS_MAINNET } from '@nocena/data/constants';
 import { Errors } from '@nocena/data/errors';
 import {
   type ChallengeRequest,
@@ -83,7 +83,7 @@ const Login = () => {
         __typename === 'AccountManaged' && a.address === account,
     );
 
-    const meta = { app: IS_MAINNET ? HEY_APP : undefined, account };
+    const meta = { app: IS_MAINNET ? NOCENA_APP : undefined, account };
     const request: ChallengeRequest = isManager
       ? { accountManager: { manager: thirdWebAccount?.address, ...meta } }
       : { accountOwner: { owner: thirdWebAccount?.address, ...meta } };

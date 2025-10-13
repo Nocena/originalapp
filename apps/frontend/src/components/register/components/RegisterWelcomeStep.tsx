@@ -2,34 +2,153 @@ import React, { useEffect, useRef, useState } from 'react';
 
 interface Props {
   inviteOwner?: string;
-  videoPreloaded?: boolean;
-  preloadedVideo?: HTMLVideoElement | null;
 }
 
-const RegisterWelcomeStep: React.FC<Props> = ({ inviteOwner, videoPreloaded = false, preloadedVideo = null }) => {
+const RegisterWelcomeStep: React.FC<Props> = ({ inviteOwner }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoEnded, setVideoEnded] = useState(false);
   const [showElements, setShowElements] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const preloadedVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [videoPreloaded, setVideoPreloaded] = useState(false);
+  const [videoPreloadError, setVideoPreloadError] = useState(false);
+
+  // Video preloading effect - starts as soon as component mounts
+  useEffect(() => {
+    console.log('🎬 Starting welcome video preload...');
+
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    video.muted = true;
+    video.playsInline = true;
+    video.loop = false;
+    video.crossOrigin = 'anonymous'; // Help with CORS if needed
+
+    // Use the exact filename we can see in your public folder
+    video.src = '/intro.MP4';
+
+    // Event listeners for preload status
+    const handleCanPlayThrough = () => {
+      console.log('✅ Welcome video fully preloaded and ready for instant playback');
+      // setVideoPreloaded(true);
+      // setVideoPreloadError(false);
+    };
+
+    const handleLoadedData = () => {
+      console.log('📼 Welcome video metadata loaded');
+    };
+
+    const handleLoadStart = () => {
+      console.log('🎬 Video preload started...');
+    };
+
+    const handleProgress = () => {
+      if (video.buffered.length > 0) {
+        const buffered = video.buffered.end(0);
+        const duration = video.duration;
+        if (duration > 0) {
+          const percentLoaded = (buffered / duration) * 100;
+          console.log(
+            `📊 Video preload progress: ${percentLoaded.toFixed(1)}% (${buffered.toFixed(1)}s of ${duration.toFixed(1)}s)`,
+          );
+
+          // Consider it "ready enough" if we have at least 50% buffered
+          if (percentLoaded >= 50 && !videoPreloaded) {
+            console.log('🎯 Video 50% preloaded - should be ready for smooth playback');
+            setVideoPreloaded(true);
+            setVideoPreloadError(false);
+          }
+        }
+      }
+    };
+
+    const handleLoadedMetadata = () => {
+      console.log('📋 Video metadata loaded:', {
+        duration: video.duration,
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight,
+        readyState: video.readyState,
+      });
+    };
+
+    const handleError = (e: Event) => {
+      console.error('⚠️ Welcome video preload failed:', e);
+      console.log('🔍 Checking if video file exists by trying direct fetch...');
+
+      // Try to fetch the video file directly to debug
+      fetch('/intro.MP4')
+        .then((response) => {
+          if (response.ok) {
+            console.log('✅ Video file exists and is accessible via fetch');
+            console.log('📁 Video details:', {
+              size: response.headers.get('content-length'),
+              type: response.headers.get('content-type'),
+            });
+          } else {
+            console.error(`❌ Video file returned status: ${response.status}`);
+          }
+        })
+        .catch((fetchError) => {
+          console.error('❌ Video file not accessible:', fetchError);
+        });
+
+      setVideoPreloadError(true);
+      setVideoPreloaded(false); // Will use fallback experience
+    };
+
+    video.addEventListener('canplaythrough', handleCanPlayThrough);
+    video.addEventListener('loadeddata', handleLoadedData);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('loadstart', handleLoadStart);
+    video.addEventListener('error', handleError);
+    video.addEventListener('progress', handleProgress);
+
+    // Start loading immediately
+    video.load();
+    preloadedVideoRef.current = video;
+
+    // Fallback timeout - don't wait forever for preload
+    const fallbackTimeout = setTimeout(() => {
+      if (!videoPreloaded && !videoPreloadError) {
+        console.log('⏰ Video preload taking too long, will continue without it');
+        setVideoPreloadError(true);
+      }
+    }, 15000); // 15 second timeout
+
+    // Cleanup
+    return () => {
+      clearTimeout(fallbackTimeout);
+      if (preloadedVideoRef.current) {
+        preloadedVideoRef.current.removeEventListener('canplaythrough', handleCanPlayThrough);
+        preloadedVideoRef.current.removeEventListener('loadeddata', handleLoadedData);
+        preloadedVideoRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        preloadedVideoRef.current.removeEventListener('loadstart', handleLoadStart);
+        preloadedVideoRef.current.removeEventListener('error', handleError);
+        preloadedVideoRef.current.removeEventListener('progress', handleProgress);
+        preloadedVideoRef.current.remove();
+        preloadedVideoRef.current = null;
+      }
+    };
+  }, [])
 
   useEffect(() => {
     const video = videoRef.current;
 
     if (video) {
-      if (videoPreloaded && preloadedVideo) {
+      if (videoPreloaded && preloadedVideoRef.current) {
         console.log('🎬 Using preloaded video for instant playback');
 
         // Method 1: Clone the preloaded video's state
         try {
           // Copy all the important properties from preloaded video
-          video.src = preloadedVideo.src;
+          video.src = preloadedVideoRef.current.src;
           video.preload = 'auto';
           video.muted = true;
           video.playsInline = true;
 
           // If the preloaded video has buffered data, this should be instant
-          if (preloadedVideo.readyState >= 3) {
+          if (preloadedVideoRef.current.readyState >= 3) {
             // HAVE_FUTURE_DATA or better
             console.log('✅ Preloaded video has sufficient data, should play instantly');
             setVideoLoaded(true);
@@ -69,7 +188,7 @@ const RegisterWelcomeStep: React.FC<Props> = ({ inviteOwner, videoPreloaded = fa
     // Show elements with animation delay
     const timer = setTimeout(() => setShowElements(true), 500);
     return () => clearTimeout(timer);
-  }, [videoPreloaded, preloadedVideo]);
+  }, [videoPreloaded, preloadedVideoRef]);
 
   const handleVideoLoad = () => {
     console.log('📼 Video loaded and ready to play');

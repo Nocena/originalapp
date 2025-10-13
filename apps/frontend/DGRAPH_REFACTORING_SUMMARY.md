@@ -209,7 +209,7 @@ To add a new query:
 
 **Pages:**
 - login/index.tsx
-- register.tsx
+- index.tsx
 - profile/index.tsx, profile/[userID].tsx
 - home/index.tsx
 - inbox/index.tsx

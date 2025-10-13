@@ -84,6 +84,7 @@
     "react-hot-toast": "^2.5.2",
     "react-markdown": "^10.1.0",
     "react-phone-input-2": "^2.15.1",
+    "react-tracked": "^2.0.1",
     "remark-breaks": "^4.0.0",
     "remark-linkify-regex": "^1.2.1",
     "strip-markdown": "^6.0.0",
