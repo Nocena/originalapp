@@ -10,6 +10,7 @@ import ThematicContainer from '@components/ui/ThematicContainer';
 import { chain, client } from '../../lib/thirdweb';
 import { wallets } from '../../lib/thirdweb/wallets';
 import Login from '@components/auth/Login';
+import RegistrationLinkSection from '@components/auth/RegistrationLinkSection';
 
 const LoginPage = () => {
   const [error, setError] = useState('');
@@ -23,7 +24,7 @@ const LoginPage = () => {
 
   const router = useRouter();
   const { login, isAuthenticated, user } = useAuth();
-  const account = useActiveAccount();
+  const thirdWebAccount = useActiveAccount();
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -35,7 +36,7 @@ const LoginPage = () => {
   // Handle user login when account connects
   useEffect(() => {
     const handleUserLogin = async () => {
-      const currentAddress = account?.address;
+      const currentAddress = thirdWebAccount?.address;
 
       if (!currentAddress) {
         setWalletChecked(false);
@@ -136,14 +137,14 @@ const LoginPage = () => {
     };
 
     handleUserLogin();
-  }, [account?.address, login, router, isAuthenticated]);
+  }, [thirdWebAccount?.address, login, router, isAuthenticated]);
 
   // Clear checked addresses when wallet disconnects
   useEffect(() => {
-    if (!account?.address) {
+    if (!thirdWebAccount?.address) {
       checkedAddresses.current.clear();
     }
-  }, [account?.address]);
+  }, [thirdWebAccount?.address]);
 
   const renderErrorState = () => {
     if (error === 'account_not_found') {
@@ -180,8 +181,8 @@ const LoginPage = () => {
           <button
             onClick={() => {
               setError('');
-              if (account?.address) {
-                checkedAddresses.current.delete(account.address);
+              if (thirdWebAccount?.address) {
+                checkedAddresses.current.delete(thirdWebAccount.address);
               }
             }}
             className="text-nocenaPink hover:text-nocenaPink/80 font-medium"
@@ -199,7 +200,7 @@ const LoginPage = () => {
     <AuthenticationLayout title="Welcome challenger" subtitle="It's time to lock in">
       <div className="w-full max-w-md mx-auto space-y-6">
         {/* Main Login Card */}
-        {!account ? (
+        {!thirdWebAccount ? (
           <ThematicContainer
             color="nocenaBlue"
             glassmorphic={true}
@@ -236,7 +237,7 @@ const LoginPage = () => {
                 <p className="text-sm text-gray-300 mb-4">Verifying your account details...</p>
                 <div className="bg-black/30 rounded-lg px-3 py-2 inline-block">
                   <span className="text-xs font-mono text-gray-400">
-                    {account.address.slice(0, 8)}...{account.address.slice(-6)}
+                    {thirdWebAccount.address.slice(0, 8)}...{thirdWebAccount.address.slice(-6)}
                   </span>
                 </div>
               </ThematicContainer>
@@ -253,7 +254,7 @@ const LoginPage = () => {
 
                 <div className="bg-black/30 rounded-lg px-3 py-2 inline-block mb-6">
                   <span className="text-xs font-mono text-gray-400">
-                    {account.address.slice(0, 8)}...{account.address.slice(-6)}
+                    {thirdWebAccount.address.slice(0, 8)}...{thirdWebAccount.address.slice(-6)}
                   </span>
                 </div>
 
@@ -281,7 +282,7 @@ const LoginPage = () => {
 
                 <div className="bg-black/30 rounded-lg px-3 py-2 inline-block mb-6">
                   <span className="text-xs font-mono text-gray-400">
-                    {account.address.slice(0, 8)}...{account.address.slice(-6)}
+                    {thirdWebAccount.address.slice(0, 8)}...{thirdWebAccount.address.slice(-6)}
                   </span>
                 </div>
 
@@ -304,25 +305,7 @@ const LoginPage = () => {
         {error && renderErrorState()}
 
         {/* Registration Link */}
-        <div className="text-center">
-          <p className="text-sm text-gray-400">
-            {error === 'account_not_found' ? (
-              <>
-                Need to register first?{' '}
-                <Link href="/register" className="text-nocenaPink hover:text-nocenaPink/80 font-medium">
-                  Input invite code
-                </Link>
-              </>
-            ) : (
-              <>
-                New challenger?{' '}
-                <Link href="/register" className="text-nocenaPink hover:text-nocenaPink/80 font-medium">
-                  Create your profile
-                </Link>
-              </>
-            )}
-          </p>
-        </div>
+        <RegistrationLinkSection error={error}/>
       </div>
       <Login setHasAccounts={setHasAccounts} />
     </AuthenticationLayout>
