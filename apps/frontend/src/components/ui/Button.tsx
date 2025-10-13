@@ -19,12 +19,14 @@ const buttonVariants = cva(
         variant: "primary",
         outline: false,
         class: cn(
-          "text-white hover:text-white active:text-gray-100",
+          "text-nocenaPink hover:text-nocenaPink/80 font-medium",
+/*
           "bg-gray-950 hover:bg-gray-800 active:bg-gray-700",
           "border border-gray-950 hover:border-gray-800 active:border-gray-700",
           "dark:text-gray-950 dark:hover:text-gray-900 dark:active:text-gray-600",
           "dark:bg-white dark:hover:bg-gray-200 dark:active:bg-gray-200",
           "dark:border-white dark:hover:border-gray-100 dark:active:border-gray-200"
+*/
         )
       },
       // Outline Primary
@@ -32,10 +34,8 @@ const buttonVariants = cva(
         variant: "primary",
         outline: true,
         class: cn(
-          "text-gray-950 active:text-gray-500",
-          "border border-gray-300 hover:border-gray-400",
-          "dark:text-white dark:active:text-gray-700",
-          "dark:border-gray-700 dark:hover:border-gray-600"
+          "text-nocenaPink hover:text-nocenaPink/80 font-medium",
+          "border border-white/20 hover:border-gray-600"
         )
       }
     ],

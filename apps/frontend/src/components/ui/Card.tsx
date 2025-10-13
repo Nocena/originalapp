@@ -1,5 +1,6 @@
 import cn from "../../helpers/cn"
 import { type ElementType, type MouseEvent, type ReactNode, memo } from "react";
+import ThematicContainer from '@components/ui/ThematicContainer';
 
 interface CardProps {
   as?: ElementType;
@@ -17,19 +18,15 @@ const Card = ({
   onClick
 }: CardProps) => {
   return (
-    <Tag
-      className={cn(
-        forceRounded
-          ? "rounded-xl border"
-          : "rounded-none border-y md:rounded-xl md:border",
-        "border-gray-200 dark:border-gray-700",
-        "bg-white dark:bg-black",
-        className
-      )}
-      onClick={onClick}
+    <ThematicContainer
+      color="nocenaPink"
+      glassmorphic={true}
+      asButton={false}
+      rounded="2xl"
+      className="p-6 text-center"
     >
       {children}
-    </Tag>
+    </ThematicContainer>
   );
 };
 

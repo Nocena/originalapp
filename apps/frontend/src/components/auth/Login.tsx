@@ -121,7 +121,7 @@ const Login = ({ setHasAccounts }: LoginProps) => {
     }
   };
 
-  return activeAccount ? (
+  return (
     <div className="space-y-3">
       <div className="space-y-2.5">
         {errorChallenge || errorAuthenticate ? (
@@ -190,7 +190,7 @@ const Login = ({ setHasAccounts }: LoginProps) => {
                         onClick={() => handleSign(account.address)}
                         outline
                       >
-                        Login
+                        Use
                       </Button>
                     </motion.div>
                   ))}
@@ -211,8 +211,6 @@ const Login = ({ setHasAccounts }: LoginProps) => {
         </button>
       </div>
     </div>
-  ) : (
-    null
   );
 };
 
