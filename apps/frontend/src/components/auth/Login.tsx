@@ -1,7 +1,7 @@
-import { Button, Card, ErrorMessage } from "@/components/Shared/UI";
-import errorToast from "@/helpers/errorToast";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import ErrorMessage from "../../components/ui/ErrorMessage";
 import { signIn } from '../../store/persisted/useAuthStore';
-import { KeyIcon } from "@heroicons/react/24/outline";
 import { HEY_APP, IS_MAINNET } from "@nocena/data/constants";
 import { Errors } from "@nocena/data/errors";
 import {
@@ -13,7 +13,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from 'react-hot-toast';
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import SingleAccount from "../Account/SingleAccount";
 import Loader from "../Loader";
@@ -206,7 +206,7 @@ const Login = ({ setHasAccounts }: LoginProps) => {
           onClick={() => disconnect?.()}
           type="reset"
         >
-          <KeyIcon className="size-4" />
+          {/*<KeyIcon className="size-4" />*/}
           <div>Change wallet</div>
         </button>
       </div>

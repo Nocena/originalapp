@@ -1,5 +1,5 @@
-import { Spinner } from "@/components/Shared/UI";
-import cn from "@/helpers/cn";
+import Spinner from "./Spinner"
+import cn from "../../helpers/cn"
 import { type VariantProps, cva } from "class-variance-authority";
 import { AnimatePresence, motion } from "motion/react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
