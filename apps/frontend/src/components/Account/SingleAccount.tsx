@@ -5,8 +5,8 @@ import getAccount from '../../helpers/getAccount';
 import getAvatar from '../../helpers/getAvatar';
 import type { AccountFragment } from '@nocena/indexer';
 import { memo } from 'react';
-import Markup from '../Markup';
-import Slug from '../Slug';
+import Markup from '@components/ui/Markup';
+import { Slug } from '@components/ui';
 import AccountPreview from './AccountPreview';
 
 interface SingleAccountProps {

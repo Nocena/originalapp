@@ -16,9 +16,7 @@ import { useState } from "react";
 import { toast } from 'react-hot-toast';
 import { useAccount, useDisconnect, useSignMessage } from "wagmi";
 import SingleAccount from "../Account/SingleAccount";
-import Loader from "../Loader";
-import SignupCard from "./SignupCard";
-import WalletSelector from "./WalletSelector";
+import { Loader } from '@components/ui';
 
 interface LoginProps {
   setHasAccounts: Dispatch<SetStateAction<boolean>>;
@@ -34,7 +32,7 @@ const Login = ({ setHasAccounts }: LoginProps) => {
   const onError = (error?: any) => {
     setIsSubmitting(false);
     setLoggingInAccountId(null);
-    errorToast(error);
+    toast.error(error);
   };
 
   const { disconnect } = useDisconnect();
@@ -174,7 +172,6 @@ const Login = ({ setHasAccounts }: LoginProps) => {
                       }}
                     >
                       <SingleAccount
-                        linkToAccount={false}
                         account={account}
                         showUserPreview={false}
                       />
@@ -197,7 +194,7 @@ const Login = ({ setHasAccounts }: LoginProps) => {
             )}
           </AnimatePresence>
         ) : (
-          <SignupCard />
+          null
         )}
         <button
           className="flex items-center space-x-1 text-sm underline"
@@ -210,7 +207,7 @@ const Login = ({ setHasAccounts }: LoginProps) => {
       </div>
     </div>
   ) : (
-    <WalletSelector />
+    null
   );
 };
 

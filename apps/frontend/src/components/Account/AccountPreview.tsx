@@ -1,16 +1,14 @@
-import { Card, Image } from "@/components/Shared/UI";
-import getMentions from "@/helpers/getMentions";
-import nFormatter from "@/helpers/nFormatter";
-import truncateByWords from "@/helpers/truncateByWords";
-import getAccount from "@nocena/helpers/getAccount";
-import getAvatar from "@nocena/helpers/getAvatar";
+import { Card, Image, Slug } from "../ui";
+import getMentions from '../../helpers/getMentions';
+import nFormatter from '../../helpers/nFormatter';
+import truncateByWords from '../../helpers/truncateByWords';
+import getAccount from '../../helpers/getAccount';
+import getAvatar from '../../helpers/getAvatar';
 import { type AccountStats, useFullAccountLazyQuery } from "@nocena/indexer";
 import * as HoverCard from "@radix-ui/react-hover-card";
 import plur from "plur";
 import type { ReactNode } from "react";
-import Markup from "../Markup";
-import Slug from "../Slug";
-import FollowUnfollowButton from "./FollowUnfollowButton";
+import Markup from '@components/ui/Markup';
 
 interface AccountPreviewProps {
   children: ReactNode;
@@ -103,7 +101,7 @@ const AccountPreview = ({
       <div className="space-y-3 p-4">
         <div className="flex items-center justify-between">
           <UserAvatar />
-          <FollowUnfollowButton account={account} small />
+          {/*<FollowUnfollowButton account={account} small />*/}
         </div>
         <UserName />
         {account.metadata?.bio && (
