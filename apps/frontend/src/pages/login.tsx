@@ -1,14 +1,14 @@
 // pages/login.tsx - Minimalist design aligned with other screens
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { ConnectButton, useActiveAccount } from 'thirdweb/react';
 import { getUserFromDgraph } from '../lib/api/dgraph';
-import { User, useAuth } from '../contexts/AuthContext';
+import { useAuth, User } from '../contexts/AuthContext';
 import AuthenticationLayout from '../components/layout/AuthenticationLayout';
 import ThematicContainer from '../components/ui/ThematicContainer';
-import { client, chain } from '../lib/thirdweb';
-import { inAppWallet, createWallet } from 'thirdweb/wallets';
+import { chain, client } from '../lib/thirdweb';
+import { wallets } from 'src/lib/thirdweb/wallets';
 
 const LoginPage = () => {
   const [error, setError] = useState('');
@@ -22,18 +22,6 @@ const LoginPage = () => {
   const router = useRouter();
   const { login, isAuthenticated, user } = useAuth();
   const account = useActiveAccount();
-
-  const wallets = [
-    inAppWallet({
-      auth: {
-        options: ['google', 'apple', 'facebook', 'discord', 'telegram', 'x', 'email', 'phone'],
-      },
-    }),
-    createWallet('io.metamask'),
-    createWallet('com.coinbase.wallet'),
-    createWallet('walletConnect'),
-    createWallet('com.trustwallet.app'),
-  ];
 
   // Redirect if already authenticated
   useEffect(() => {
