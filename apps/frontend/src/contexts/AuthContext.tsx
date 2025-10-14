@@ -1,4 +1,4 @@
-import type { Account } from '@nocena/indexer';
+import type { Account, AccountFragment } from '@nocena/indexer';
 import React, {
   createContext,
   useState,
@@ -9,6 +9,7 @@ import React, {
   useCallback,
 } from 'react';
 import { useActiveAccount, useDisconnect, useActiveWallet } from 'thirdweb/react';
+import { signOut } from '../store/persisted/useAuthStore';
 
 // Updated User interface - matches Dgraph schema exactly
 export interface User {
@@ -73,7 +74,7 @@ export interface User {
 }
 
 export interface CombinedUser extends User {
-  lensAccount: Account;
+  lensAccount: Account | AccountFragment;
 }
 
 // GeoPoint for location-based challenges
@@ -211,12 +212,12 @@ export interface Avatar {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: CombinedUser | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (userData: User) => Promise<void>;
+  login: (userData: CombinedUser) => Promise<void>;
   logout: () => Promise<void>;
-  updateUser: (userData: Partial<User>) => void;
+  updateUser: (userData: Partial<CombinedUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -235,7 +236,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<CombinedUser | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -510,7 +511,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [account?.address, user?.wallet, user, isBrowser, setStoredUser]);
 
   const login = useCallback(
-    async (userData: User): Promise<void> => {
+    async (userData: CombinedUser): Promise<void> => {
       if (isProcessingAuth.current) {
         throw new Error('Authentication already in progress');
       }
@@ -536,7 +537,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         setUser(userData);
         setIsAuthenticated(true);
-        setStoredUser(userData);
+        // setStoredUser(userData);
         lastWalletAddress.current = account?.address || null;
 
         console.log('[AuthContext] Login successful', {
@@ -563,7 +564,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     try {
       console.log('[AuthContext] Logout initiated');
-
+      signOut()
       // Clear local state and storage
       setUser(null);
       setIsAuthenticated(false);

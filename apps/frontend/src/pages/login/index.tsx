@@ -1,24 +1,27 @@
 // pages/index.tsx - Minimalist design aligned with other screens
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
-import { ConnectButton, useActiveAccount, useDisconnect, useActiveWallet } from 'thirdweb/react';
-import { getUserByWallet } from '../../lib/graphql';
-import { useAuth, User } from '../../contexts/AuthContext';
+import { ConnectButton, useActiveAccount, useActiveWallet, useDisconnect } from 'thirdweb/react';
+import { getUserByLensAccountId, getUserByWallet } from '../../lib/graphql';
+import { CombinedUser, useAuth, User } from '../../contexts/AuthContext';
 import AuthenticationLayout from '@components/layout/AuthenticationLayout';
 import ThematicContainer from '@components/ui/ThematicContainer';
 import { chain, client } from '../../lib/thirdweb';
 import { wallets } from '../../lib/thirdweb/wallets';
 import Login from '@components/auth/Login';
 import RegistrationLinkSection from '@components/auth/RegistrationLinkSection';
+import { useMeQuery } from '@nocena/indexer';
+import type { AccountFragment } from "@nocena/indexer";
+import { hydrateAuthTokens } from '../../store/persisted/useAuthStore';
 
 const LoginPage = () => {
+  const [ currentLensAccount, setCurrentLensAccount ] = useState<AccountFragment | null>(null);
   const [error, setError] = useState('');
-  const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
   const [loading, setLoading] = useState(false);
   const [walletChecked, setWalletChecked] = useState(false);
   const { disconnect } = useDisconnect();
   const activeWallet = useActiveWallet();
+  const { accessToken } = hydrateAuthTokens();
 
   const isProcessingLogin = useRef(false);
   const checkedAddresses = useRef<Set<string>>(new Set());
@@ -49,6 +52,10 @@ const LoginPage = () => {
         return;
       }
 
+      if (!currentLensAccount) {
+        return
+      }
+
       if (isProcessingLogin.current) {
         return;
       }
@@ -67,7 +74,7 @@ const LoginPage = () => {
       setWalletChecked(false);
 
       try {
-        const userData = await getUserByWallet(currentAddress);
+        const userData = await getUserByLensAccountId(currentLensAccount.address);
         checkedAddresses.current.add(currentAddress);
         setWalletChecked(true);
 
@@ -79,8 +86,9 @@ const LoginPage = () => {
         }
 
         // Format user data for context
-        const formattedUser: User = {
+        const formattedUser: CombinedUser = {
           id: userData.id,
+          lensAccount: currentLensAccount,
           username: userData.username,
           bio: userData.bio || '',
           wallet: userData.wallet,
@@ -140,7 +148,18 @@ const LoginPage = () => {
     };
 
     handleUserLogin();
-  }, [thirdWebAccount?.address, login, router, isAuthenticated]);
+  }, [thirdWebAccount?.address, currentLensAccount, login, router, isAuthenticated]);
+
+  const { loading: meQueryLoading } = useMeQuery({
+    variables: { request: { post: '' } },
+    onCompleted: ({ me, pro }) => {
+      setCurrentLensAccount(me.loggedInAs.account);
+    },
+    // onError,
+    skip: !accessToken
+  });
+
+  console.log("currentLensAccount", currentLensAccount)
 
   // Clear checked addresses when wallet disconnects
   useEffect(() => {
@@ -177,7 +196,7 @@ const LoginPage = () => {
           </ThematicContainer>
         ) : (
           <div className="space-y-6">
-            {loading ? (
+            {loading || meQueryLoading ? (
               <ThematicContainer
                 color="nocenaPink"
                 glassmorphic={true}
@@ -264,7 +283,11 @@ const LoginPage = () => {
           </div>
         )}
 
-        <Login />
+        {
+          thirdWebAccount && !loading && !meQueryLoading && (
+            <Login />
+          )
+        }
 
         {/* Registration Link */}
         <RegistrationLinkSection error={error} />

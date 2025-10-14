@@ -1,4 +1,11 @@
-import { RegisterStep } from '@pages/register/index';
+export enum RegisterStep {
+  INVITE_CODE = 0,
+  WALLET_CONNECT = 1,
+  USER_INFO = 2,
+  NOTIFICATIONS = 3,
+  MINTING = 4,
+  WELCOME = 5,
+}
 
 export const getStepInfo = (
   currentStep: RegisterStep,

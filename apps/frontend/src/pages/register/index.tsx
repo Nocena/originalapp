@@ -5,22 +5,20 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useActiveAccount } from 'thirdweb/react';
 import { generateInviteCode, registerUser } from '../../lib/graphql';
-import { useAuth, User } from '../../contexts/AuthContext';
+import { CombinedUser, useAuth, User } from '../../contexts/AuthContext';
 import AuthenticationLayout from '@components/layout/AuthenticationLayout';
 import RegisterWelcomeStep from '@components/register/components/RegisterWelcomeStep';
 import RegisterInviteCodeStep from '@components/register/components/RegisterInviteCodeStep';
 import RegisterWalletConnectStep from '@components/register/components/RegisterWalletConnectStep';
 import RegisterFormStep from '@components/register/components/RegisterFormStep';
 import RegisterNotificationsStep from '@components/register/components/RegisterNotificationsStep';
-import {
-  useAuthenticateMutation,
-  useChallengeMutation,
-  useCreateAccountWithUsernameMutation,
-} from '@nocena/indexer';
+import { useSwitchAccountMutation } from '@nocena/indexer';
 import { toast } from 'react-hot-toast';
-import { getStepInfo, validateInviteCode } from 'src/lib/register/utils';
+import { getStepInfo, RegisterStep, validateInviteCode } from 'src/lib/register/utils';
 import { schema } from 'src/lib/register/values';
 import Minting from '@pages/register/Minting';
+import { useSignupStore } from '../../store/non-persisted/useSignupStore';
+import { signIn } from '../../store/persisted/useAuthStore';
 
 type FormValues = {
   username: string;
@@ -37,19 +35,11 @@ interface RegistrationData {
   pushSubscription?: string | null; // Updated to allow null
 }
 
-export enum RegisterStep {
-  INVITE_CODE = 0,
-  WALLET_CONNECT = 1,
-  USER_INFO = 2,
-  NOTIFICATIONS = 3,
-  MINTING = 4,
-  WELCOME = 5,
-}
-
 const RegisterPage = () => {
-  const [currentStep, setCurrentStep] = useState(RegisterStep.WALLET_CONNECT);
+  const { onboardingToken, currentStep, transactionHash, setCurrentStep, accountAddress: lensAccountAddress } = useSignupStore();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [storedPushSubscription, setStoredPushSubscription] = useState<string | null>(null);
 
   // Video preloading states
   // const [videoPreloaded, setVideoPreloaded] = useState(false);
@@ -71,11 +61,8 @@ const RegisterPage = () => {
     setRegistrationInProgress(false);
     toast.error(error);
   };
-  const [loadChallenge] = useChallengeMutation({ onError });
-  const [authenticate] = useAuthenticateMutation({ onError });
-  const [createAccountWithUsername] = useCreateAccountWithUsernameMutation({
-    onError,
-  });
+  const [switchAccount] = useSwitchAccountMutation({ onError });
+
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(schema),
@@ -147,6 +134,10 @@ const RegisterPage = () => {
   // Updated to accept string | null for optional notifications
   const handleNotificationsReady = async (pushSubscription: string | null) => {
     setCurrentStep(RegisterStep.MINTING);
+    setStoredPushSubscription(pushSubscription);
+  };
+
+  const registerWholeAccount = async (lensAccountAddress: string) => {
     // CRITICAL: Prevent duplicate registrations - check immediately
     if (registrationInProgress) {
       console.log('⚠️ Registration already in progress, ignoring duplicate attempt');
@@ -174,7 +165,7 @@ const RegisterPage = () => {
       currentAttempt: registrationAttemptRef.current,
       username: registrationData.username,
       wallet: registrationData.walletAddress,
-      pushSubscription: pushSubscription ? 'Enabled' : 'Skipped/Failed',
+      pushSubscription: storedPushSubscription ? 'Enabled' : 'Skipped/Failed',
     });
 
     // Validate we have all required data
@@ -196,132 +187,97 @@ const RegisterPage = () => {
       attemptId,
       inProgress: true,
       timestamp: new Date().toISOString(),
-      notificationsEnabled: !!pushSubscription,
+      notificationsEnabled: !!storedPushSubscription,
     });
 
     try {
-      // STEP 2: Register the user in Dgraph with mock Lens data
-      console.log('🗄️ Creating user in Dgraph with mock Lens data...');
-      const addedUser = await registerUser({
-        username: registrationData.username,
-        bio: '', // bio (empty for new users)
-        profilePicture: '/images/profile.png', // profilePicture
-        coverPhoto: '/images/cover.jpg', // coverPhoto
-        trailerVideo: '/trailer.mp4', // trailerVideo
-        wallet: registrationData.walletAddress,
-        earnedTokens: 50, // earnedTokens
-        earnedTokensToday: 0, // earnedTokensToday
-        earnedTokensThisWeek: 0, // earnedTokensThisWeek
-        earnedTokensThisMonth: 0, // earnedTokensThisMonth
-        personalField1Type: '', // personalField1Type
-        personalField1Value: '', // personalField1Value
-        personalField1Metadata: '', // personalField1Metadata
-        personalField2Type: '', // personalField2Type
-        personalField2Value: '', // personalField2Value
-        personalField2Metadata: '', // personalField2Metadata
-        personalField3Type: '', // personalField3Type
-        personalField3Value: '', // personalField3Value
-        personalField3Metadata: '', // personalField3Metadata
-        dailyChallenge: '0'.repeat(365), // dailyChallenge
-        weeklyChallenge: '0'.repeat(52), // weeklyChallenge
-        monthlyChallenge: '0'.repeat(12), // monthlyChallenge
-        inviteCode: registrationData.inviteCode || '',
-        // Mock Lens data (these come BEFORE invitedById and pushSubscription according to function signature)
-        lensHandle: '',
-        lensAccountId: '',
-        lensTransactionHash: '',
-        lensMetadataUri: '',
-        // These are the optional parameters at the end
-        invitedById: registrationData.invitedById || '',
-        pushSubscription: pushSubscription || '', // Convert null to empty string for the API
+      // STEP 1: register Lens Account
+      const auth = await switchAccount({
+        context: { headers: { 'X-Access-Token': onboardingToken } },
+        variables: { request: { account: lensAccountAddress } },
       });
 
-      if (!addedUser) {
-        throw new Error('Failed to create user in database');
+      if (auth.data?.switchAccount.__typename === 'AuthenticationTokens') {
+        const accessToken = auth.data?.switchAccount.accessToken;
+        const refreshToken = auth.data?.switchAccount.refreshToken;
+        signIn({ accessToken, refreshToken });
+
+        // STEP 2: Register the user in Dgraph with mock Lens data
+        console.log('🗄️ Creating user in Dgraph with mock Lens data...');
+        const addedUser = await registerUser({
+          username: registrationData.username,
+          bio: '', // bio (empty for new users)
+          profilePicture: '/images/profile.png', // profilePicture
+          coverPhoto: '/images/cover.jpg', // coverPhoto
+          trailerVideo: '/trailer.mp4', // trailerVideo
+          wallet: registrationData.walletAddress,
+          earnedTokens: 50, // earnedTokens
+          earnedTokensToday: 0, // earnedTokensToday
+          earnedTokensThisWeek: 0, // earnedTokensThisWeek
+          earnedTokensThisMonth: 0, // earnedTokensThisMonth
+          personalField1Type: '', // personalField1Type
+          personalField1Value: '', // personalField1Value
+          personalField1Metadata: '', // personalField1Metadata
+          personalField2Type: '', // personalField2Type
+          personalField2Value: '', // personalField2Value
+          personalField2Metadata: '', // personalField2Metadata
+          personalField3Type: '', // personalField3Type
+          personalField3Value: '', // personalField3Value
+          personalField3Metadata: '', // personalField3Metadata
+          dailyChallenge: '0'.repeat(365), // dailyChallenge
+          weeklyChallenge: '0'.repeat(52), // weeklyChallenge
+          monthlyChallenge: '0'.repeat(12), // monthlyChallenge
+          inviteCode: registrationData.inviteCode || '',
+          // Mock Lens data (these come BEFORE invitedById and pushSubscription according to function signature)
+          lensHandle: '',
+          lensAccountId: lensAccountAddress,
+          lensTransactionHash: transactionHash,
+          lensMetadataUri: '',
+          // These are the optional parameters at the end
+          invitedById: registrationData.invitedById || '',
+          pushSubscription: storedPushSubscription || '', // Convert null to empty string for the API
+        });
+
+        if (!addedUser) {
+          throw new Error('Failed to create user in database');
+        }
+
+        console.log('✅ User created in Dgraph with mock Lens data:', {
+          userId: addedUser.id,
+          username: addedUser.username,
+          lensHandle: addedUser.lensHandle,
+          lensAccountId: addedUser.lensAccountId,
+          notificationsEnabled: !!storedPushSubscription,
+        });
+
+        // STEP 3: Mark invite code as used (no recovery mode exception)
+/*
+        await fetch('/api/registration/use-invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            inviteCode: registrationData.inviteCode,
+            newUserId: addedUser.id,
+          }),
+        });
+*/
+
+        // STEP 4: Generate initial invite codes
+        try {
+          await generateInviteCode(addedUser.id, 'initial');
+          await generateInviteCode(addedUser.id, 'initial');
+          console.log('✅ Initial invite codes generated');
+        } catch (inviteError) {
+          console.error('Error generating initial invite codes:', inviteError);
+          // Don't fail registration for this
+        }
+
+        // STEP 5: Create user data and commit to AuthContext
+        console.log('👤 Creating user data for AuthContext...');
+        // Mark registration as completed
+        setRegistrationCompleted(true);
+        setCurrentStep(RegisterStep.WELCOME);
       }
-
-      console.log('✅ User created in Dgraph with mock Lens data:', {
-        userId: addedUser.id,
-        username: addedUser.username,
-        lensHandle: addedUser.lensHandle,
-        lensAccountId: addedUser.lensAccountId,
-        notificationsEnabled: !!pushSubscription,
-      });
-
-      // STEP 3: Mark invite code as used (no recovery mode exception)
-      await fetch('/api/registration/use-invite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          inviteCode: registrationData.inviteCode,
-          newUserId: addedUser.id,
-        }),
-      });
-
-      // STEP 4: Generate initial invite codes
-      try {
-        await generateInviteCode(addedUser.id, 'initial');
-        await generateInviteCode(addedUser.id, 'initial');
-        console.log('✅ Initial invite codes generated');
-      } catch (inviteError) {
-        console.error('Error generating initial invite codes:', inviteError);
-        // Don't fail registration for this
-      }
-
-      // STEP 5: Create user data and commit to AuthContext
-      console.log('👤 Creating user data for AuthContext...');
-      const userData: User = {
-        id: addedUser.id,
-        username: registrationData.username,
-        bio: '', // Empty bio for new users
-        wallet: registrationData.walletAddress,
-        profilePicture: '/images/profile.png',
-        coverPhoto: '/images/cover.jpg',
-        trailerVideo: '/trailer.mp4',
-        earnedTokens: 50,
-        earnedTokensDay: 0,
-        earnedTokensWeek: 0,
-        earnedTokensMonth: 0,
-
-        // Personal Expression Fields
-        personalField1Type: '',
-        personalField1Value: '',
-        personalField1Metadata: '',
-        personalField2Type: '',
-        personalField2Value: '',
-        personalField2Metadata: '',
-        personalField3Type: '',
-        personalField3Value: '',
-        personalField3Metadata: '',
-
-        pushSubscription: pushSubscription || '', // Store actual value or empty string
-        dailyChallenge: '0'.repeat(365),
-        weeklyChallenge: '0'.repeat(52),
-        monthlyChallenge: '0'.repeat(12),
-
-        // Include mock Lens data in user context
-        lensHandle: addedUser.lensHandle!,
-        lensAccountId: addedUser.lensAccountId!,
-        lensTransactionHash: addedUser.lensTransactionHash!,
-        lensMetadataUri: addedUser.lensMetadataUri!,
-
-        followers: [],
-        following: [],
-        notifications: [],
-        completedChallenges: [],
-        receivedPrivateChallenges: [],
-        createdPrivateChallenges: [],
-        createdPublicChallenges: [],
-        participatingPublicChallenges: [],
-      };
-
-      // STEP 6: Commit to AuthContext only after everything is successful
-      console.log('🔐 Logging in user...');
-      await login(userData);
-
-      // Mark registration as completed
-      setRegistrationCompleted(true);
-      setCurrentStep(RegisterStep.WELCOME);
     } catch (err) {
       console.error('💥 Registration error:', err);
       setError(err instanceof Error ? err.message : 'Failed to register. Please try again.');
@@ -353,7 +309,7 @@ const RegisterPage = () => {
 
       const timer = setTimeout(() => {
         console.log('🏠 Navigating to home...');
-        router.push('/home');
+        router.push('/login');
       }, welcomeDuration);
 
       return () => clearTimeout(timer);
@@ -386,7 +342,7 @@ const RegisterPage = () => {
         );
 
       case RegisterStep.MINTING:
-        return <Minting />;
+        return <Minting registerWholeAccount={registerWholeAccount} />;
 
       case RegisterStep.NOTIFICATIONS:
         return (
@@ -406,7 +362,7 @@ const RegisterPage = () => {
 
   const stepInfo = useMemo(
     () => getStepInfo(currentStep, registrationInProgress, registrationCompleted),
-    [currentStep, registrationInProgress, registrationCompleted]
+    [currentStep, registrationInProgress, registrationCompleted],
   );
 
   if (currentStep === RegisterStep.WELCOME) {

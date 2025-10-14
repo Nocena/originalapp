@@ -20,6 +20,21 @@ export const GET_USER_BY_WALLET = gql`
   ${CHALLENGE_COMPLETION_WITH_CHALLENGE}
 `;
 
+export const GET_USER_BY_LENS_ACCOUNT_ID = gql`
+  query GetUserByWallet($lensAccountId: String!) {
+    queryUser(
+      filter: { lensAccountId: { eq: $lensAccountId} }
+    ) {
+      ...UserWithRelations
+      completedChallenges {
+        ...ChallengeCompletionWithChallenge
+      }
+    }
+  }
+  ${USER_WITH_RELATIONS}
+  ${CHALLENGE_COMPLETION_WITH_CHALLENGE}
+`;
+
 export const GET_USERS_BY_WALLET_AND_LENS_ACCOUNTS = gql`
   query GetUsersByWalletAndLens(
     $walletAddress: String!

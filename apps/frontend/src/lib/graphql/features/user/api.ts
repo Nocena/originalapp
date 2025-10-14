@@ -28,6 +28,24 @@ export async function getUserByWallet(walletAddress: string): Promise<User | nul
   }
 }
 
+export async function getUserByLensAccountId(lensAccountAddress: string): Promise<User | null> {
+  try {
+    const { data } = await graphqlClient.query({
+      query: queries.GET_USER_BY_LENS_ACCOUNT_ID,
+      variables: { lensAccountId: lensAccountAddress },
+    });
+
+    const userData = data.queryUser?.[0];
+    if (!userData) return null;
+
+    // Format the data to match User interface
+    return formatUserData(userData);
+  } catch (error) {
+    console.error('Error getting user by wallet:', error);
+    throw error;
+  }
+}
+
 export async function getUserById(userId: string): Promise<User | null> {
   try {
     const { data } = await graphqlClient.query({
@@ -205,6 +223,7 @@ export async function registerUser(params: {
   });
 
   // Validate Lens data
+/*
   if (
     !params.lensHandle ||
     !params.lensAccountId ||
@@ -213,6 +232,7 @@ export async function registerUser(params: {
   ) {
     throw new Error('All Lens Protocol data is required for user registration');
   }
+*/
 
   try {
     const input: any = {
