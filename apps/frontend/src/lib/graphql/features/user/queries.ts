@@ -22,9 +22,7 @@ export const GET_USER_BY_WALLET = gql`
 
 export const GET_USER_BY_LENS_ACCOUNT_ID = gql`
   query GetUserByWallet($lensAccountId: String!) {
-    queryUser(
-      filter: { lensAccountId: { eq: $lensAccountId} }
-    ) {
+    queryUser(filter: { lensAccountId: { eq: $lensAccountId } }) {
       ...UserWithRelations
       completedChallenges {
         ...ChallengeCompletionWithChallenge

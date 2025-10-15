@@ -564,7 +564,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     try {
       console.log('[AuthContext] Logout initiated');
-      signOut()
+      signOut();
       // Clear local state and storage
       setUser(null);
       setIsAuthenticated(false);

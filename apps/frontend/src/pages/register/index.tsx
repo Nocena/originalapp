@@ -36,7 +36,13 @@ interface RegistrationData {
 }
 
 const RegisterPage = () => {
-  const { onboardingToken, currentStep, transactionHash, setCurrentStep, accountAddress: lensAccountAddress } = useSignupStore();
+  const {
+    onboardingToken,
+    currentStep,
+    transactionHash,
+    setCurrentStep,
+    accountAddress: lensAccountAddress,
+  } = useSignupStore();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [storedPushSubscription, setStoredPushSubscription] = useState<string | null>(null);
@@ -62,7 +68,6 @@ const RegisterPage = () => {
     toast.error(error);
   };
   const [switchAccount] = useSwitchAccountMutation({ onError });
-
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(schema),
@@ -251,7 +256,7 @@ const RegisterPage = () => {
         });
 
         // STEP 3: Mark invite code as used (no recovery mode exception)
-/*
+        /*
         await fetch('/api/registration/use-invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -362,7 +367,7 @@ const RegisterPage = () => {
 
   const stepInfo = useMemo(
     () => getStepInfo(currentStep, registrationInProgress, registrationCompleted),
-    [currentStep, registrationInProgress, registrationCompleted],
+    [currentStep, registrationInProgress, registrationCompleted]
   );
 
   if (currentStep === RegisterStep.WELCOME) {

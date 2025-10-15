@@ -4,9 +4,9 @@ import ThematicContainer from '@components/ui/ThematicContainer';
 import React from 'react';
 
 interface MintingProps {
-  registerWholeAccount: (lensAccountAddress: string) => void
+  registerWholeAccount: (lensAccountAddress: string) => void;
 }
-const Minting = ({registerWholeAccount}: MintingProps) => {
+const Minting = ({ registerWholeAccount }: MintingProps) => {
   const { choosedUsername, setCurrentStep, setAccountAddress, transactionHash } = useSignupStore();
 
   useAccountQuery({
@@ -14,7 +14,7 @@ const Minting = ({registerWholeAccount}: MintingProps) => {
     onCompleted: (data) => {
       if (data.account) {
         setAccountAddress(data.account.address);
-        registerWholeAccount(data.account.address)
+        registerWholeAccount(data.account.address);
         // setCurrentStep(RegisterStep.WELCOME)
       }
     },

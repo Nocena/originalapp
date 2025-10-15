@@ -11,11 +11,11 @@ import { wallets } from '../../lib/thirdweb/wallets';
 import Login from '@components/auth/Login';
 import RegistrationLinkSection from '@components/auth/RegistrationLinkSection';
 import { useMeQuery } from '@nocena/indexer';
-import type { AccountFragment } from "@nocena/indexer";
+import type { AccountFragment } from '@nocena/indexer';
 import { hydrateAuthTokens } from '../../store/persisted/useAuthStore';
 
 const LoginPage = () => {
-  const [ currentLensAccount, setCurrentLensAccount ] = useState<AccountFragment | null>(null);
+  const [currentLensAccount, setCurrentLensAccount] = useState<AccountFragment | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [walletChecked, setWalletChecked] = useState(false);
@@ -53,7 +53,7 @@ const LoginPage = () => {
       }
 
       if (!currentLensAccount) {
-        return
+        return;
       }
 
       if (isProcessingLogin.current) {
@@ -156,10 +156,10 @@ const LoginPage = () => {
       setCurrentLensAccount(me.loggedInAs.account);
     },
     // onError,
-    skip: !accessToken
+    skip: !accessToken,
   });
 
-  console.log("currentLensAccount", currentLensAccount)
+  console.log('currentLensAccount', currentLensAccount);
 
   // Clear checked addresses when wallet disconnects
   useEffect(() => {
@@ -283,11 +283,7 @@ const LoginPage = () => {
           </div>
         )}
 
-        {
-          thirdWebAccount && !loading && !meQueryLoading && (
-            <Login />
-          )
-        }
+        {thirdWebAccount && !loading && !meQueryLoading && <Login />}
 
         {/* Registration Link */}
         <RegistrationLinkSection error={error} />

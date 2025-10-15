@@ -223,7 +223,7 @@ export async function registerUser(params: {
   });
 
   // Validate Lens data
-/*
+  /*
   if (
     !params.lensHandle ||
     !params.lensAccountId ||
