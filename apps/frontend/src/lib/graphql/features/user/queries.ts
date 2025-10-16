@@ -149,3 +149,14 @@ export const GET_ALL_PUSH_SUBSCRIPTIONS = gql`
     }
   }
 `;
+
+export const GET_ALL_USERS_WITH_WALLETS = gql`
+  query GetAllUsersWithWallets($limit: Int) {
+    queryUser(first: $limit) {
+      id
+      username
+      profilePicture
+      wallet
+    }
+  }
+`;
