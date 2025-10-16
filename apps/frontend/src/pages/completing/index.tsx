@@ -13,6 +13,7 @@ import VerificationScreen from './components/VerificationScreen';
 import ClaimingScreen from './components/ClaimingScreen';
 import { useBackgroundTasks } from '../../contexts/BackgroundTaskContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { CHALLENGE_REWARDS } from '../../lib/constants';
 
 interface Challenge {
   title: string;
@@ -68,13 +69,30 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
     if (title && description && reward) {
       let challengeData: Challenge;
 
+      // Get correct reward amount based on frequency for AI challenges
+      const getCorrectReward = (challengeType: string, freq?: string) => {
+        if (challengeType === 'AI' && freq) {
+          switch (freq) {
+            case 'daily':
+              return CHALLENGE_REWARDS.DAILY;
+            case 'weekly':
+              return CHALLENGE_REWARDS.WEEKLY;
+            case 'monthly':
+              return CHALLENGE_REWARDS.MONTHLY;
+            default:
+              return parseInt(reward as string);
+          }
+        }
+        return parseInt(reward as string);
+      };
+
       if (type === 'AI') {
         challengeData = {
           title: title as string,
           description: description as string,
           challengerName: 'Nocena GPT',
           challengerProfile: '/images/AI.jpg',
-          reward: parseInt(reward as string),
+          reward: getCorrectReward('AI', frequency as string),
           color: 'nocenaPink',
           type: 'AI',
           frequency: frequency as 'daily' | 'weekly' | 'monthly',
@@ -85,7 +103,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
           description: description as string,
           challengerName: 'Friend Challenge',
           challengerProfile: '/images/profile.png',
-          reward: parseInt(reward as string),
+          reward: getCorrectReward('PRIVATE'),
           color: 'nocenaBlue',
           type: 'PRIVATE',
           challengeId: challengeId as string,
@@ -97,7 +115,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
           description: description as string,
           challengerName: 'Business Challenge',
           challengerProfile: '/images/profile.png',
-          reward: parseInt(reward as string),
+          reward: getCorrectReward('PUBLIC'),
           color: 'nocenaPurple',
           type: 'PUBLIC',
           challengeId: challengeId as string,
@@ -108,7 +126,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
           description: description as string,
           challengerName: 'Nocena',
           challengerProfile: '/images/AI.jpg',
-          reward: parseInt(reward as string),
+          reward: getCorrectReward('AI', frequency as string),
           color: 'nocenaPink',
           type: 'AI',
         };
@@ -501,7 +519,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
             <Image src="/nocenix.ico" alt="Success" width={40} height={40} />
           </div>
           <h2 className="text-2xl font-bold text-nocenaPurple mb-3">Challenge Complete!</h2>
-          <p className="text-lg mb-1">+{challenge.reward} Nocenix earned</p>
+          <p className="text-lg mb-1">+{challenge.reward} NCT earned</p>
           <p className="text-sm text-gray-400 mb-8">Tokens have been added to your wallet</p>
           <PrimaryButton onClick={handleComplete} text="Continue" className="w-full max-w-sm" />
         </div>
@@ -622,7 +640,8 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
                 <ThematicContainer asButton={false} color="nocenaPink" className="px-4 py-2">
                   <div className="flex items-center space-x-2">
                     <span className="text-lg font-semibold">{challenge.reward}</span>
-                    <Image src="/nocenix.ico" alt="Nocenix" width={20} height={20} />
+                    <Image src="/nocenix.ico" alt="NCT" width={20} height={20} />
+                    <span className="text-sm font-medium">NCT</span>
                   </div>
                 </ThematicContainer>
               </div>

@@ -7,7 +7,6 @@ import ThematicContainer from '../../../components/ui/ThematicContainer';
 import {
   completeChallengeWorkflow,
   CompletionData,
-  saveNFTRewardAfterCompletion,
 } from '../../../lib/completing/challengeCompletionService';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useBackgroundTasks } from '../../../contexts/BackgroundTaskContext';
@@ -305,24 +304,11 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
     }
 
     try {
-      const saveResult = await saveNFTRewardAfterCompletion(completionId, user.id, {
-        collectionId: nftState.collectionId,
-        templateType: nftState.templateType,
-        templateName: nftState.templateName,
-        imageUrl: imageUrl,
-        generationPrompt: `Generated ${nftState.templateType} for challenge completion`,
-      });
-
-      if (saveResult.success) {
-        console.log('NFT saved to database:', saveResult.nftId);
-        setNftState((prev) => ({
-          ...prev,
-          status: 'saved',
-          nftId: saveResult.nftId,
-        }));
-      } else {
-        console.error('Failed to save NFT to database:', saveResult.error);
-      }
+      console.log('NFT already generated and ready to use');
+      setNftState((prev) => ({
+        ...prev,
+        status: 'saved',
+      }));
     } catch (error) {
       console.error('Error saving NFT to database:', error);
     }
@@ -388,8 +374,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
       const result = await completeChallengeWorkflow(
         user.id,
         completionData,
-        updateUser,
-        existingNFTData
+        user.wallet
       );
 
       if (result.success) {
@@ -469,7 +454,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
       case 'success':
         return {
           title: 'Reward Claimed!',
-          subtitle: `+${challenge.reward} Nocenix${nftState.tokenBonus ? ` (+${nftState.tokenBonus}% bonus)` : ''}`,
+          subtitle: `+${challenge.reward} NCT${nftState.tokenBonus ? ` (+${nftState.tokenBonus}% bonus)` : ''}`,
         };
       case 'failed':
         return {
@@ -611,7 +596,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-sm font-semibold">{challenge.reward}</span>
-                      <Image src="/nocenix.ico" alt="Nocenix" width={16} height={16} />
+                      <Image src="/nocenix.ico" alt="NCT" width={16} height={16} />
                     </div>
                   </div>
                 </div>
@@ -654,8 +639,8 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                 <div className="bg-black/30 rounded-xl p-4 mb-4">
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-2xl font-bold text-white">{challenge.reward}</span>
-                    <Image src="/nocenix.ico" alt="Nocenix" width={24} height={24} />
-                    <span className="text-sm text-gray-300">NOCENIX</span>
+                    <Image src="/nocenix.ico" alt="NCT" width={24} height={24} />
+                    <span className="text-sm text-gray-300">NCT</span>
                   </div>
                 </div>
 
@@ -773,8 +758,8 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
                 <div className="bg-black/30 rounded-xl p-4 mb-6">
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-xl font-bold">+{challenge.reward}</span>
-                    <Image src="/nocenix.ico" alt="Nocenix" width={24} height={24} />
-                    <span className="text-lg text-gray-300">NOCENIX</span>
+                    <Image src="/nocenix.ico" alt="NCT" width={24} height={24} />
+                    <span className="text-lg text-gray-300">NCT</span>
                   </div>
                 </div>
 

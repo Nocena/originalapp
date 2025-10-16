@@ -177,22 +177,20 @@ export const getCurrentChallenge = async (
 /**
  * Get challenge reward based on the challenge data or use default
  */
-export const getChallengeReward = (challenge: AIChallenge | null, frequency: string): number => {
-  // If we have a challenge with a reward, use it
-  if (challenge?.reward) {
-    return challenge.reward;
-  }
+import { CHALLENGE_REWARDS } from '../constants';
 
-  // Otherwise use defaults based on frequency
+export const getChallengeReward = (challenge: AIChallenge | null, frequency: string): number => {
+  // Always use constants for correct reward values: 100, 500, 2500
+  // Ignore database reward values as they may be outdated
   switch (frequency) {
     case 'daily':
-      return 25;
+      return CHALLENGE_REWARDS.DAILY; // 100
     case 'weekly':
-      return 100;
+      return CHALLENGE_REWARDS.WEEKLY; // 500
     case 'monthly':
-      return 500;
+      return CHALLENGE_REWARDS.MONTHLY; // 2500
     default:
-      return 25;
+      return CHALLENGE_REWARDS.DAILY; // 100
   }
 };
 
@@ -205,7 +203,7 @@ export const getFallbackChallenge = (frequency: 'daily' | 'weekly' | 'monthly'):
       id: 'fallback-daily',
       title: 'Daily Challenge',
       description: "Complete today's challenge to earn rewards!",
-      reward: 25,
+      reward: CHALLENGE_REWARDS.DAILY, // 100
       frequency: 'daily',
       isActive: false, // Mark as inactive to show offline state
     },
@@ -213,7 +211,7 @@ export const getFallbackChallenge = (frequency: 'daily' | 'weekly' | 'monthly'):
       id: 'fallback-weekly',
       title: 'Weekly Challenge',
       description: "Complete this week's challenge for bonus rewards!",
-      reward: 100,
+      reward: CHALLENGE_REWARDS.WEEKLY, // 500
       frequency: 'weekly',
       isActive: false,
     },
@@ -221,7 +219,7 @@ export const getFallbackChallenge = (frequency: 'daily' | 'weekly' | 'monthly'):
       id: 'fallback-monthly',
       title: 'Monthly Challenge',
       description: "Complete this month's epic challenge!",
-      reward: 500,
+      reward: CHALLENGE_REWARDS.MONTHLY, // 2500
       frequency: 'monthly',
       isActive: false,
     },

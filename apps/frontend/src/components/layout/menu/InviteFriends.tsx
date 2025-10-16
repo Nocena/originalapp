@@ -106,7 +106,7 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
   Complete challenges. Earn token. Connect with people.
 
   Your invite code: ${code}
-  We both get 50 Nocenix when you join!
+  We both get 50 NCT when you join!
   Download: https://app.nocena/${code}
 
   ⚠️ *Pro tip:* If you're opening this in Meta, Telegram, or any in-app browser, tap the ... menu and choose "Open in browser" to install the app properly.
