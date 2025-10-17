@@ -8,6 +8,7 @@ import NotificationInviteReward from './notifications/NotificationInviteReward';
 import { getPageState, updatePageState } from '../../components/PageManager';
 import { NotificationBase, CreatePrivateChallengeRequest } from '../../types/notifications';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
+import ThematicContainer from '../../components/ui/ThematicContainer';
 
 // Performance debugging - global timer for overall page load
 const startTime = Date.now();
@@ -438,9 +439,31 @@ const InboxView = () => {
   };
 
   const handleSubmitChallenge = async (challenge: CreatePrivateChallengeRequest) => {
-    console.log('Creating private challenge:', challenge);
-    // TODO: Implement API call to create private challenge
-    setShowChallengeCreator(false);
+    try {
+      const response = await fetch('/api/private-challenge/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(challenge),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log('Private challenge created:', result);
+        // TODO: Show success message
+        // TODO: Refresh challenge list
+      } else {
+        console.error('Failed to create challenge:', result.error);
+        // TODO: Show error message
+      }
+    } catch (error) {
+      console.error('Error creating private challenge:', error);
+      // TODO: Show error message
+    } finally {
+      setShowChallengeCreator(false);
+    }
   };
 
   // Memoize notification rendering to prevent unnecessary re-renders
@@ -548,15 +571,24 @@ const InboxView = () => {
 
         {/* Private Challenge Section */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Private Challenges</h2>
-            <button 
-              onClick={handleCreateChallenge}
-              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              Create Challenge
-            </button>
-          </div>
+          <ThematicContainer
+            asButton={false}
+            glassmorphic={true}
+            color="nocenaPurple"
+            rounded="xl"
+            className="p-4 mb-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Private Challenges</h2>
+              <button 
+                onClick={handleCreateChallenge}
+                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ backgroundColor: '#6A4CFF' }}
+              >
+                Create Challenge
+              </button>
+            </div>
+          </ThematicContainer>
           
           {/* Placeholder for private challenge invites */}
           <div className="text-gray-400 text-center py-8">

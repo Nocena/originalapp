@@ -15,15 +15,28 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
     rewardAmount: 50,
   });
   const [selectedUser, setSelectedUser] = useState<SearchUser | null>(null);
+  const [rewardError, setRewardError] = useState<string>('');
 
   const handleUserSelect = (user: SearchUser) => {
     setSelectedUser(user);
     setFormData({ ...formData, recipientId: user.id });
   };
 
+  const handleRewardChange = (value: string) => {
+    const numValue = parseInt(value) || 0;
+    
+    if (numValue > 250) {
+      setRewardError('Exceeds private challenge limit');
+    } else {
+      setRewardError('');
+    }
+    
+    setFormData({ ...formData, rewardAmount: numValue });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.description && formData.recipientId) {
+    if (formData.name && formData.description && formData.recipientId && !rewardError && formData.rewardAmount > 0) {
       onSubmit(formData);
     }
   };
@@ -86,14 +99,19 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Reward Amount (max 250)</label>
+            <div className="flex items-center space-x-2 mb-2">
+              <label className="block text-sm font-medium">Reward Amount (max 250)</label>
+              {rewardError && (
+                <span className="text-red-400 text-sm">{rewardError}</span>
+              )}
+            </div>
             <input
               type="number"
-              value={formData.rewardAmount}
-              onChange={(e) => setFormData({ ...formData, rewardAmount: Math.min(250, parseInt(e.target.value) || 0) })}
-              className="w-full px-3 py-2 bg-gray-700 rounded-lg"
+              value={formData.rewardAmount || ''}
+              onChange={(e) => handleRewardChange(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 rounded-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               min="1"
-              max="250"
+              placeholder="Enter reward amount"
             />
           </div>
 
@@ -101,14 +119,14 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors"
+              className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={!selectedUser}
-              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors"
+              disabled={!selectedUser || !!rewardError || formData.rewardAmount <= 0}
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors"
             >
               Send Challenge
             </button>
