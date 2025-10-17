@@ -12,7 +12,12 @@ const UpdateNotification: React.FC<UpdateNotificationProps> = ({ onUpdate }) => 
   const [newVersion, setNewVersion] = useState<string>('');
 
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
+    // Skip ServiceWorker in development
+    if (
+      'serviceWorker' in navigator &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1'
+    ) {
       const cleanupFunctions: (() => void)[] = [];
 
       const initializeServiceWorker = async () => {

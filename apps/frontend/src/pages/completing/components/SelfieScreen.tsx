@@ -242,7 +242,7 @@ const SelfieScreen: React.FC<SelfieScreenProps> = ({
               <div className="text-sm font-medium text-white">{challenge.title}</div>
               <div className="flex items-center gap-1">
                 <span className="text-sm font-semibold text-nocenaPink">{challenge.reward}</span>
-                <Image src="/nocenix.ico" alt="Nocenix" width={14} height={14} />
+                <Image src="/nocenix.ico" alt="NCT" width={14} height={14} />
               </div>
             </div>
           </div>

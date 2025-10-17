@@ -6,6 +6,7 @@ import webpush from 'web-push';
 import axios from 'axios';
 import { monthlyChallenges, ChallengeFrequency, ChallengeCategory } from '../data/challenges';
 import { resetTimeBasedEarnings } from '../lib/graphql';
+import { CHALLENGE_REWARDS } from '../lib/constants';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -436,7 +437,7 @@ IMPORTANT: Review the recent episodes above and create something DIFFERENT for m
       id: uuidv4(),
       title,
       description,
-      reward: 25, // Monthly challenges reward 25 Nocenix
+      reward: CHALLENGE_REWARDS.MONTHLY, // Monthly challenges reward 2500 NCT
       createdAt: new Date().toISOString(),
       isActive: true,
       frequency: 'monthly',

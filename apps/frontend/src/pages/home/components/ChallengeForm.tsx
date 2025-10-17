@@ -62,7 +62,7 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
             <ThematicContainer asButton={false} color="nocenaPink" className="px-4 py-1">
               <div className="flex items-center space-x-1">
                 <span className="text-xl font-semibold">+{reward}</span>
-                <Image src={nocenixIcon} alt="Nocenix" width={32} height={32} />
+                <Image src={nocenixIcon} alt="NCT" width={32} height={32} />
                 <span className="text-sm text-gray-300">earned</span>
               </div>
             </ThematicContainer>
@@ -98,7 +98,7 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
             >
               <div className="flex items-center space-x-1">
                 <span className="text-xl font-semibold">{reward}</span>
-                <Image src={nocenixIcon} alt="Nocenix" width={32} height={32} />
+                <Image src={nocenixIcon} alt="NCT" width={32} height={32} />
               </div>
             </ThematicContainer>
           </div>

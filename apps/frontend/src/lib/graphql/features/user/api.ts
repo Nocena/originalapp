@@ -3,7 +3,9 @@ import { generateId, normalizeWallet } from '../../utils';
 import type { User } from '../../../../contexts/AuthContext';
 import * as queries from './queries';
 import * as mutations from './mutations';
-
+import { createPublicClient, http, defineChain } from 'viem';
+import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../../../lib/constants';
+import noceniteTokenArtifact from '../../../../lib/contracts/nocenite.json';
 // ============================================================================
 // QUERY FUNCTIONS
 // ============================================================================
@@ -519,3 +521,96 @@ function formatUserData(userData: any): User {
     monthlyChallenge: userData.monthlyChallenge || '0'.repeat(12),
   };
 }
+
+// ============================================================================
+// BLOCKCHAIN LEADERBOARD
+// ============================================================================
+
+export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[]> => {
+  try {
+    // Get all users with wallet addresses
+    const { data } = await graphqlClient.query({
+      query: queries.GET_ALL_USERS_WITH_WALLETS,
+      variables: { limit: 1000 }, // Get more users to check balances
+    });
+
+    const users = data.queryUser || [];
+
+    if (users.length === 0) {
+      return [];
+    }
+
+    // Filter users with wallets and get blockchain balances
+    const usersWithWallets = users.filter((user: any) => {
+      if (!user.wallet || user.wallet.trim() === '') return false;
+      // Validate wallet address format (40 hex characters after 0x)
+      const walletRegex = /^0x[a-fA-F0-9]{40}$/;
+      return walletRegex.test(user.wallet);
+    });
+
+    if (usersWithWallets.length === 0) {
+      return [];
+    }
+
+    // Get blockchain balances for all users with wallets
+    const usersWithBalances = await Promise.all(
+      usersWithWallets.map(async (user: any) => {
+        try {
+          // Create public client for reading blockchain data
+          const publicClient = createPublicClient({
+            chain: defineChain(FLOW_TESTNET_CONFIG),
+            transport: http(),
+          });
+
+          // Get NCT token balance with error handling
+          let balance = 0n;
+          try {
+            balance = (await publicClient.readContract({
+              address: CONTRACTS.Nocenite as `0x${string}`,
+              abi: noceniteTokenArtifact.abi,
+              functionName: 'balanceOf',
+              args: [user.wallet],
+            })) as bigint;
+          } catch (error) {
+            // Silently handle errors and return 0 balance
+            balance = 0n;
+          }
+
+          // Convert from wei to tokens (18 decimals)
+          const balanceInTokens = Number(balance) / Math.pow(10, 18);
+
+          return {
+            ...user,
+            balance: Math.floor(balanceInTokens),
+          };
+        } catch (error) {
+          console.error(`Error fetching balance for ${user.wallet}:`, error);
+          return { ...user, balance: 0 };
+        }
+      })
+    );
+
+    // Filter out users with 0 balance and sort by balance
+    const leaderboard = usersWithBalances
+      .filter((user: any) => user.balance > 0)
+      .sort((a: any, b: any) => b.balance - a.balance)
+      .slice(0, limit)
+      .map((user: any, index: number) => ({
+        rank: index + 1,
+        userId: user.id,
+        username: user.username,
+        profilePicture: user.profilePicture || '/images/profile.png',
+        currentPeriodTokens: user.balance,
+        allTimeTokens: user.balance,
+        todayTokens: 0,
+        weekTokens: 0,
+        monthTokens: 0,
+        lastUpdate: new Date().toISOString(),
+      }));
+
+    return leaderboard;
+  } catch (error) {
+    console.error('Error in getBlockchainLeaderboard:', error);
+    throw error;
+  }
+};

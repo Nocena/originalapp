@@ -832,7 +832,7 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-sm font-semibold">{challenge.reward}</span>
-                      <Image src="/nocenix.ico" alt="Nocenix" width={16} height={16} />
+                      <Image src="/nocenix.ico" alt="NCT" width={16} height={16} />
                     </div>
                   </div>
                 </div>
@@ -1070,8 +1070,8 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                 <div className="bg-black/30 rounded-xl p-4 mb-6">
                   <div className="flex items-center justify-center gap-2">
                     <span className="text-xl font-bold text-white">{challenge.reward}</span>
-                    <Image src="/nocenix.ico" alt="Nocenix" width={20} height={20} />
-                    <span className="text-sm text-gray-300">NOCENIX</span>
+                    <Image src="/nocenix.ico" alt="NCT" width={20} height={20} />
+                    <span className="text-sm text-gray-300">NCT</span>
                   </div>
                 </div>
               </ThematicContainer>
