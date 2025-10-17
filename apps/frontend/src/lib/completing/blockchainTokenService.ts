@@ -15,7 +15,7 @@ interface BlockchainRewardResult {
 async function mintChallengeReward(
   userAddress: string,
   frequency: ChallengeFrequency,
-  ipfsHash: string,
+  ipfsHash: string
 ): Promise<BlockchainRewardResult> {
   try {
     const response = await fetch('/api/mint-challenge-reward', {

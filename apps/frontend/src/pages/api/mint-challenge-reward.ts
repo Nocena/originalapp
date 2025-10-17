@@ -45,7 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Ensure private key has 0x prefix
-    const formattedPrivateKey = relayerPrivateKey.startsWith('0x') ? relayerPrivateKey : `0x${relayerPrivateKey}`;
+    const formattedPrivateKey = relayerPrivateKey.startsWith('0x')
+      ? relayerPrivateKey
+      : `0x${relayerPrivateKey}`;
 
     // Create relayer account and wallet client
     const relayerAccount = privateKeyToAccount(formattedPrivateKey as `0x${string}`);
@@ -67,8 +69,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           { name: 'challengeType', type: 'string' },
           { name: 'ipfsHash', type: 'string' },
         ],
-        [userAddress as `0x${string}`, challengeFrequency, ipfsHash],
-      ),
+        [userAddress as `0x${string}`, challengeFrequency, ipfsHash]
+      )
     );
 
     // Sign the message hash (viem automatically adds the Ethereum signed message prefix)

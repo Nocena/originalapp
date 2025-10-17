@@ -399,7 +399,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // If we have a wallet connection, validate it matches
             if (currentAddress && userData.wallet) {
               if (userData.wallet.toLowerCase() === currentAddress.toLowerCase()) {
-                setUser(userData);
+                setUser({ ...userData, lensAccount: {} as Account });
                 setIsAuthenticated(true);
                 lastWalletAddress.current = currentAddress;
                 console.log('[AuthContext] User restored with matching wallet', {
@@ -422,7 +422,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               lastWalletAddress.current = null;
             } else {
               // User without wallet requirement
-              setUser(userData);
+              setUser({ ...userData, lensAccount: {} as Account });
               setIsAuthenticated(true);
               lastWalletAddress.current = currentAddress;
               console.log('[AuthContext] User restored without wallet requirement');
@@ -535,7 +535,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           throw new Error('User wallet does not match connected wallet');
         }
 
-        setUser(userData);
+        setUser({ ...userData, lensAccount: {} as Account });
         setIsAuthenticated(true);
         // setStoredUser(userData);
         lastWalletAddress.current = account?.address || null;

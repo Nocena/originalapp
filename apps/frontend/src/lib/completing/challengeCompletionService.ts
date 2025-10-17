@@ -19,12 +19,16 @@ export interface CompletionResult {
   success: boolean;
   message: string;
   completionId?: string;
+  nftReward?: {
+    status: string;
+    [key: string]: any;
+  };
 }
 
 export async function completeChallengeWorkflow(
   userId: string,
   completionData: CompletionData,
-  userWalletAddress?: string,
+  userWalletAddress?: string
 ): Promise<CompletionResult> {
   try {
     const { challenge } = completionData;
@@ -78,7 +82,6 @@ export async function completeChallengeWorkflow(
       message: `Challenge completed! +${challenge.reward} tokens earned`,
       completionId: 'mock-completion-id',
     };
-
   } catch (error) {
     console.error('Challenge completion failed:', error);
     return {

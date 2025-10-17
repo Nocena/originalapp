@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useIsRewardMinter } from './contracts/useNocenite';
-import { completeChallengeWorkflow, type CompletionData, type CompletionResult } from '../lib/completing/challengeCompletionService';
+import {
+  completeChallengeWorkflow,
+  type CompletionData,
+  type CompletionResult,
+} from '../lib/completing/challengeCompletionService';
 
 interface BlockchainCompletionResult extends CompletionResult {
   blockchainReward?: {
@@ -21,7 +25,7 @@ export function useChallengeCompletion() {
 
   const completeChallenge = async (
     completionData: CompletionData,
-    enableBlockchainRewards: boolean = true,
+    enableBlockchainRewards: boolean = true
   ): Promise<BlockchainCompletionResult> => {
     if (!user?.id) {
       return { success: false, message: 'User not authenticated' };
@@ -34,7 +38,7 @@ export function useChallengeCompletion() {
       const completionResult = await completeChallengeWorkflow(
         user.id,
         completionData,
-        account?.address, // This ensures tokens are minted to the connected wallet
+        account?.address // This ensures tokens are minted to the connected wallet
       );
 
       return completionResult;
