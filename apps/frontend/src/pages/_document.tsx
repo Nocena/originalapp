@@ -30,7 +30,8 @@ class MyDocument extends Document {
             dangerouslySetInnerHTML={{
               __html: `
               // Service Worker Registration and Update Handling
-              if ('serviceWorker' in navigator) {
+              // Only register in production (not localhost)
+              if ('serviceWorker' in navigator && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
                 let swVersion = null;
                 
                 // Register service worker on page load
@@ -138,7 +139,7 @@ class MyDocument extends Document {
                   }
                 };
               } else {
-                console.warn('⚠️ Service workers not supported');
+                console.warn('⚠️ Service workers not supported or running in development');
               }
             `,
             }}
