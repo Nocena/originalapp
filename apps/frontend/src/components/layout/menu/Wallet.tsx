@@ -96,7 +96,9 @@ const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
 
       {/* Current Balance */}
       <div className="bg-white/5 rounded-2xl p-6 mb-6 border border-white/10">
-        <h3 className="text-white font-semibold mb-4 text-center text-lg">Your Blockchain Balance</h3>
+        <h3 className="text-white font-semibold mb-4 text-center text-lg">
+          Your Blockchain Balance
+        </h3>
         {account?.address ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -115,20 +117,26 @@ const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
                   >
                     <Copy className="w-3 h-3" />
                   </button>
-                  {copiedAddress === 'NCT' && <span className="text-green-400 text-xs">Copied!</span>}
+                  {copiedAddress === 'NCT' && (
+                    <span className="text-green-400 text-xs">Copied!</span>
+                  )}
                 </div>
               </div>
             </div>
             <div className="text-center pt-2 border-t border-white/10">
               <div className="text-white/60 text-xs flex items-center justify-center space-x-2">
-                <span>{account.address.slice(0, 6)}...{account.address.slice(-4)}</span>
+                <span>
+                  {account.address.slice(0, 6)}...{account.address.slice(-4)}
+                </span>
                 <button
                   onClick={() => copyToClipboard(account.address, 'wallet')}
                   className="text-white/40 hover:text-white/60 transition-colors"
                 >
                   <Copy className="w-3 h-3" />
                 </button>
-                {copiedAddress === 'wallet' && <span className="text-green-400 text-xs">Copied!</span>}
+                {copiedAddress === 'wallet' && (
+                  <span className="text-green-400 text-xs">Copied!</span>
+                )}
               </div>
             </div>
           </div>
@@ -147,11 +155,12 @@ const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
           Your Digital Wallet
         </h3>
         <p className="text-white/70 text-sm leading-relaxed mb-4">
-          Think of your wallet like a secure digital account that holds your Nocenite tokens. Just like your email or
-          social media account, it's protected and belongs to you.
+          Think of your wallet like a secure digital account that holds your Nocenite tokens. Just
+          like your email or social media account, it's protected and belongs to you.
         </p>
         <p className="text-white/70 text-sm leading-relaxed">
-          Connect popular wallets like MetaMask, Coinbase Wallet, or use our built-in social login options to get started.
+          Connect popular wallets like MetaMask, Coinbase Wallet, or use our built-in social login
+          options to get started.
         </p>
       </div>
 
@@ -165,7 +174,9 @@ const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
             </div>
             <div>
               <div className="text-white font-medium text-sm">Instant & Free</div>
-              <div className="text-white/50 text-xs">No transaction fees for earning or using tokens</div>
+              <div className="text-white/50 text-xs">
+                No transaction fees for earning or using tokens
+              </div>
             </div>
           </div>
 
@@ -175,7 +186,9 @@ const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
             </div>
             <div>
               <div className="text-white font-medium text-sm">Automatically Secure</div>
-              <div className="text-white/50 text-xs">Protected by advanced encryption technology</div>
+              <div className="text-white/50 text-xs">
+                Protected by advanced encryption technology
+              </div>
             </div>
           </div>
 
@@ -185,7 +198,9 @@ const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
             </div>
             <div>
               <div className="text-white font-medium text-sm">Multiple Options</div>
-              <div className="text-white/50 text-xs">MetaMask, social login, or built-in wallet</div>
+              <div className="text-white/50 text-xs">
+                MetaMask, social login, or built-in wallet
+              </div>
             </div>
           </div>
         </div>
@@ -201,20 +216,22 @@ const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
           <div className="flex items-start space-x-3">
             <div className="w-2 h-2 bg-nocenaPink rounded-full mt-2 flex-shrink-0"></div>
             <p className="text-white/70 text-sm">
-              <strong className="text-white">Multiple Options:</strong> Use MetaMask, Coinbase Wallet, or sign up with email/social
+              <strong className="text-white">Multiple Options:</strong> Use MetaMask, Coinbase
+              Wallet, or sign up with email/social
             </p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="w-2 h-2 bg-nocenaBlue rounded-full mt-2 flex-shrink-0"></div>
             <p className="text-white/70 text-sm">
-              <strong className="text-white">No Hidden Fees:</strong> Earning, sending, and receiving tokens is
-              completely free
+              <strong className="text-white">No Hidden Fees:</strong> Earning, sending, and
+              receiving tokens is completely free
             </p>
           </div>
           <div className="flex items-start space-x-3">
             <div className="w-2 h-2 bg-nocenaPurple rounded-full mt-2 flex-shrink-0"></div>
             <p className="text-white/70 text-sm">
-              <strong className="text-white">Beginner Friendly:</strong> Social login makes it easy for anyone to start
+              <strong className="text-white">Beginner Friendly:</strong> Social login makes it easy
+              for anyone to start
             </p>
           </div>
         </div>

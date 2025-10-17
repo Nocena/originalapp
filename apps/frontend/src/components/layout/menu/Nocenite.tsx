@@ -10,7 +10,10 @@ const NoceniteMenu: React.FC<NoceniteMenuProps> = ({ onBack }) => {
     <div className="p-6">
       {/* Header */}
       <div className="flex items-center mb-6">
-        <button onClick={onBack} className="mr-4 p-2 rounded-full hover:bg-white/10 transition-colors">
+        <button
+          onClick={onBack}
+          className="mr-4 p-2 rounded-full hover:bg-white/10 transition-colors"
+        >
           <ChevronLeft className="w-5 h-5 text-white" />
         </button>
         <h2 className="text-xl font-bold text-white">Nocenite (NCT)</h2>
@@ -25,8 +28,8 @@ const NoceniteMenu: React.FC<NoceniteMenuProps> = ({ onBack }) => {
             <h3 className="text-lg font-semibold text-white">What is Nocenite?</h3>
           </div>
           <p className="text-white/80 leading-relaxed">
-            Nocenite (NCT) is the reward token of the Nocena ecosystem. You earn NCT by completing daily, weekly, and
-            monthly challenges in the app.
+            Nocenite (NCT) is the reward token of the Nocena ecosystem. You earn NCT by completing
+            daily, weekly, and monthly challenges in the app.
           </p>
         </div>
 
@@ -65,8 +68,9 @@ const NoceniteMenu: React.FC<NoceniteMenuProps> = ({ onBack }) => {
             <h3 className="text-lg font-semibold text-white">Purpose in Nocena</h3>
           </div>
           <p className="text-white/80 leading-relaxed">
-            NCT tokens represent your engagement and achievements within the Nocena community. They're stored on the
-            blockchain and serve as proof of your participation in challenges and social activities.
+            NCT tokens represent your engagement and achievements within the Nocena community.
+            They're stored on the blockchain and serve as proof of your participation in challenges
+            and social activities.
           </p>
         </div>
 
@@ -74,8 +78,8 @@ const NoceniteMenu: React.FC<NoceniteMenuProps> = ({ onBack }) => {
         <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
           <h3 className="text-lg font-semibold text-white mb-3">Getting Started</h3>
           <p className="text-white/80 leading-relaxed">
-            Connect your wallet from the Wallet section to start earning and managing your NCT tokens. Complete your
-            first challenge to earn your initial NCT rewards!
+            Connect your wallet from the Wallet section to start earning and managing your NCT
+            tokens. Complete your first challenge to earn your initial NCT rewards!
           </p>
         </div>
       </div>

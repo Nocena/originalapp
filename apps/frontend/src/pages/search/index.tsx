@@ -89,7 +89,7 @@ function SearchView() {
             JSON.stringify({
               data: holders,
               timestamp: now,
-            }),
+            })
           );
         } catch (error) {
           // Silent fail for localStorage
@@ -100,7 +100,7 @@ function SearchView() {
         setIsLoading(false);
       }
     },
-    [fetchLeaderboard, lastRefreshTime],
+    [fetchLeaderboard, lastRefreshTime]
   );
 
   // Simple page visibility handling - refresh when page becomes visible
@@ -149,14 +149,20 @@ function SearchView() {
   // Handle follow action
   const handleFollow = useCallback(
     async (targetUserId: string) => {
-      if (!user || !user.id || !targetUserId || user.id === targetUserId || pendingFollowActions.has(targetUserId)) {
+      if (
+        !user ||
+        !user.id ||
+        !targetUserId ||
+        user.id === targetUserId ||
+        pendingFollowActions.has(targetUserId)
+      ) {
         return;
       }
 
       setPendingFollowActions((prev) => new Set(prev).add(targetUserId));
 
       try {
-        await toggleFollowUser(user.id, targetUserId, user.username);
+        await toggleFollowUser(user.id, targetUserId, user.following.includes(targetUserId));
         // Refresh leaderboards to update follow states
         // You might want to implement a more efficient update here
       } catch (error) {
@@ -169,7 +175,7 @@ function SearchView() {
         });
       }
     },
-    [user, pendingFollowActions],
+    [user, pendingFollowActions]
   );
 
   // Handle profile navigation
@@ -328,7 +334,11 @@ function SearchView() {
               {/* User Info */}
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
-                  <h3 className={`font-semibold ${isCurrentUser ? 'text-nocenaPink' : 'text-white'}`}>{item.username}</h3>
+                  <h3
+                    className={`font-semibold ${isCurrentUser ? 'text-nocenaPink' : 'text-white'}`}
+                  >
+                    {item.username}
+                  </h3>
                   {isCurrentUser && (
                     <ThematicContainer
                       asButton={false}
@@ -384,10 +394,14 @@ function SearchView() {
             >
               <div className="text-gray-400 mb-4">
                 <h3 className="text-lg font-medium mb-2">No Rankings Yet</h3>
-                <p className="text-sm">Be the first to complete a challenge and claim the top spot!</p>
+                <p className="text-sm">
+                  Be the first to complete a challenge and claim the top spot!
+                </p>
               </div>
               <div className="text-4xl mb-4">🏆</div>
-              <p className="text-xs text-gray-500">Complete challenges to appear on the leaderboard</p>
+              <p className="text-xs text-gray-500">
+                Complete challenges to appear on the leaderboard
+              </p>
             </ThematicContainer>
           ) : (
             <div className="space-y-6">
@@ -402,7 +416,11 @@ function SearchView() {
 
               {/* Rest of the leaderboard */}
               {leaderboard.slice(3, 10).length > 0 && (
-                <div>{leaderboard.slice(3, 10).map((item, index) => renderRemainingItem(item, index + 3))}</div>
+                <div>
+                  {leaderboard
+                    .slice(3, 10)
+                    .map((item, index) => renderRemainingItem(item, index + 3))}
+                </div>
               )}
 
               {/* Current user position - always show if not in top 10 */}
@@ -414,7 +432,7 @@ function SearchView() {
                     return (
                       <div className="mt-6 pt-4 border-t border-white/20">
                         <p className="text-center text-xs text-gray-400 mb-3">Your Position</p>
-                        {renderRemainingItem(userItem, userPosition, true)}
+                        {renderRemainingItem(userItem, userPosition)}
                       </div>
                     );
                   }
@@ -426,6 +444,6 @@ function SearchView() {
       </div>
     </div>
   );
-};
+}
 
 export default SearchView;
