@@ -6,7 +6,8 @@ import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';
 import { getPageState, updatePageState } from '../../components/PageManager';
-import { NotificationBase } from '../../types/notifications';
+import { NotificationBase, CreatePrivateChallengeRequest } from '../../types/notifications';
+import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 
 // Performance debugging - global timer for overall page load
 const startTime = Date.now();
@@ -94,6 +95,7 @@ const InboxView = () => {
   const [initialRenderComplete, setInitialRenderComplete] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [showChallengeCreator, setShowChallengeCreator] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const currentY = useRef(0);
@@ -430,6 +432,17 @@ const InboxView = () => {
     return reward;
   };
 
+  // Private challenge handlers
+  const handleCreateChallenge = () => {
+    setShowChallengeCreator(true);
+  };
+
+  const handleSubmitChallenge = async (challenge: CreatePrivateChallengeRequest) => {
+    console.log('Creating private challenge:', challenge);
+    // TODO: Implement API call to create private challenge
+    setShowChallengeCreator(false);
+  };
+
   // Memoize notification rendering to prevent unnecessary re-renders
   const notificationList = useMemo(() => {
     console.time('render-notification-list');
@@ -533,6 +546,24 @@ const InboxView = () => {
           </div>
         )}
 
+        {/* Private Challenge Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Private Challenges</h2>
+            <button 
+              onClick={handleCreateChallenge}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Create Challenge
+            </button>
+          </div>
+          
+          {/* Placeholder for private challenge invites */}
+          <div className="text-gray-400 text-center py-8">
+            No private challenges yet
+          </div>
+        </div>
+
         {/* Notifications list */}
         <div className="w-full space-y-4 pb-32">
           {notifications.length === 0 ? (
@@ -544,6 +575,14 @@ const InboxView = () => {
           )}
         </div>
       </div>
+
+      {/* Private Challenge Creator Modal */}
+      {showChallengeCreator && (
+        <PrivateChallengeCreator
+          onClose={() => setShowChallengeCreator(false)}
+          onSubmit={handleSubmitChallenge}
+        />
+      )}
     </div>
   );
 };
