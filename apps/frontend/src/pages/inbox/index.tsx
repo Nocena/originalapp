@@ -6,41 +6,11 @@ import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';
 import { getPageState, updatePageState } from '../../components/PageManager';
+import { NotificationBase } from '../../types/notifications';
 
 // Performance debugging - global timer for overall page load
 const startTime = Date.now();
 console.log(`[PERF] InboxView started initializing at ${new Date().toISOString()}`);
-
-// Type definitions for notifications
-interface NotificationBase {
-  id: string;
-  content?: string;
-  createdAt: string;
-  notificationType: string;
-  triggeredBy?: {
-    id?: string;
-    username?: string;
-    profilePicture?: string;
-  };
-  reward?: number;
-  // Add challenge reference properties
-  privateChallenge?: {
-    id: string;
-    title: string;
-    description: string;
-  };
-  publicChallenge?: {
-    id: string;
-    title: string;
-    description: string;
-  };
-  aiChallenge?: {
-    id: string;
-    title: string;
-    description: string;
-    frequency: string;
-  };
-}
 
 // Skeleton component for loading states
 const NotificationSkeleton = () => (
