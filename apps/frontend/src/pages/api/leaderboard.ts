@@ -22,7 +22,9 @@ export default async function handler(req: any, res: any) {
     } else {
       // Use database fields (original behavior)
       if (!['all-time', 'today', 'week', 'month'].includes(period)) {
-        return res.status(400).json({ message: 'Invalid period. Must be: all-time, today, week, or month' });
+        return res
+          .status(400)
+          .json({ message: 'Invalid period. Must be: all-time, today, week, or month' });
       }
       leaderboard = await getLeaderboard(period, limitNum);
     }

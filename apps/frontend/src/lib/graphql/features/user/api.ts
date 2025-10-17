@@ -3,7 +3,9 @@ import { generateId, normalizeWallet } from '../../utils';
 import type { User } from '../../../../contexts/AuthContext';
 import * as queries from './queries';
 import * as mutations from './mutations';
-
+import { createPublicClient, http, defineChain } from 'viem';
+import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../../../lib/constants';
+import noceniteTokenArtifact from '../../../../lib/contracts/nocenite.json';
 // ============================================================================
 // QUERY FUNCTIONS
 // ============================================================================
@@ -533,7 +535,7 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
     });
 
     const users = data.queryUser || [];
-    
+
     if (users.length === 0) {
       return [];
     }
@@ -545,7 +547,7 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
       const walletRegex = /^0x[a-fA-F0-9]{40}$/;
       return walletRegex.test(user.wallet);
     });
-    
+
     if (usersWithWallets.length === 0) {
       return [];
     }
@@ -553,66 +555,39 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
     // Get blockchain balances for all users with wallets
     const usersWithBalances = await Promise.all(
       usersWithWallets.map(async (user: any) => {
+        try {
+          // Create public client for reading blockchain data
+          const publicClient = createPublicClient({
+            chain: defineChain(FLOW_TESTNET_CONFIG),
+            transport: http(),
+          });
+
+          // Get NCT token balance with error handling
+          let balance = 0n;
           try {
-            // Import blockchain balance logic directly
-            const { createPublicClient, http, defineChain } = await import('viem');
-            const { CONTRACTS } = await import('../../../constants');
-            const noceniteTokenArtifact = await import('../../../contracts/nocenite.json');
-
-            // Define Flow EVM Testnet for viem
-            const flowTestnet = defineChain({
-              id: 545,
-              name: 'Flow EVM Testnet',
-              nativeCurrency: {
-                name: 'Flow',
-                symbol: 'FLOW',
-                decimals: 18,
-              },
-              rpcUrls: {
-                default: {
-                  http: ['https://testnet.evm.nodes.onflow.org'],
-                },
-              },
-              blockExplorers: {
-                default: {
-                  name: 'Flow Diver',
-                  url: 'https://testnet.flowdiver.io',
-                },
-              },
-            });
-
-            // Create public client for reading blockchain data
-            const publicClient = createPublicClient({
-              chain: flowTestnet,
-              transport: http(),
-            });
-
-            // Get NCT token balance with error handling
-            let balance = 0n;
-            try {
-              balance = await publicClient.readContract({
-                address: CONTRACTS.Nocenite as `0x${string}`,
-                abi: noceniteTokenArtifact.abi,
-                functionName: 'balanceOf',
-                args: [user.wallet],
-              });
-            } catch (error) {
-              // Silently handle errors and return 0 balance
-              balance = 0n;
-            }
-
-            // Convert from wei to tokens (18 decimals)
-            const balanceInTokens = Number(balance) / Math.pow(10, 18);
-
-            return {
-              ...user,
-              balance: Math.floor(balanceInTokens),
-            };
+            balance = (await publicClient.readContract({
+              address: CONTRACTS.Nocenite as `0x${string}`,
+              abi: noceniteTokenArtifact.abi,
+              functionName: 'balanceOf',
+              args: [user.wallet],
+            })) as bigint;
           } catch (error) {
-            console.error(`Error fetching balance for ${user.wallet}:`, error);
-            return { ...user, balance: 0 };
+            // Silently handle errors and return 0 balance
+            balance = 0n;
           }
-        })
+
+          // Convert from wei to tokens (18 decimals)
+          const balanceInTokens = Number(balance) / Math.pow(10, 18);
+
+          return {
+            ...user,
+            balance: Math.floor(balanceInTokens),
+          };
+        } catch (error) {
+          console.error(`Error fetching balance for ${user.wallet}:`, error);
+          return { ...user, balance: 0 };
+        }
+      })
     );
 
     // Filter out users with 0 balance and sort by balance
