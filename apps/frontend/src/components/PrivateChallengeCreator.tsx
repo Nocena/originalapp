@@ -37,7 +37,10 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.name && formData.description && formData.recipientId && !rewardError && formData.rewardAmount > 0) {
-      onSubmit(formData);
+      onSubmit({
+        ...formData,
+        selectedUser,
+      });
     }
   };
 

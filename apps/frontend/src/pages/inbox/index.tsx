@@ -6,7 +6,7 @@ import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';
 import { getPageState, updatePageState } from '../../components/PageManager';
-import { NotificationBase, CreatePrivateChallengeRequest } from '../../types/notifications';
+import { NotificationBase, CreatePrivateChallengeRequest, PrivateChallengeInvite } from '../../types/notifications';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import ThematicContainer from '../../components/ui/ThematicContainer';
 
@@ -97,6 +97,8 @@ const InboxView = () => {
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [showChallengeCreator, setShowChallengeCreator] = useState(false);
+  const [privateChallenges, setPrivateChallenges] = useState<PrivateChallengeInvite[]>([]);
+  const [sentChallenges, setSentChallenges] = useState<PrivateChallengeInvite[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const currentY = useRef(0);
@@ -339,6 +341,14 @@ const InboxView = () => {
     };
   }, [isVisible, user?.id, fetchUserNotifications]);
 
+  // Fetch private challenges when component mounts
+  useEffect(() => {
+    if (user?.id) {
+      fetchPrivateChallenges();
+      fetchSentChallenges();
+    }
+  }, [user?.id]);
+
   // Setup pull-to-refresh functionality
   useEffect(() => {
     if (!contentRef.current) return;
@@ -438,22 +448,147 @@ const InboxView = () => {
     setShowChallengeCreator(true);
   };
 
-  const handleSubmitChallenge = async (challenge: CreatePrivateChallengeRequest) => {
+  const fetchPrivateChallenges = async () => {
+    if (!user?.id) return;
+    
+    console.log('Fetching challenges for user ID:', user.id);
+    
+    try {
+      const response = await fetch(`/api/private-challenge/list?userId=${user.id}`);
+      const result = await response.json();
+      
+      if (response.ok) {
+        // Filter to only show pending challenges
+        const pendingChallenges = result.challenges.filter(
+          (challenge: PrivateChallengeInvite) => challenge.status === 'pending'
+        );
+        setPrivateChallenges(pendingChallenges);
+        console.log('Private challenges fetched:', pendingChallenges);
+      } else {
+        console.error('Failed to fetch private challenges:', result.error);
+      }
+    } catch (error) {
+      console.error('Error fetching private challenges:', error);
+    }
+  };
+
+  const handleChallengeResponse = async (challengeId: string, action: 'accept' | 'reject') => {
+    if (!user?.id) return;
+
+    console.log('Responding to challenge:', { challengeId, action, userId: user.id });
+
+    try {
+      const response = await fetch('/api/private-challenge/respond', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          challengeId,
+          action,
+          userId: user.id,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log(`Challenge ${action}ed:`, result);
+        // Refresh challenge list to update UI
+        fetchPrivateChallenges();
+        
+        // If accepted, redirect to completion page
+        if (action === 'accept') {
+          // TODO: Navigate to challenge completion
+          console.log('Navigate to challenge completion for:', challengeId);
+        }
+      } else {
+        console.error(`Failed to ${action} challenge:`, result.error);
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing challenge:`, error);
+    }
+  };
+
+  const fetchSentChallenges = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const response = await fetch(`/api/private-challenge/sent?userId=${user.id}`);
+      const result = await response.json();
+      
+      if (response.ok) {
+        // Filter out cleared challenges from display
+        const activeChallenges = result.challenges.filter(
+          (challenge: PrivateChallengeInvite) => challenge.status !== 'cleared'
+        );
+        setSentChallenges(activeChallenges);
+        console.log('Sent challenges fetched:', activeChallenges);
+      } else {
+        console.error('Failed to fetch sent challenges:', result.error);
+      }
+    } catch (error) {
+      console.error('Error fetching sent challenges:', error);
+    }
+  };
+
+  const clearCompletedChallenges = async () => {
+    if (!user?.id) return;
+
+    try {
+      const response = await fetch('/api/private-challenge/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log(`Cleared ${result.clearedCount} completed challenges`);
+        // Refresh sent challenges to update UI
+        fetchSentChallenges();
+      } else {
+        console.error('Failed to clear challenges:', result.error);
+      }
+    } catch (error) {
+      console.error('Error clearing challenges:', error);
+    }
+  };
+
+  const handleSubmitChallenge = async (challenge: CreatePrivateChallengeRequest & { selectedUser: any }) => {
+    if (!user?.id) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    console.log('Challenge data:', challenge);
+    console.log('Selected user:', challenge.selectedUser);
+
     try {
       const response = await fetch('/api/private-challenge/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(challenge),
+        body: JSON.stringify({
+          ...challenge,
+          creatorId: user.id,
+          creatorUsername: user.username,
+          creatorProfilePicture: user.profilePicture || '/images/profile.png',
+          recipientUsername: challenge.selectedUser?.username || 'Unknown',
+        }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
         console.log('Private challenge created:', result);
-        // TODO: Show success message
-        // TODO: Refresh challenge list
+        // Refresh both challenge lists
+        fetchPrivateChallenges();
+        fetchSentChallenges();
       } else {
         console.error('Failed to create challenge:', result.error);
         // TODO: Show error message
@@ -590,10 +725,112 @@ const InboxView = () => {
             </div>
           </ThematicContainer>
           
-          {/* Placeholder for private challenge invites */}
-          <div className="text-gray-400 text-center py-8">
-            No private challenges yet
-          </div>
+          {/* Private challenge invites */}
+          {privateChallenges.length === 0 ? (
+            <div className="text-gray-400 text-center py-8">
+              No private challenges yet
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {privateChallenges.map((challenge) => (
+                <ThematicContainer
+                  key={challenge.id}
+                  asButton={false}
+                  glassmorphic={true}
+                  color="nocenaBlue"
+                  rounded="xl"
+                  className="p-4"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">{challenge.name}</h3>
+                    <span className="text-sm text-blue-400">{challenge.rewardAmount} NCT</span>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-3">{challenge.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">From @{challenge.creatorUsername}</span>
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => handleChallengeResponse(challenge.id, 'reject')}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
+                      >
+                        Reject
+                      </button>
+                      <button 
+                        onClick={() => handleChallengeResponse(challenge.id, 'accept')}
+                        className="px-3 py-1 bg-green-500 hover:bg-green-600 rounded text-sm transition-colors"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  </div>
+                </ThematicContainer>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Sent Challenges Section */}
+        <div className="mb-6">
+          <ThematicContainer
+            asButton={false}
+            glassmorphic={true}
+            color="nocenaPink"
+            rounded="xl"
+            className="p-4 mb-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Sent Challenges</h2>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-400">{sentChallenges.length} sent</span>
+                {sentChallenges.some(c => c.status === 'accepted' || c.status === 'rejected') && (
+                  <button
+                    onClick={clearCompletedChallenges}
+                    className="text-xs px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+                  >
+                    Clear Notifications
+                  </button>
+                )}
+              </div>
+            </div>
+          </ThematicContainer>
+          
+          {/* Sent challenge list */}
+          {sentChallenges.length === 0 ? (
+            <div className="text-gray-400 text-center py-4">
+              No challenges sent yet
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sentChallenges.map((challenge) => (
+                <ThematicContainer
+                  key={challenge.id}
+                  asButton={false}
+                  glassmorphic={true}
+                  color="nocenaPink"
+                  rounded="xl"
+                  className="p-4"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">{challenge.name}</h3>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-pink-400">{challenge.rewardAmount} NCT</span>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        challenge.status === 'pending' ? 'bg-yellow-600' :
+                        challenge.status === 'accepted' ? 'bg-green-600' :
+                        'bg-red-600'
+                      }`}>
+                        {challenge.status}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
+                  <div className="text-xs text-gray-400">
+                    Sent to @{challenge.recipientUsername}
+                  </div>
+                </ThematicContainer>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Notifications list */}

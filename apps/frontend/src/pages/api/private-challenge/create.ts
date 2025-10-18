@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { CreatePrivateChallengeRequest } from '../../../types/notifications';
+import { privateChallengeDb } from '../../../lib/api/mockPrivateChallengeDb';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -7,10 +8,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { recipientId, name, description, rewardAmount }: CreatePrivateChallengeRequest = req.body;
+    const { recipientId, name, description, rewardAmount, creatorId, creatorUsername, creatorProfilePicture, recipientUsername }: CreatePrivateChallengeRequest & { 
+      creatorId: string;
+      creatorUsername: string;
+      creatorProfilePicture?: string;
+      recipientUsername: string;
+    } = req.body;
 
     // Basic validation
-    if (!recipientId || !name || !description || !rewardAmount) {
+    if (!recipientId || !name || !description || !rewardAmount || !creatorId || !creatorUsername) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -18,19 +24,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Reward amount cannot exceed 250 tokens' });
     }
 
-    // TODO: Get creator ID from auth/session
-    const creatorId = 'temp-creator-id';
-
     // TODO: Check daily limit (3 challenges per day)
     
-    // TODO: Create challenge in database
-    const challengeId = `challenge-${Date.now()}`;
+    // Create challenge in database (mock for now)
+    const challenge = await privateChallengeDb.createChallenge({
+      creatorId,
+      creatorUsername,
+      creatorProfilePicture: creatorProfilePicture || '/images/profile.png',
+      recipientId,
+      recipientUsername,
+      name,
+      description,
+      rewardAmount,
+      status: 'pending',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+    });
 
     // TODO: Send notification to recipient
 
     res.status(201).json({
       success: true,
-      challengeId,
+      challengeId: challenge.id,
       message: 'Private challenge created successfully'
     });
 

@@ -38,6 +38,7 @@ export interface PrivateChallengeInvite {
   creatorUsername: string;
   creatorProfilePicture: string;
   recipientId: string;
+  recipientUsername: string;
   name: string;
   description: string;
   rewardAmount: number; // Max 250
