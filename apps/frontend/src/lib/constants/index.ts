@@ -2,8 +2,8 @@
 export const FLOW_EVM_TESTNET_ID = 545;
 
 export const CONTRACTS = {
-  Nocenite: '0xA92C45C3d516f1cCe011BE92C81326962e5C1047',
-  ChallengeRewards: '0xf9b4812a2160b4550045ae3DfDF797eC4d5C3336',
+  Nocenite: '0x4d25c4EB1E0358F2FfF2c170865a37BEe172696B',
+  ChallengeRewards: '0xED268e5Cf8D717c3737f4ac156DCD518548CEe0D',
 } as const;
 
 // Challenge reward amounts (in tokens, not wei)

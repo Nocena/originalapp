@@ -1,6 +1,7 @@
 // pages/inbox/index.tsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRouter } from 'next/router';
 import { fetchNotifications } from '../../lib/graphql';
 import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
@@ -89,6 +90,7 @@ const InboxView = () => {
   }
 
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   // Start with loading true for immediate skeleton display
   const [notifications, setNotifications] = useState<NotificationBase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -477,6 +479,26 @@ const InboxView = () => {
 
     console.log('Responding to challenge:', { challengeId, action, userId: user.id });
 
+    // Handle accept by navigating to completion (no status change yet)
+    if (action === 'accept') {
+      const challenge = privateChallenges.find(c => c.id === challengeId);
+      if (challenge) {
+        router.push({
+          pathname: '/completing',
+          query: {
+            type: 'PRIVATE',
+            title: challenge.name,
+            description: challenge.description,
+            reward: challenge.rewardAmount.toString(),
+            challengeId: challenge.id,
+            creatorId: challenge.creatorId,
+          },
+        });
+      }
+      return;
+    }
+
+    // Handle reject by updating status
     try {
       const response = await fetch('/api/private-challenge/respond', {
         method: 'POST',
@@ -496,12 +518,6 @@ const InboxView = () => {
         console.log(`Challenge ${action}ed:`, result);
         // Refresh challenge list to update UI
         fetchPrivateChallenges();
-        
-        // If accepted, redirect to completion page
-        if (action === 'accept') {
-          // TODO: Navigate to challenge completion
-          console.log('Navigate to challenge completion for:', challengeId);
-        }
       } else {
         console.error(`Failed to ${action} challenge:`, result.error);
       }
@@ -782,7 +798,7 @@ const InboxView = () => {
               <h2 className="text-xl font-semibold">Sent Challenges</h2>
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-400">{sentChallenges.length} sent</span>
-                {sentChallenges.some(c => c.status === 'accepted' || c.status === 'rejected') && (
+                {sentChallenges.some(c => ['completed', 'rejected', 'expired', 'failed'].includes(c.status)) && (
                   <button
                     onClick={clearCompletedChallenges}
                     className="text-xs px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
@@ -816,8 +832,12 @@ const InboxView = () => {
                       <span className="text-sm text-pink-400">{challenge.rewardAmount} NCT</span>
                       <span className={`text-xs px-2 py-1 rounded ${
                         challenge.status === 'pending' ? 'bg-yellow-600' :
-                        challenge.status === 'accepted' ? 'bg-green-600' :
-                        'bg-red-600'
+                        challenge.status === 'accepted' ? 'bg-blue-600' :
+                        challenge.status === 'completed' ? 'bg-green-600' :
+                        challenge.status === 'rejected' ? 'bg-red-600' :
+                        challenge.status === 'expired' ? 'bg-gray-600' :
+                        challenge.status === 'failed' ? 'bg-orange-600' :
+                        'bg-gray-600'
                       }`}>
                         {challenge.status}
                       </span>

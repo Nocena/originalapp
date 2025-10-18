@@ -42,7 +42,7 @@ export interface PrivateChallengeInvite {
   name: string;
   description: string;
   rewardAmount: number; // Max 250
-  status: 'pending' | 'accepted' | 'rejected' | 'completed';
+  status: 'pending' | 'accepted' | 'completed' | 'rejected' | 'expired' | 'failed';
   createdAt: string;
   expiresAt: string;
 }

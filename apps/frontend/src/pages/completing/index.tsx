@@ -101,7 +101,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
         challengeData = {
           title: title as string,
           description: description as string,
-          challengerName: 'Friend Challenge',
+          challengerName: 'Private Challenge',
           challengerProfile: '/images/profile.png',
           reward: getCorrectReward('PRIVATE'),
           color: 'nocenaBlue',

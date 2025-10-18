@@ -16,9 +16,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get all challenges created by this user
     const sentChallenges = await privateChallengeDb.getChallengesByCreator(userId);
     
-    // Filter only completed challenges (accepted or rejected) - NOT pending
+    // Filter only final statuses that can be cleared (not pending or accepted)
+    const clearableStatuses = ['completed', 'rejected', 'expired', 'failed'];
     const completedChallenges = sentChallenges.filter(
-      challenge => challenge.status === 'accepted' || challenge.status === 'rejected'
+      challenge => clearableStatuses.includes(challenge.status)
     );
 
     // Mark completed challenges as cleared (they won't show in sent list anymore)

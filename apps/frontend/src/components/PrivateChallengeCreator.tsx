@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CreatePrivateChallengeRequest } from '../types/notifications';
 import SearchBox, { SearchUser } from '../pages/search/components/SearchBox';
+import { useAuth } from '../contexts/AuthContext';
 
 interface PrivateChallengeCreatorProps {
   onClose: () => void;
@@ -8,6 +9,7 @@ interface PrivateChallengeCreatorProps {
 }
 
 const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClose, onSubmit }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     recipientId: '',
     name: '',
@@ -17,9 +19,15 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
   const [selectedUser, setSelectedUser] = useState<SearchUser | null>(null);
   const [rewardError, setRewardError] = useState<string>('');
 
-  const handleUserSelect = (user: SearchUser) => {
-    setSelectedUser(user);
-    setFormData({ ...formData, recipientId: user.id });
+  const handleUserSelect = (selectedUser: SearchUser) => {
+    // Prevent selecting yourself
+    if (user?.id === selectedUser.id) {
+      alert('You cannot send a challenge to yourself!');
+      return;
+    }
+    
+    setSelectedUser(selectedUser);
+    setFormData({ ...formData, recipientId: selectedUser.id });
   };
 
   const handleRewardChange = (value: string) => {
@@ -97,7 +105,10 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
                 </button>
               </div>
             ) : (
-              <SearchBox onUserSelect={handleUserSelect} />
+              <SearchBox 
+                onUserSelect={handleUserSelect} 
+                currentUserId={user?.id}
+              />
             )}
           </div>
 

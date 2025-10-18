@@ -24,6 +24,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Reward amount cannot exceed 250 tokens' });
     }
 
+    // Prevent sending challenges to yourself
+    if (creatorId === recipientId) {
+      return res.status(400).json({ error: 'Cannot send challenge to yourself' });
+    }
+
     // TODO: Check daily limit (3 challenges per day)
     
     // Create challenge in database (mock for now)
