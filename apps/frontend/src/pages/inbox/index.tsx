@@ -101,6 +101,8 @@ const InboxView = () => {
   const [showChallengeCreator, setShowChallengeCreator] = useState(false);
   const [privateChallenges, setPrivateChallenges] = useState<PrivateChallengeInvite[]>([]);
   const [sentChallenges, setSentChallenges] = useState<PrivateChallengeInvite[]>([]);
+  const [showReceivedChallenges, setShowReceivedChallenges] = useState(false);
+  const [showSentChallenges, setShowSentChallenges] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const currentY = useRef(0);
@@ -460,12 +462,14 @@ const InboxView = () => {
       const result = await response.json();
       
       if (response.ok) {
-        // Filter to only show pending challenges
-        const pendingChallenges = result.challenges.filter(
-          (challenge: PrivateChallengeInvite) => challenge.status === 'pending'
+        // Show pending and completed challenges (exclude rejected/expired/failed/cleared)
+        const activeChallenges = result.challenges.filter(
+          (challenge: PrivateChallengeInvite) => 
+            (challenge.status === 'pending' || challenge.status === 'completed') &&
+            challenge.status !== 'cleared'
         );
-        setPrivateChallenges(pendingChallenges);
-        console.log('Private challenges fetched:', pendingChallenges);
+        setPrivateChallenges(activeChallenges);
+        console.log('Private challenges fetched:', activeChallenges);
       } else {
         console.error('Failed to fetch private challenges:', result.error);
       }
@@ -491,7 +495,7 @@ const InboxView = () => {
             description: challenge.description,
             reward: challenge.rewardAmount.toString(),
             challengeId: challenge.id,
-            creatorId: challenge.creatorId,
+            creatorWalletAddress: challenge.creatorWalletAddress,
           },
         });
       }
@@ -564,8 +568,9 @@ const InboxView = () => {
 
       if (response.ok) {
         console.log(`Cleared ${result.clearedCount} completed challenges`);
-        // Refresh sent challenges to update UI
+        // Refresh both sent and received challenges to update UI
         fetchSentChallenges();
+        fetchPrivateChallenges();
       } else {
         console.error('Failed to clear challenges:', result.error);
       }
@@ -592,9 +597,11 @@ const InboxView = () => {
         body: JSON.stringify({
           ...challenge,
           creatorId: user.id,
+          creatorWalletAddress: user.wallet,
           creatorUsername: user.username,
           creatorProfilePicture: user.profilePicture || '/images/profile.png',
           recipientUsername: challenge.selectedUser?.username || 'Unknown',
+          recipientWalletAddress: challenge.selectedUser?.wallet,
         }),
       });
 
@@ -720,14 +727,14 @@ const InboxView = () => {
           </div>
         )}
 
-        {/* Private Challenge Section */}
+        {/* Create Challenge Button */}
         <div className="mb-6">
           <ThematicContainer
             asButton={false}
             glassmorphic={true}
             color="nocenaPurple"
             rounded="xl"
-            className="p-4 mb-4"
+            className="p-4"
           >
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Private Challenges</h2>
@@ -740,15 +747,59 @@ const InboxView = () => {
               </button>
             </div>
           </ThematicContainer>
-          
-          {/* Private challenge invites */}
-          {privateChallenges.length === 0 ? (
-            <div className="text-gray-400 text-center py-8">
-              No private challenges yet
+        </div>
+
+        {/* Received Challenges Section */}
+        <div className="mb-3 mt-12">
+          <ThematicContainer
+            asButton={false}
+            glassmorphic={true}
+            color="nocenaBlue"
+            rounded="xl"
+            className="p-4 mb-4"
+          >
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setShowReceivedChallenges(!showReceivedChallenges)}
+                className="flex items-center space-x-2 text-xl font-semibold hover:text-blue-300 transition-colors"
+              >
+                <span>Received Challenges</span>
+                <svg
+                  className={`w-5 h-5 transition-transform duration-200 ${showReceivedChallenges ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-400">{privateChallenges.length} received</span>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {privateChallenges.map((challenge) => (
+          </ThematicContainer>
+          
+          {/* Collapsible received challenge list */}
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+            showReceivedChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+          }`}>
+            {privateChallenges.some(c => ['completed', 'rejected', 'expired', 'failed'].includes(c.status)) && (
+              <div className="flex justify-end mb-3">
+                <button
+                  onClick={clearCompletedChallenges}
+                  className="text-xs px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+                >
+                  Clear Notifications
+                </button>
+              </div>
+            )}
+            {privateChallenges.length === 0 ? (
+              <div className="text-gray-400 text-center py-4">
+                No challenges received yet
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {privateChallenges.map((challenge) => (
                 <ThematicContainer
                   key={challenge.id}
                   asButton={false}
@@ -758,13 +809,45 @@ const InboxView = () => {
                   className="p-4"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">{challenge.name}</h3>
-                    <span className="text-sm text-blue-400">{challenge.rewardAmount} NCT</span>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="font-semibold">{challenge.name}</h3>
+                      {challenge.status === 'completed' && (
+                        <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30">
+                          ✓ Completed
+                        </span>
+                      )}
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      challenge.status === 'pending' ? 'bg-yellow-600' :
+                      challenge.status === 'accepted' ? 'bg-blue-600' :
+                      challenge.status === 'completed' ? 'bg-green-600' :
+                      challenge.status === 'rejected' ? 'bg-red-600' :
+                      challenge.status === 'expired' ? 'bg-gray-600' :
+                      challenge.status === 'failed' ? 'bg-orange-600' :
+                      'bg-gray-600'
+                    }`}>
+                      {challenge.status}
+                    </span>
                   </div>
-                  <p className="text-gray-300 text-sm mb-3">{challenge.description}</p>
+                  <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">From @{challenge.creatorUsername}</span>
-                    <div className="flex space-x-2">
+                    <span className="text-xs text-gray-400">
+                      From{' '}
+                      <button
+                        onClick={() => router.push(`/profile/${challenge.creatorId}`)}
+                        className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
+                      >
+                        @{challenge.creatorUsername}
+                      </button>
+                    </span>
+                    {challenge.status === 'completed' && (
+                      <span className="text-xs text-gray-400">
+                        Recipient: +{challenge.rewardAmount} NCT • Creator: +{Math.floor(challenge.rewardAmount * 0.1)} NCT
+                      </span>
+                    )}
+                  </div>
+                  {challenge.status === 'pending' && (
+                    <div className="flex space-x-2 mt-3">
                       <button 
                         onClick={() => handleChallengeResponse(challenge.id, 'reject')}
                         className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
@@ -778,11 +861,12 @@ const InboxView = () => {
                         Accept
                       </button>
                     </div>
-                  </div>
+                  )}
                 </ThematicContainer>
               ))}
             </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Sent Challenges Section */}
@@ -795,29 +879,47 @@ const InboxView = () => {
             className="p-4 mb-4"
           >
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Sent Challenges</h2>
+              <button
+                onClick={() => setShowSentChallenges(!showSentChallenges)}
+                className="flex items-center space-x-2 text-xl font-semibold hover:text-pink-300 transition-colors"
+              >
+                <span>Sent Challenges</span>
+                <svg
+                  className={`w-5 h-5 transition-transform duration-200 ${showSentChallenges ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-400">{sentChallenges.length} sent</span>
-                {sentChallenges.some(c => ['completed', 'rejected', 'expired', 'failed'].includes(c.status)) && (
-                  <button
-                    onClick={clearCompletedChallenges}
-                    className="text-xs px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
-                  >
-                    Clear Notifications
-                  </button>
-                )}
               </div>
             </div>
           </ThematicContainer>
           
-          {/* Sent challenge list */}
-          {sentChallenges.length === 0 ? (
-            <div className="text-gray-400 text-center py-4">
-              No challenges sent yet
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sentChallenges.map((challenge) => (
+          {/* Collapsible sent challenge list */}
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+            showSentChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+          }`}>
+            {sentChallenges.some(c => ['completed', 'rejected', 'expired', 'failed'].includes(c.status)) && (
+              <div className="flex justify-end mb-3">
+                <button
+                  onClick={clearCompletedChallenges}
+                  className="text-xs px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+                >
+                  Clear Notifications
+                </button>
+              </div>
+            )}
+            {sentChallenges.length === 0 ? (
+              <div className="text-gray-400 text-center py-4">
+                No challenges sent yet
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sentChallenges.map((challenge) => (
                 <ThematicContainer
                   key={challenge.id}
                   asButton={false}
@@ -828,29 +930,40 @@ const InboxView = () => {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold">{challenge.name}</h3>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-pink-400">{challenge.rewardAmount} NCT</span>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        challenge.status === 'pending' ? 'bg-yellow-600' :
-                        challenge.status === 'accepted' ? 'bg-blue-600' :
-                        challenge.status === 'completed' ? 'bg-green-600' :
-                        challenge.status === 'rejected' ? 'bg-red-600' :
-                        challenge.status === 'expired' ? 'bg-gray-600' :
-                        challenge.status === 'failed' ? 'bg-orange-600' :
-                        'bg-gray-600'
-                      }`}>
-                        {challenge.status}
-                      </span>
-                    </div>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      challenge.status === 'pending' ? 'bg-yellow-600' :
+                      challenge.status === 'accepted' ? 'bg-blue-600' :
+                      challenge.status === 'completed' ? 'bg-green-600' :
+                      challenge.status === 'rejected' ? 'bg-red-600' :
+                      challenge.status === 'expired' ? 'bg-gray-600' :
+                      challenge.status === 'failed' ? 'bg-orange-600' :
+                      'bg-gray-600'
+                    }`}>
+                      {challenge.status}
+                    </span>
                   </div>
                   <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
-                  <div className="text-xs text-gray-400">
-                    Sent to @{challenge.recipientUsername}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">
+                      Sent to{' '}
+                      <button
+                        onClick={() => router.push(`/profile/${challenge.recipientId}`)}
+                        className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
+                      >
+                        @{challenge.recipientUsername}
+                      </button>
+                    </span>
+                    {challenge.status === 'completed' && (
+                      <span className="text-xs text-gray-400">
+                        Recipient: +{challenge.rewardAmount} NCT • Creator: +{Math.floor(challenge.rewardAmount * 0.1)} NCT
+                      </span>
+                    )}
                   </div>
                 </ThematicContainer>
               ))}
             </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Notifications list */}
