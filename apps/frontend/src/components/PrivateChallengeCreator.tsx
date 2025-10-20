@@ -108,6 +108,7 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
               <SearchBox 
                 onUserSelect={handleUserSelect} 
                 currentUserId={user?.id}
+                maxHeight="max-h-48"
               />
             )}
           </div>

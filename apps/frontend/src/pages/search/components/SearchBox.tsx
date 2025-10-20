@@ -24,9 +24,10 @@ interface SearchBoxProps {
   onSearch?: (term: string) => void;
   users?: SearchUser[];
   currentUserId?: string; // Add current user ID to grey out self
+  maxHeight?: string; // Add custom max height for dropdown
 }
 
-const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users, currentUserId }) => {
+const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users, currentUserId, maxHeight = "max-h-80" }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestedUsers, setSuggestedUsers] = useState<SearchUser[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -157,7 +158,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users, cu
       </div>
 
       {isDropdownOpen && suggestedUsers.length > 0 && (
-        <ul className="absolute top-full mt-2 w-full bg-gray-900 rounded-lg shadow-lg overflow-hidden z-50 max-h-80 overflow-y-auto">
+        <ul className={`absolute top-full mt-2 w-full bg-gray-900 rounded-lg shadow-lg overflow-hidden z-50 ${maxHeight} overflow-y-auto`}>
           {suggestedUsers.map((suggestedUser) => {
             const isCurrentUser = currentUserId === suggestedUser.id;
             return (
