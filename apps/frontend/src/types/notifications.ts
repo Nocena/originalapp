@@ -35,20 +35,23 @@ export interface NotificationBase {
 export interface PrivateChallengeInvite {
   id: string;
   creatorId: string;
+  creatorWalletAddress: string;
   creatorUsername: string;
   creatorProfilePicture: string;
   recipientId: string;
+  recipientWalletAddress: string;
   recipientUsername: string;
   name: string;
   description: string;
   rewardAmount: number; // Max 250
-  status: 'pending' | 'accepted' | 'completed' | 'rejected' | 'expired' | 'failed';
+  status: 'pending' | 'accepted' | 'completed' | 'rejected' | 'expired' | 'failed' | 'cleared';
   createdAt: string;
   expiresAt: string;
 }
 
 export interface CreatePrivateChallengeRequest {
   recipientId: string;
+  recipientWalletAddress: string;
   name: string;
   description: string;
   rewardAmount: number;

@@ -13,12 +13,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    // Get all challenges created by this user
+    // Get all challenges created by this user AND received by this user
     const sentChallenges = await privateChallengeDb.getChallengesByCreator(userId);
+    const receivedChallenges = await privateChallengeDb.getChallengesByRecipient(userId);
+    
+    // Combine both sent and received challenges
+    const allChallenges = [...sentChallenges, ...receivedChallenges];
     
     // Filter only final statuses that can be cleared (not pending or accepted)
     const clearableStatuses = ['completed', 'rejected', 'expired', 'failed'];
-    const completedChallenges = sentChallenges.filter(
+    const completedChallenges = allChallenges.filter(
       challenge => clearableStatuses.includes(challenge.status)
     );
 
