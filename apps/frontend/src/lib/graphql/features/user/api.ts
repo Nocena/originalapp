@@ -565,14 +565,17 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
           // Get NCT token balance with error handling
           let balance = 0n;
           try {
+            console.log(`🔍 Checking balance for wallet: ${user.wallet}`);
             balance = (await publicClient.readContract({
               address: CONTRACTS.Nocenite as `0x${string}`,
-              abi: noceniteTokenArtifact.abi,
+              abi: noceniteTokenArtifact,
               functionName: 'balanceOf',
               args: [user.wallet],
             })) as bigint;
+            console.log(`💰 Balance for ${user.wallet}: ${balance.toString()}`);
           } catch (error) {
             // Silently handle errors and return 0 balance
+            console.error(`❌ Error getting balance for ${user.wallet}:`, error);
             balance = 0n;
           }
 

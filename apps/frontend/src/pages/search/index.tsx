@@ -48,20 +48,26 @@ function SearchView() {
   // Fetch Top NCT Holders leaderboard
   const fetchLeaderboard = useCallback(async (): Promise<LeaderboardUser[]> => {
     try {
-      const response = await fetch('/api/leaderboard?source=blockchain&limit=100');
+      console.log('🔍 Fetching leaderboard...');
+      const response = await fetch('/api/leaderboard?source=blockchain&limit=25');
 
       if (!response.ok) {
+        console.log('❌ Response not ok:', response.status);
         return [];
       }
 
       const data = await response.json();
+      console.log('📊 API response:', data);
 
       if (!data.success) {
+        console.log('❌ API returned success: false');
         return [];
       }
 
+      console.log('✅ Returning leaderboard:', data.leaderboard);
       return data.leaderboard || [];
     } catch (error) {
+      console.error('❌ Fetch error:', error);
       return [];
     }
   }, []);
@@ -80,6 +86,8 @@ function SearchView() {
 
       try {
         const holders = await fetchLeaderboard();
+        console.log('🏆 Leaderboard data received:', holders);
+        console.log('🏆 Leaderboard length:', holders.length);
         setLeaderboard(holders);
 
         // Cache the data
