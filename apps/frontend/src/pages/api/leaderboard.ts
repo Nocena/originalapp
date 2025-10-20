@@ -18,7 +18,9 @@ export default async function handler(req: any, res: any) {
 
     if (source === 'blockchain') {
       // Use blockchain balances
+      console.log('🔍 Fetching blockchain leaderboard...');
       leaderboard = await getBlockchainLeaderboard(limitNum);
+      console.log('📊 Blockchain leaderboard result:', leaderboard);
     } else {
       // Use database fields (original behavior)
       if (!['all-time', 'today', 'week', 'month'].includes(period)) {

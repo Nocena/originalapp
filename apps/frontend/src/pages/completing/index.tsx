@@ -25,7 +25,7 @@ interface Challenge {
   type: 'AI' | 'PRIVATE' | 'PUBLIC';
   frequency?: 'daily' | 'weekly' | 'monthly';
   challengeId?: string;
-  creatorId?: string;
+  creatorWalletAddress?: string;
 }
 
 interface CompletingViewProps {
@@ -64,7 +64,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
   backgroundTasksRef.current = backgroundTasks;
 
   useEffect(() => {
-    const { type, frequency, title, description, reward, challengeId, creatorId } = router.query;
+    const { type, frequency, title, description, reward, challengeId, creatorWalletAddress } = router.query;
 
     if (title && description && reward) {
       let challengeData: Challenge;
@@ -101,13 +101,13 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
         challengeData = {
           title: title as string,
           description: description as string,
-          challengerName: 'Friend Challenge',
+          challengerName: 'Private Challenge',
           challengerProfile: '/images/profile.png',
           reward: getCorrectReward('PRIVATE'),
           color: 'nocenaBlue',
           type: 'PRIVATE',
           challengeId: challengeId as string,
-          creatorId: creatorId as string,
+          creatorWalletAddress: creatorWalletAddress as string,
         };
       } else if (type === 'PUBLIC') {
         challengeData = {
@@ -294,7 +294,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
         return {
           badge: 'Private Challenge',
           subtitle: 'Secure peer-to-peer verification',
-          action: 'Accept Mission',
+          action: 'Initialize Challenge',
         };
       case 'PUBLIC':
         return {

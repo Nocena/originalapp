@@ -100,7 +100,7 @@ export interface NFTRarityConfig {
 }
 
 /**
- * Extended Challenge Completion Data with NFT - builds on existing ChallengeData
+ * Extended Challenge Completion Data with NFT - builds on existing Challenge types from types/challenges.ts
  */
 export interface ExtendedCompletionData {
   // Existing completion data
@@ -133,15 +133,6 @@ export interface ClaimingProcessState {
   // Overall status
   error?: string;
   completedAt?: Date;
-}
-
-export interface ChallengeData {
-  id?: string;
-  position: [number, number];
-  color: string;
-  title: string;
-  description: string;
-  reward: number;
 }
 
 export interface LocationData {

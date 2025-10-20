@@ -1,46 +1,19 @@
 // pages/inbox/index.tsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useRouter } from 'next/router';
 import { fetchNotifications } from '../../lib/graphql';
 import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';
 import { getPageState, updatePageState } from '../../components/PageManager';
+import { NotificationBase, CreatePrivateChallengeRequest, PrivateChallengeInvite } from '../../types/notifications';
+import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
+import ThematicContainer from '../../components/ui/ThematicContainer';
 
 // Performance debugging - global timer for overall page load
 const startTime = Date.now();
 console.log(`[PERF] InboxView started initializing at ${new Date().toISOString()}`);
-
-// Type definitions for notifications
-interface NotificationBase {
-  id: string;
-  content?: string;
-  createdAt: string;
-  notificationType: string;
-  triggeredBy?: {
-    id?: string;
-    username?: string;
-    profilePicture?: string;
-  };
-  reward?: number;
-  // Add challenge reference properties
-  privateChallenge?: {
-    id: string;
-    title: string;
-    description: string;
-  };
-  publicChallenge?: {
-    id: string;
-    title: string;
-    description: string;
-  };
-  aiChallenge?: {
-    id: string;
-    title: string;
-    description: string;
-    frequency: string;
-  };
-}
 
 // Skeleton component for loading states
 const NotificationSkeleton = () => (
@@ -117,6 +90,7 @@ const InboxView = () => {
   }
 
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   // Start with loading true for immediate skeleton display
   const [notifications, setNotifications] = useState<NotificationBase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -124,6 +98,11 @@ const InboxView = () => {
   const [initialRenderComplete, setInitialRenderComplete] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [showChallengeCreator, setShowChallengeCreator] = useState(false);
+  const [privateChallenges, setPrivateChallenges] = useState<PrivateChallengeInvite[]>([]);
+  const [sentChallenges, setSentChallenges] = useState<PrivateChallengeInvite[]>([]);
+  const [showReceivedChallenges, setShowReceivedChallenges] = useState(false);
+  const [showSentChallenges, setShowSentChallenges] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const currentY = useRef(0);
@@ -366,6 +345,14 @@ const InboxView = () => {
     };
   }, [isVisible, user?.id, fetchUserNotifications]);
 
+  // Fetch private challenges when component mounts
+  useEffect(() => {
+    if (user?.id) {
+      fetchPrivateChallenges();
+      fetchSentChallenges();
+    }
+  }, [user?.id]);
+
   // Setup pull-to-refresh functionality
   useEffect(() => {
     if (!contentRef.current) return;
@@ -458,6 +445,183 @@ const InboxView = () => {
     }
 
     return reward;
+  };
+
+  // Private challenge handlers
+  const handleCreateChallenge = () => {
+    setShowChallengeCreator(true);
+  };
+
+  const fetchPrivateChallenges = async () => {
+    if (!user?.id) return;
+    
+    console.log('Fetching challenges for user ID:', user.id);
+    
+    try {
+      const response = await fetch(`/api/private-challenge/list?userId=${user.id}`);
+      const result = await response.json();
+      
+      if (response.ok) {
+        // Show pending and completed challenges (exclude rejected/expired/failed/cleared)
+        const activeChallenges = result.challenges.filter(
+          (challenge: PrivateChallengeInvite) => 
+            (challenge.status === 'pending' || challenge.status === 'completed') &&
+            challenge.status !== 'cleared'
+        );
+        setPrivateChallenges(activeChallenges);
+        console.log('Private challenges fetched:', activeChallenges);
+      } else {
+        console.error('Failed to fetch private challenges:', result.error);
+      }
+    } catch (error) {
+      console.error('Error fetching private challenges:', error);
+    }
+  };
+
+  const handleChallengeResponse = async (challengeId: string, action: 'accept' | 'reject') => {
+    if (!user?.id) return;
+
+    console.log('Responding to challenge:', { challengeId, action, userId: user.id });
+
+    // Handle accept by navigating to completion (no status change yet)
+    if (action === 'accept') {
+      const challenge = privateChallenges.find(c => c.id === challengeId);
+      if (challenge) {
+        router.push({
+          pathname: '/completing',
+          query: {
+            type: 'PRIVATE',
+            title: challenge.name,
+            description: challenge.description,
+            reward: challenge.rewardAmount.toString(),
+            challengeId: challenge.id,
+            creatorWalletAddress: challenge.creatorWalletAddress,
+          },
+        });
+      }
+      return;
+    }
+
+    // Handle reject by updating status
+    try {
+      const response = await fetch('/api/private-challenge/respond', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          challengeId,
+          action,
+          userId: user.id,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log(`Challenge ${action}ed:`, result);
+        // Refresh challenge list to update UI
+        fetchPrivateChallenges();
+      } else {
+        console.error(`Failed to ${action} challenge:`, result.error);
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing challenge:`, error);
+    }
+  };
+
+  const fetchSentChallenges = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const response = await fetch(`/api/private-challenge/sent?userId=${user.id}`);
+      const result = await response.json();
+      
+      if (response.ok) {
+        // Filter out cleared challenges from display
+        const activeChallenges = result.challenges.filter(
+          (challenge: PrivateChallengeInvite) => challenge.status !== 'cleared'
+        );
+        setSentChallenges(activeChallenges);
+        console.log('Sent challenges fetched:', activeChallenges);
+      } else {
+        console.error('Failed to fetch sent challenges:', result.error);
+      }
+    } catch (error) {
+      console.error('Error fetching sent challenges:', error);
+    }
+  };
+
+  const clearCompletedChallenges = async () => {
+    if (!user?.id) return;
+
+    try {
+      const response = await fetch('/api/private-challenge/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log(`Cleared ${result.clearedCount} completed challenges`);
+        // Refresh both sent and received challenges to update UI
+        fetchSentChallenges();
+        fetchPrivateChallenges();
+      } else {
+        console.error('Failed to clear challenges:', result.error);
+      }
+    } catch (error) {
+      console.error('Error clearing challenges:', error);
+    }
+  };
+
+  const handleSubmitChallenge = async (challenge: CreatePrivateChallengeRequest & { selectedUser: any }) => {
+    if (!user?.id) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    console.log('Challenge data:', challenge);
+    console.log('Selected user:', challenge.selectedUser);
+
+    try {
+      const response = await fetch('/api/private-challenge/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...challenge,
+          creatorId: user.id,
+          creatorWalletAddress: user.wallet,
+          creatorUsername: user.username,
+          creatorProfilePicture: user.profilePicture || '/images/profile.png',
+          recipientUsername: challenge.selectedUser?.username || 'Unknown',
+          recipientWalletAddress: challenge.selectedUser?.wallet,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log('Private challenge created:', result);
+        // Refresh both challenge lists
+        fetchPrivateChallenges();
+        fetchSentChallenges();
+      } else {
+        console.error('Failed to create challenge:', result.error);
+        // TODO: Show error message
+      }
+    } catch (error) {
+      console.error('Error creating private challenge:', error);
+      // TODO: Show error message
+    } finally {
+      setShowChallengeCreator(false);
+    }
   };
 
   // Memoize notification rendering to prevent unnecessary re-renders
@@ -563,6 +727,245 @@ const InboxView = () => {
           </div>
         )}
 
+        {/* Create Challenge Button */}
+        <div className="mb-6">
+          <ThematicContainer
+            asButton={false}
+            glassmorphic={true}
+            color="nocenaPurple"
+            rounded="xl"
+            className="p-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Private Challenges</h2>
+              <button 
+                onClick={handleCreateChallenge}
+                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ backgroundColor: '#6A4CFF' }}
+              >
+                Create Challenge
+              </button>
+            </div>
+          </ThematicContainer>
+        </div>
+
+        {/* Received Challenges Section */}
+        <div className="mb-3 mt-12">
+          <ThematicContainer
+            asButton={false}
+            glassmorphic={true}
+            color="nocenaBlue"
+            rounded="xl"
+            className="p-4 mb-4"
+          >
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setShowReceivedChallenges(!showReceivedChallenges)}
+                className="flex items-center space-x-2 text-xl font-semibold hover:text-blue-300 transition-colors"
+              >
+                <span>Received Challenges</span>
+                <svg
+                  className={`w-5 h-5 transition-transform duration-200 ${showReceivedChallenges ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-400">{privateChallenges.length} received</span>
+              </div>
+            </div>
+          </ThematicContainer>
+          
+          {/* Collapsible received challenge list */}
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+            showReceivedChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+          }`}>
+            {privateChallenges.some(c => ['completed', 'rejected', 'expired', 'failed'].includes(c.status)) && (
+              <div className="flex justify-end mb-3">
+                <button
+                  onClick={clearCompletedChallenges}
+                  className="text-xs px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+                >
+                  Clear Notifications
+                </button>
+              </div>
+            )}
+            {privateChallenges.length === 0 ? (
+              <div className="text-gray-400 text-center py-4">
+                No challenges received yet
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {privateChallenges.map((challenge) => (
+                <ThematicContainer
+                  key={challenge.id}
+                  asButton={false}
+                  glassmorphic={true}
+                  color="nocenaBlue"
+                  rounded="xl"
+                  className="p-4"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <h3 className="font-semibold">{challenge.name}</h3>
+                      {challenge.status === 'completed' && (
+                        <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30">
+                          ✓ Completed
+                        </span>
+                      )}
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      challenge.status === 'pending' ? 'bg-yellow-600' :
+                      challenge.status === 'accepted' ? 'bg-blue-600' :
+                      challenge.status === 'completed' ? 'bg-green-600' :
+                      challenge.status === 'rejected' ? 'bg-red-600' :
+                      challenge.status === 'expired' ? 'bg-gray-600' :
+                      challenge.status === 'failed' ? 'bg-orange-600' :
+                      'bg-gray-600'
+                    }`}>
+                      {challenge.status}
+                    </span>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">
+                      From{' '}
+                      <button
+                        onClick={() => router.push(`/profile/${challenge.creatorId}`)}
+                        className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
+                      >
+                        @{challenge.creatorUsername}
+                      </button>
+                    </span>
+                    {challenge.status === 'completed' && (
+                      <span className="text-xs text-gray-400">
+                        Recipient: +{challenge.rewardAmount} NCT • Creator: +{Math.floor(challenge.rewardAmount * 0.1)} NCT
+                      </span>
+                    )}
+                  </div>
+                  {challenge.status === 'pending' && (
+                    <div className="flex space-x-2 mt-3">
+                      <button 
+                        onClick={() => handleChallengeResponse(challenge.id, 'reject')}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
+                      >
+                        Reject
+                      </button>
+                      <button 
+                        onClick={() => handleChallengeResponse(challenge.id, 'accept')}
+                        className="px-3 py-1 bg-green-500 hover:bg-green-600 rounded text-sm transition-colors"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  )}
+                </ThematicContainer>
+              ))}
+            </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sent Challenges Section */}
+        <div className="mb-6">
+          <ThematicContainer
+            asButton={false}
+            glassmorphic={true}
+            color="nocenaPink"
+            rounded="xl"
+            className="p-4 mb-4"
+          >
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setShowSentChallenges(!showSentChallenges)}
+                className="flex items-center space-x-2 text-xl font-semibold hover:text-pink-300 transition-colors"
+              >
+                <span>Sent Challenges</span>
+                <svg
+                  className={`w-5 h-5 transition-transform duration-200 ${showSentChallenges ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-gray-400">{sentChallenges.length} sent</span>
+              </div>
+            </div>
+          </ThematicContainer>
+          
+          {/* Collapsible sent challenge list */}
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+            showSentChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+          }`}>
+            {sentChallenges.some(c => ['completed', 'rejected', 'expired', 'failed'].includes(c.status)) && (
+              <div className="flex justify-end mb-3">
+                <button
+                  onClick={clearCompletedChallenges}
+                  className="text-xs px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded transition-colors"
+                >
+                  Clear Notifications
+                </button>
+              </div>
+            )}
+            {sentChallenges.length === 0 ? (
+              <div className="text-gray-400 text-center py-4">
+                No challenges sent yet
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sentChallenges.map((challenge) => (
+                <ThematicContainer
+                  key={challenge.id}
+                  asButton={false}
+                  glassmorphic={true}
+                  color="nocenaPink"
+                  rounded="xl"
+                  className="p-4"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">{challenge.name}</h3>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      challenge.status === 'pending' ? 'bg-yellow-600' :
+                      challenge.status === 'accepted' ? 'bg-blue-600' :
+                      challenge.status === 'completed' ? 'bg-green-600' :
+                      challenge.status === 'rejected' ? 'bg-red-600' :
+                      challenge.status === 'expired' ? 'bg-gray-600' :
+                      challenge.status === 'failed' ? 'bg-orange-600' :
+                      'bg-gray-600'
+                    }`}>
+                      {challenge.status}
+                    </span>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">
+                      Sent to{' '}
+                      <button
+                        onClick={() => router.push(`/profile/${challenge.recipientId}`)}
+                        className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
+                      >
+                        @{challenge.recipientUsername}
+                      </button>
+                    </span>
+                    {challenge.status === 'completed' && (
+                      <span className="text-xs text-gray-400">
+                        Recipient: +{challenge.rewardAmount} NCT • Creator: +{Math.floor(challenge.rewardAmount * 0.1)} NCT
+                      </span>
+                    )}
+                  </div>
+                </ThematicContainer>
+              ))}
+            </div>
+            )}
+          </div>
+        </div>
+
         {/* Notifications list */}
         <div className="w-full space-y-4 pb-32">
           {notifications.length === 0 ? (
@@ -574,6 +977,14 @@ const InboxView = () => {
           )}
         </div>
       </div>
+
+      {/* Private Challenge Creator Modal */}
+      {showChallengeCreator && (
+        <PrivateChallengeCreator
+          onClose={() => setShowChallengeCreator(false)}
+          onSubmit={handleSubmitChallenge}
+        />
+      )}
     </div>
   );
 };

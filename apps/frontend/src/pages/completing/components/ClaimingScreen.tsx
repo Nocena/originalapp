@@ -10,6 +10,7 @@ import {
 } from '../../../lib/completing/challengeCompletionService';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useBackgroundTasks } from '../../../contexts/BackgroundTaskContext';
+import { useActiveAccount } from 'thirdweb/react';
 
 interface Challenge {
   title: string;
@@ -21,7 +22,7 @@ interface Challenge {
   type: 'AI' | 'PRIVATE' | 'PUBLIC';
   frequency?: 'daily' | 'weekly' | 'monthly';
   challengeId?: string;
-  creatorId?: string;
+  creatorWalletAddress?: string;
 }
 
 interface BackgroundTasks {
@@ -121,6 +122,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
   backgroundTaskIds,
 }) => {
   const { user, updateUser } = useAuth();
+  const account = useActiveAccount();
   const backgroundTasks = useBackgroundTasks();
   const [claimingStage, setClaimingStage] = useState<'ready' | 'claiming' | 'success' | 'failed'>(
     'ready'
@@ -333,6 +335,9 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
     }
 
     console.log('[Claim DEBUG] Starting token claim process...');
+    console.log('[Claim DEBUG] User object:', user);
+    console.log('[Claim DEBUG] User wallet:', user?.wallet);
+    console.log('[Claim DEBUG] Connected account:', account?.address);
     setClaimingStage('claiming');
     setErrorMessage('');
 
@@ -349,7 +354,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
           type: challenge.type,
           frequency: challenge.frequency,
           challengeId: challenge.challengeId,
-          creatorId: challenge.creatorId,
+          creatorWalletAddress: challenge.creatorWalletAddress,
         },
       };
 
@@ -371,7 +376,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
             }
           : undefined;
 
-      const result = await completeChallengeWorkflow(user.id, completionData, user.wallet);
+      const result = await completeChallengeWorkflow(user.id, completionData, account?.address);
 
       if (result.success) {
         console.log('[Claim Success DEBUG] Challenge completion successful:', result);

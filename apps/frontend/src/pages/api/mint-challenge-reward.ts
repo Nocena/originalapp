@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createWalletClient, http, keccak256, encodeAbiParameters, defineChain } from 'viem';
+import { createWalletClient, http, keccak256, encodeAbiParameters, defineChain, parseEther } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { CONTRACTS } from '../../lib/constants';
 import challengeRewardsArtifact from '../../lib/contracts/challengeRewards.json';
@@ -32,10 +32,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { userAddress, challengeFrequency, ipfsHash } = req.body;
+    const { userAddress, challengeFrequency, challengeType, challengeId, creatorAddress, recipientReward, creatorReward, ipfsHash } = req.body;
 
-    if (!userAddress || !challengeFrequency || !ipfsHash) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+    // Validate required parameters based on challenge type
+    if (!userAddress || !ipfsHash) {
+      return res.status(400).json({ error: 'Missing required parameters: userAddress, ipfsHash' });
+    }
+
+    if (challengeType === 'PRIVATE') {
+      if (!challengeId || !creatorAddress || !recipientReward || !creatorReward) {
+        return res.status(400).json({ error: 'Missing required parameters for private challenge: challengeId, creatorAddress, recipientReward, creatorReward' });
+      }
+    } else if (!challengeFrequency) {
+      return res.status(400).json({ error: 'Missing required parameter: challengeFrequency' });
     }
 
     // Get relayer private key from environment
@@ -57,41 +66,85 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       transport: http(),
     });
 
-    // Determine function name based on frequency
-    const functionName = `complete${challengeFrequency.charAt(0).toUpperCase() + challengeFrequency.slice(1)}Challenge`;
+    console.log('🔍 Relayer address:', relayerAccount.address);
 
-    // Create the message hash that matches the contract's expectation
-    // Contract uses: keccak256(abi.encode(user, challengeType, ipfsHash))
-    const messageHash = keccak256(
-      encodeAbiParameters(
-        [
-          { name: 'user', type: 'address' },
-          { name: 'challengeType', type: 'string' },
-          { name: 'ipfsHash', type: 'string' },
-        ],
-        [userAddress as `0x${string}`, challengeFrequency, ipfsHash]
-      )
-    );
+    if (challengeType === 'PRIVATE') {
+      // Private challenge - single transaction with dual minting
+      if (!challengeId || !creatorAddress || !recipientReward) {
+        return res.status(400).json({ error: 'Missing required parameters for private challenge: challengeId, creatorAddress, recipientReward' });
+      }
 
-    // Sign the message hash (viem automatically adds the Ethereum signed message prefix)
-    const signature = await walletClient.signMessage({
-      message: { raw: messageHash },
-    });
+      // Create message hash for dual minting
+      const messageHash = keccak256(
+        encodeAbiParameters(
+          [
+            { name: 'recipient', type: 'address' },
+            { name: 'challengeType', type: 'string' },
+            { name: 'ipfsHash', type: 'string' },
+          ],
+          [userAddress as `0x${string}`, 'private', ipfsHash]
+        )
+      );
 
-    // Call the contract function
-    const txHash = await walletClient.writeContract({
-      address: CONTRACTS.ChallengeRewards as `0x${string}`,
-      abi: challengeRewardsArtifact.abi,
-      functionName,
-      args: [userAddress, ipfsHash, signature],
-    });
+      const signature = await walletClient.signMessage({
+        message: { raw: messageHash },
+      });
 
-    return res.status(200).json({
-      success: true,
-      txHash,
-      functionName,
-      message: `${challengeFrequency} challenge reward minted successfully`,
-    });
+      console.log('🔄 Attempting dual private challenge transaction...');
+      const txHash = await walletClient.writeContract({
+        address: CONTRACTS.ChallengeRewards as `0x${string}`,
+        abi: challengeRewardsArtifact,
+        functionName: 'completePrivateChallenge',
+        args: [userAddress, creatorAddress, parseEther(recipientReward.toString()), ipfsHash, signature],
+      });
+      
+      console.log('✅ Private challenge dual minting completed:', txHash);
+      console.log('💰 Recipient reward:', recipientReward, 'NCT');
+      console.log('💰 Creator reward:', Math.floor(recipientReward * 0.1), 'NCT (auto-calculated 10%)');
+
+      return res.status(200).json({
+        success: true,
+        txHash,
+        message: `Private challenge completed! +${recipientReward} NCT to recipient, +${Math.floor(recipientReward * 0.1)} NCT to creator`,
+      });
+    } else {
+      // AI challenge function (existing logic)
+      const functionName = `complete${challengeFrequency.charAt(0).toUpperCase() + challengeFrequency.slice(1)}Challenge`;
+      
+      // Create message hash for AI challenge
+      const messageHash = keccak256(
+        encodeAbiParameters(
+          [
+            { name: 'user', type: 'address' },
+            { name: 'challengeType', type: 'string' },
+            { name: 'ipfsHash', type: 'string' },
+          ],
+          [userAddress as `0x${string}`, challengeFrequency, ipfsHash]
+        )
+      );
+
+      const contractArgs = [userAddress, ipfsHash];
+
+      // Sign the message hash
+      const signature = await walletClient.signMessage({
+        message: { raw: messageHash },
+      });
+
+      // Call the contract function with dynamic arguments
+      const txHash = await walletClient.writeContract({
+        address: CONTRACTS.ChallengeRewards as `0x${string}`,
+        abi: challengeRewardsArtifact,
+        functionName,
+        args: [...contractArgs, signature],
+      });
+
+      return res.status(200).json({
+        success: true,
+        txHash,
+        functionName,
+        message: `${challengeFrequency} challenge reward minted successfully`,
+      });
+    }
   } catch (error) {
     console.error('Relayer error:', error);
     return res.status(500).json({

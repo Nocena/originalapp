@@ -8,7 +8,7 @@ const noceniteContract = getContract({
   client,
   chain: flowTestnet,
   address: CONTRACTS.Nocenite,
-  abi: (noceniteArtifact as any).abi,
+  abi: noceniteArtifact,
 });
 
 export function useNoceniteBalance(address?: string) {

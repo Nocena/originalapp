@@ -11,7 +11,7 @@ export interface CompletionData {
     type: 'AI' | 'PRIVATE' | 'PUBLIC';
     frequency?: 'daily' | 'weekly' | 'monthly';
     challengeId?: string;
-    creatorId?: string;
+    creatorWalletAddress?: string;
   };
 }
 
@@ -31,30 +31,99 @@ export async function completeChallengeWorkflow(
   userWalletAddress?: string
 ): Promise<CompletionResult> {
   try {
+    console.log('🔍 DEBUG: Function inputs:', {
+      userId,
+      completionData,
+      userWalletAddress,
+      challengeType: completionData?.challenge?.type,
+      challengeFrequency: completionData?.challenge?.frequency,
+      challengeId: completionData?.challenge?.challengeId,
+      creatorWalletAddress: completionData?.challenge?.creatorWalletAddress
+    });
+
     const { challenge } = completionData;
 
     console.log('Starting challenge completion workflow for user:', userId);
     console.log('Challenge type:', challenge.type, 'Frequency:', challenge.frequency);
+    console.log('User wallet address:', userWalletAddress);
 
-    // Step 1: Mint blockchain NCT tokens if it's an AI challenge with frequency and user has wallet
-    if (challenge.type === 'AI' && challenge.frequency && userWalletAddress) {
+    // Step 1: Mint blockchain NCT tokens based on challenge type
+    if (userWalletAddress) {
       try {
         console.log('🔗 Minting blockchain NCT tokens...');
+        
+        let mintPayload;
+        
+        if (challenge.type === 'AI' && challenge.frequency) {
+          // AI challenges with frequency (existing logic)
+          mintPayload = {
+            userAddress: userWalletAddress,
+            challengeFrequency: challenge.frequency,
+            ipfsHash: 'challenge-completion',
+          };
+        } else if (challenge.type === 'PRIVATE' && challenge.challengeId && challenge.creatorWalletAddress) {
+          // Private challenges - mint to both recipient and creator
+          const creatorReward = Math.floor(challenge.reward * 0.1); // 10% to creator
+          
+          mintPayload = {
+            userAddress: userWalletAddress,
+            challengeType: 'PRIVATE',
+            challengeId: challenge.challengeId,
+            creatorAddress: challenge.creatorWalletAddress,
+            recipientReward: challenge.reward,
+            creatorReward: creatorReward,
+            ipfsHash: challenge.challengeId, // Use unique challengeId for testing
+          };
+        } else {
+          // Skip token minting for other challenge types or missing data
+          return {
+            success: true,
+            message: `Challenge completed! +${challenge.reward} tokens earned`,
+            completionId: 'mock-completion-id',
+          };
+        }
+
+        console.log('🔗 Mint payload:', mintPayload);
         const mintResponse = await fetch('/api/mint-challenge-reward', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            userAddress: userWalletAddress,
-            challengeFrequency: challenge.frequency,
-            ipfsHash: 'challenge-completion',
-          }),
+          body: JSON.stringify(mintPayload),
         });
 
+        console.log('🔗 Mint API response status:', mintResponse.status);
         const mintResult = await mintResponse.json();
+        console.log('🔗 Mint API result:', mintResult);
         if (mintResult.success) {
           console.log(`✅ Blockchain NCT tokens minted: ${mintResult.txHash}`);
+          
+          // Mark private challenge as completed if applicable
+          if (challenge.type === 'PRIVATE' && challenge.challengeId) {
+            try {
+              console.log('🏁 Marking private challenge as completed...');
+              const completeResponse = await fetch('/api/private-challenge/complete', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  challengeId: challenge.challengeId,
+                  userId: userId,
+                }),
+              });
+              
+              const completeResult = await completeResponse.json();
+              if (completeResult.success) {
+                console.log('✅ Private challenge marked as completed');
+              } else {
+                console.error('❌ Failed to mark private challenge as completed:', completeResult.error);
+              }
+            } catch (error) {
+              console.error('❌ Error marking private challenge as completed:', error);
+            }
+          }
+          
           return {
             success: true,
             message: `Challenge completed! +${challenge.reward} NCT tokens minted to your wallet!`,
@@ -74,6 +143,8 @@ export async function completeChallengeWorkflow(
           message: 'Challenge completion failed: Blockchain error',
         };
       }
+    } else {
+      console.log('❌ No wallet address provided, skipping blockchain minting');
     }
 
     // For non-AI challenges or challenges without wallet

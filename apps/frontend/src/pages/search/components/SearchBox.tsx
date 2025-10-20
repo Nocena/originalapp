@@ -23,9 +23,11 @@ interface SearchBoxProps {
   onUserSelect?: (user: SearchUser) => void; // Make sure the parameter name is 'user'
   onSearch?: (term: string) => void;
   users?: SearchUser[];
+  currentUserId?: string; // Add current user ID to grey out self
+  maxHeight?: string; // Add custom max height for dropdown
 }
 
-const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users }) => {
+const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users, currentUserId, maxHeight = "max-h-80" }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestedUsers, setSuggestedUsers] = useState<SearchUser[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -156,26 +158,37 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users }) 
       </div>
 
       {isDropdownOpen && suggestedUsers.length > 0 && (
-        <ul className="absolute top-full mt-2 w-full bg-gray-900 rounded-lg shadow-lg overflow-hidden z-50 max-h-80 overflow-y-auto">
-          {suggestedUsers.map((suggestedUser) => (
-            <li
-              key={suggestedUser.id}
-              onClick={() => handleProfileRedirect(suggestedUser)}
-              className="flex items-center gap-4 p-3 hover:bg-gray-700 cursor-pointer transition-colors"
-            >
-              <ThematicImage className="rounded-full flex-shrink-0">
-                <Image
-                  src={suggestedUser.profilePicture || '/images/profile.png'}
-                  alt="Profile"
-                  width={96}
-                  height={96}
-                  className="w-10 h-10 object-cover rounded-full"
-                />
-              </ThematicImage>
+        <ul className={`absolute top-full mt-2 w-full bg-gray-900 rounded-lg shadow-lg overflow-hidden z-50 ${maxHeight} overflow-y-auto`}>
+          {suggestedUsers.map((suggestedUser) => {
+            const isCurrentUser = currentUserId === suggestedUser.id;
+            return (
+              <li
+                key={suggestedUser.id}
+                onClick={() => !isCurrentUser && handleProfileRedirect(suggestedUser)}
+                className={`flex items-center gap-4 p-3 transition-colors ${
+                  isCurrentUser 
+                    ? 'opacity-50 cursor-not-allowed bg-gray-800' 
+                    : 'hover:bg-gray-700 cursor-pointer'
+                }`}
+              >
+                <ThematicImage className="rounded-full flex-shrink-0">
+                  <Image
+                    src={suggestedUser.profilePicture || '/images/profile.png'}
+                    alt="Profile"
+                    width={96}
+                    height={96}
+                    className="w-10 h-10 object-cover rounded-full"
+                  />
+                </ThematicImage>
 
-              <span className="text-white font-medium truncate">{suggestedUser.username}</span>
-            </li>
-          ))}
+                <span className={`font-medium truncate ${
+                  isCurrentUser ? 'text-gray-500' : 'text-white'
+                }`}>
+                  {suggestedUser.username}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
 
