@@ -36,12 +36,12 @@ export interface ChallengeData {
 // Private Challenge Completion Types
 export interface PrivateChallengeCompletion {
   challengeId: string;
-  creatorId: string;
-  recipientId: string;
+  creatorWalletAddress: string;
+  recipientWalletAddress: string;
   completedAt: string;
   rewardAmount: number;
-  creatorReward: number; // 25 tokens for creator
-  recipientReward: number; // 250 tokens for completer
+  creatorReward: number; // 10% of reward amount for creator
+  recipientReward: number; // Full reward amount for completer
 }
 
 // Helper function to get completion method and duration based on challenge type

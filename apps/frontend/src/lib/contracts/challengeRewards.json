@@ -111,6 +111,11 @@
   },
   {
     "inputs": [],
+    "name": "SelfReferentialChallenge",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "SignatureAlreadyUsed",
     "type": "error"
   },
@@ -316,12 +321,17 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "user",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "creator",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "recipientAmount",
         "type": "uint256"
       },
       {
