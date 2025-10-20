@@ -1,6 +1,5 @@
 // lib/thirdweb.ts
 import { createThirdwebClient, defineChain } from 'thirdweb';
-import { polygon } from 'thirdweb/chains';
 
 // Create the client with your Client ID and Secret Key
 export const client = createThirdwebClient({
@@ -27,5 +26,5 @@ export const flowTestnet = defineChain({
 });
 
 // Define the chains you want to use
-export const chain = polygon;
+export const chain = flowTestnet;
 export const flowChain = flowTestnet;

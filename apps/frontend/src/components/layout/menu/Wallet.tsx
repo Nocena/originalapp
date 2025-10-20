@@ -104,7 +104,7 @@ const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
             <div className="flex items-center justify-between">
               <div className="text-left flex-1">
                 <div className="text-2xl font-bold text-green-400">
-                  {parseFloat(nctBalance.formatted).toFixed(0)} NCT
+                  {parseFloat(nctBalance.formatted).toFixed(1)} NCT
                 </div>
                 <div className="text-white/50 text-sm">Reward Tokens</div>
                 <div className="flex items-center space-x-2 mt-1">

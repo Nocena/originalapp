@@ -230,7 +230,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       height: height,
       width: width,
       amount: 1,
-      chainId: 137,
+      chainId: 545,
     };
 
     // Add enhance parameter if supported
