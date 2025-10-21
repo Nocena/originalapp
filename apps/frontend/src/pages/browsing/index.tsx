@@ -1,7 +1,7 @@
 // pages/browsing/index.tsx - Minimal camera cleanup additions
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../../src/contexts/AuthContext'; // Add this import
+import { useAuth } from '../../contexts/AuthContext'; // Add this import
 import InteractionSidebar from './components/InteractionSidebar';
 
 interface ChallengeCompletion {

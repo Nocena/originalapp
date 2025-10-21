@@ -2,12 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import { User } from '../../contexts/AuthContext';
 import { getDayOfYear, getWeekOfYear } from '@utils/dateUtils';
-import {
-  ChallengeFormData,
-  CreateChallengeResponse,
-  PublicChallenge,
-  PrivateChallenge,
-} from '../map/types';
+import { ChallengeFormData } from '../map/types';
 
 const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
 

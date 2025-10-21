@@ -3,7 +3,7 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 import { signIn } from '../../store/persisted/useAuthStore';
-import { NOCENA_APP, IS_MAINNET } from '@nocena/data/constants';
+import { IS_MAINNET, NOCENA_APP } from '@nocena/data/constants';
 import { Errors } from '@nocena/data/errors';
 import {
   type ChallengeRequest,
@@ -20,8 +20,6 @@ import SingleAccount from '../Account/SingleAccount';
 import { Loader } from '@components/ui';
 import AuthMessage from '@components/auth/AuthMessage';
 import AccountNotFound from '@components/auth/AccountNotFound';
-import { useUsersByWalletAndLensIds } from '../../lib/graphql/features/user/hook';
-import type { CombinedUser, User } from '../../contexts/AuthContext';
 
 const Login = () => {
   const [hasAccounts, setHasAccounts] = useState(true);
@@ -62,21 +60,6 @@ const Login = () => {
     : allAccounts.map(({ account }) => account);
 
   const accounts = lastLogin ? [lastLogin, ...remainingAccounts] : remainingAccounts;
-
-  const {
-    users,
-    loading: loadingDgraph,
-    error: errorDgraph,
-  } = useUsersByWalletAndLensIds(
-    thirdWebAccount?.address,
-    accounts.map((account) => account.address)
-  );
-
-  const mergedUsers = users.map((user: User) => {
-    const lensAccount = accounts.find((acc) => acc.address === user.lensAccountId);
-    return { ...user, lensAccount };
-  }) as CombinedUser[];
-
   const handleSign = async (account: string) => {
     if (!thirdWebAccount) return;
 
@@ -128,18 +111,18 @@ const Login = () => {
   return (
     <div className="space-y-3">
       <div className="space-y-2.5">
-        {errorChallenge || errorAuthenticate || errorDgraph ? (
+        {errorChallenge || errorAuthenticate ? (
           <ErrorMessage
             className="text-red-500"
             title={Errors.SomethingWentWrong}
-            error={errorChallenge || errorAuthenticate || errorDgraph}
+            error={errorChallenge || errorAuthenticate}
           />
         ) : null}
-        {loading || loadingDgraph ? (
+        {loading ? (
           <Card className="w-full dark:divide-gray-700" forceRounded>
             <Loader className="my-4" message="Loading accounts managed by you..." small />
           </Card>
-        ) : mergedUsers.length > 0 ? (
+        ) : accounts.length > 0 ? (
           <AnimatePresence mode="popLayout">
             <motion.div
               initial="hidden"
@@ -161,9 +144,9 @@ const Login = () => {
                   description="Nocena uses this signature to verify that you're the owner of this address."
                   title="Please sign the message."
                 />
-                {mergedUsers.map(({ lensAccount }, index) => (
+                {accounts.map((account, index) => (
                   <motion.div
-                    key={lensAccount.address}
+                    key={account.address}
                     variants={{
                       hidden: { opacity: 0, y: 20 },
                       visible: {
@@ -179,11 +162,11 @@ const Login = () => {
                       transition: { duration: 0.2 },
                     }}
                   >
-                    <SingleAccount account={lensAccount} showUserPreview={false} />
+                    <SingleAccount account={account} showUserPreview={false} />
                     <Button
-                      disabled={isSubmitting && loggingInAccountId === lensAccount.address}
-                      loading={isSubmitting && loggingInAccountId === lensAccount.address}
-                      onClick={() => handleSign(lensAccount.address)}
+                      disabled={isSubmitting && loggingInAccountId === account.address}
+                      loading={isSubmitting && loggingInAccountId === account.address}
+                      onClick={() => handleSign(account.address)}
                       outline
                     >
                       Use
