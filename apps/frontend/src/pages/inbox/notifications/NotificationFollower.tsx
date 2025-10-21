@@ -49,12 +49,12 @@ const NotificationFollower: React.FC<NotificationFollowerProps> = ({
   notification,
 }) => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
 
   const handleProfileRedirect = () => {
     if (!id) return;
 
-    if (user?.id === id) {
+    if (currentLensAccount?.address === id) {
       router.push('/profile');
     } else {
       router.push(`/profile/${id}`);

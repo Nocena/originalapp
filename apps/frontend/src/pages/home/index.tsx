@@ -8,7 +8,7 @@ import {
   getChallengeReward,
   getFallbackChallenge,
   AIChallenge,
-} from '../../lib/utils/challengeUtils';
+} from '@utils/challengeUtils';
 
 // Component imports
 import ChallengeHeader from './components/ChallengeHeader';
@@ -134,7 +134,7 @@ const createMockPhotoBlob = (): Blob => {
 
 const HomeView = () => {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { currentLensAccount, loading } = useAuth();
   const [selectedTab, setSelectedTab] = useState<ChallengeType>('daily');
   const [followerCompletions, setFollowerCompletions] = useState<any[]>([]);
   const [isFetchingCompletions, setIsFetchingCompletions] = useState(false);

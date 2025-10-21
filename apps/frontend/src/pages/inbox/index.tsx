@@ -1,5 +1,5 @@
 // pages/inbox/index.tsx
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import { fetchNotifications } from '../../lib/graphql';
@@ -7,7 +7,7 @@ import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';
 import { getPageState, updatePageState } from '../../components/PageManager';
-import { NotificationBase, CreatePrivateChallengeRequest, PrivateChallengeInvite } from '../../types/notifications';
+import { CreatePrivateChallengeRequest, NotificationBase, PrivateChallengeInvite } from '../../types/notifications';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import ThematicContainer from '../../components/ui/ThematicContainer';
 
@@ -89,7 +89,7 @@ const InboxView = () => {
     );
   }
 
-  const { user, isAuthenticated } = useAuth();
+  const { currentLensAccount, isAuthenticated } = useAuth();
   const router = useRouter();
   // Start with loading true for immediate skeleton display
   const [notifications, setNotifications] = useState<NotificationBase[]>([]);
@@ -215,7 +215,7 @@ const InboxView = () => {
   // Function to fetch notifications
   const fetchUserNotifications = useCallback(
     async (showLoadingState = true) => {
-      if (!user?.id) {
+      if (!currentLensAccount?.address) {
         console.log('[PERF] fetchUserNotifications aborted - no user ID');
         return;
       }
@@ -229,7 +229,7 @@ const InboxView = () => {
       try {
         console.time('network-request');
         console.log('[PERF] Starting API request to fetch notifications');
-        const fetchedNotifications = await fetchNotifications(user.id);
+        const fetchedNotifications = await fetchNotifications(currentLensAccount.address);
         console.timeEnd('network-request');
         console.log(`[PERF] API returned ${fetchedNotifications.length} notifications`);
 
@@ -273,14 +273,14 @@ const InboxView = () => {
         console.timeEnd('fetch-notifications-total');
       }
     },
-    [user?.id]
+    [currentLensAccount?.address]
   );
 
   // Handle data fetching based on component visibility and data freshness
   useEffect(() => {
-    if (!user?.id || !initialRenderComplete) {
+    if (!currentLensAccount?.address || !initialRenderComplete) {
       console.log(
-        `[PERF] Data fetch check skipped - user: ${!!user?.id}, initialRender: ${initialRenderComplete}`
+        `[PERF] Data fetch check skipped - user: ${!!currentLensAccount?.address}, initialRender: ${initialRenderComplete}`
       );
       return;
     }
@@ -306,11 +306,11 @@ const InboxView = () => {
       fetchUserNotifications(notifications.length === 0);
     }
     console.timeEnd('should-fetch-check');
-  }, [user?.id, isVisible, notifications.length, initialRenderComplete, fetchUserNotifications]);
+  }, [currentLensAccount?.address, isVisible, notifications.length, initialRenderComplete, fetchUserNotifications]);
 
   // Set up background refresh when page is visible
   useEffect(() => {
-    if (!isVisible || !user?.id) return;
+    if (!isVisible || !currentLensAccount?.address) return;
 
     console.log('[PERF] Setting up background refresh interval');
 
@@ -326,13 +326,13 @@ const InboxView = () => {
     }
 
     return () => window.clearInterval(intervalId);
-  }, [isVisible, user?.id, fetchUserNotifications]);
+  }, [isVisible, currentLensAccount?.address, fetchUserNotifications]);
 
   // Listen for app foreground/background events
   useEffect(() => {
     const handleAppForeground = () => {
       console.log('[PERF] App came to foreground');
-      if (isVisible && user?.id) {
+      if (isVisible && currentLensAccount?.address) {
         // Refresh data when app comes to foreground and this page is visible
         fetchUserNotifications(false);
       }
@@ -343,15 +343,15 @@ const InboxView = () => {
     return () => {
       window.removeEventListener('nocena_app_foreground', handleAppForeground);
     };
-  }, [isVisible, user?.id, fetchUserNotifications]);
+  }, [isVisible, currentLensAccount?.address, fetchUserNotifications]);
 
   // Fetch private challenges when component mounts
   useEffect(() => {
-    if (user?.id) {
+    if (currentLensAccount?.address) {
       fetchPrivateChallenges();
       fetchSentChallenges();
     }
-  }, [user?.id]);
+  }, [currentLensAccount?.address]);
 
   // Setup pull-to-refresh functionality
   useEffect(() => {
@@ -453,20 +453,20 @@ const InboxView = () => {
   };
 
   const fetchPrivateChallenges = async () => {
-    if (!user?.id) return;
+    if (!currentLensAccount?.address) return;
     
-    console.log('Fetching challenges for user ID:', user.id);
+    console.log('Fetching challenges for user ID:', currentLensAccount?.address);
     
     try {
-      const response = await fetch(`/api/private-challenge/list?userId=${user.id}`);
+      const response = await fetch(`/api/private-challenge/list?userId=${currentLensAccount?.address}`);
       const result = await response.json();
       
       if (response.ok) {
         // Show pending and completed challenges (exclude rejected/expired/failed/cleared)
         const activeChallenges = result.challenges.filter(
           (challenge: PrivateChallengeInvite) => 
-            (challenge.status === 'pending' || challenge.status === 'completed') &&
-            challenge.status !== 'cleared'
+            (challenge.status === 'pending' || challenge.status === 'completed')/* &&
+            challenge.status !== 'cleared'*/
         );
         setPrivateChallenges(activeChallenges);
         console.log('Private challenges fetched:', activeChallenges);
@@ -479,9 +479,9 @@ const InboxView = () => {
   };
 
   const handleChallengeResponse = async (challengeId: string, action: 'accept' | 'reject') => {
-    if (!user?.id) return;
+    if (!currentLensAccount?.address) return;
 
-    console.log('Responding to challenge:', { challengeId, action, userId: user.id });
+    console.log('Responding to challenge:', { challengeId, action, userId: currentLensAccount?.address });
 
     // Handle accept by navigating to completion (no status change yet)
     if (action === 'accept') {
@@ -504,6 +504,7 @@ const InboxView = () => {
 
     // Handle reject by updating status
     try {
+      // TODO: fix it
       const response = await fetch('/api/private-challenge/respond', {
         method: 'POST',
         headers: {
@@ -512,7 +513,7 @@ const InboxView = () => {
         body: JSON.stringify({
           challengeId,
           action,
-          userId: user.id,
+          userId: currentLensAccount?.address,
         }),
       });
 
@@ -531,10 +532,10 @@ const InboxView = () => {
   };
 
   const fetchSentChallenges = async () => {
-    if (!user?.id) return;
+    if (!currentLensAccount?.address) return;
     
     try {
-      const response = await fetch(`/api/private-challenge/sent?userId=${user.id}`);
+      const response = await fetch(`/api/private-challenge/sent?userId=${currentLensAccount?.address}`);
       const result = await response.json();
       
       if (response.ok) {
@@ -553,7 +554,7 @@ const InboxView = () => {
   };
 
   const clearCompletedChallenges = async () => {
-    if (!user?.id) return;
+    if (!currentLensAccount?.address) return;
 
     try {
       const response = await fetch('/api/private-challenge/clear', {
@@ -561,7 +562,7 @@ const InboxView = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: user.id }),
+        body: JSON.stringify({ userId: currentLensAccount?.address }),
       });
 
       const result = await response.json();
@@ -580,7 +581,7 @@ const InboxView = () => {
   };
 
   const handleSubmitChallenge = async (challenge: CreatePrivateChallengeRequest & { selectedUser: any }) => {
-    if (!user?.id) {
+    if (!currentLensAccount?.address) {
       console.error('User not authenticated');
       return;
     }
@@ -589,6 +590,8 @@ const InboxView = () => {
     console.log('Selected user:', challenge.selectedUser);
 
     try {
+      // TODO: fix it
+/*
       const response = await fetch('/api/private-challenge/create', {
         method: 'POST',
         headers: {
@@ -596,7 +599,7 @@ const InboxView = () => {
         },
         body: JSON.stringify({
           ...challenge,
-          creatorId: user.id,
+          creatorId: currentLensAccount?.address,
           creatorWalletAddress: user.wallet,
           creatorUsername: user.username,
           creatorProfilePicture: user.profilePicture || '/images/profile.png',
@@ -616,6 +619,7 @@ const InboxView = () => {
         console.error('Failed to create challenge:', result.error);
         // TODO: Show error message
       }
+*/
     } catch (error) {
       console.error('Error creating private challenge:', error);
       // TODO: Show error message
