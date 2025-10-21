@@ -2,8 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ConnectButton, useActiveAccount, useActiveWallet, useDisconnect } from 'thirdweb/react';
-import { getUserByLensAccountId, getUserByWallet } from '../../lib/graphql';
-import { CombinedUser, useAuth, User } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import AuthenticationLayout from '@components/layout/AuthenticationLayout';
 import ThematicContainer from '@components/ui/ThematicContainer';
 import { chain, client } from '../../lib/thirdweb';
@@ -11,11 +10,9 @@ import { wallets } from '../../lib/thirdweb/wallets';
 import Login from '@components/auth/Login';
 import RegistrationLinkSection from '@components/auth/RegistrationLinkSection';
 import { useMeQuery } from '@nocena/indexer';
-import type { AccountFragment } from '@nocena/indexer';
 import { hydrateAuthTokens } from '../../store/persisted/useAuthStore';
 
 const LoginPage = () => {
-  const [currentLensAccount, setCurrentLensAccount] = useState<AccountFragment | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [walletChecked, setWalletChecked] = useState(false);
@@ -27,128 +24,15 @@ const LoginPage = () => {
   const checkedAddresses = useRef<Set<string>>(new Set());
 
   const router = useRouter();
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, isAuthenticated, currentLensAccount, setCurrentLensAccount } = useAuth();
   const thirdWebAccount = useActiveAccount();
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && user) {
-      console.log('✅ User already authenticated, redirecting to home:', user.username);
+    if (isAuthenticated && currentLensAccount) {
+      console.log('✅ User already authenticated, redirecting to home:', currentLensAccount.username);
       router.push('/home');
     }
-  }, [isAuthenticated, user, router]);
-
-  // Handle user login when account connects
-  useEffect(() => {
-    const handleUserLogin = async () => {
-      const currentAddress = thirdWebAccount?.address;
-
-      if (!currentAddress) {
-        setWalletChecked(false);
-        setError('');
-        return;
-      }
-
-      if (isAuthenticated) {
-        return;
-      }
-
-      if (!currentLensAccount) {
-        return;
-      }
-
-      if (isProcessingLogin.current) {
-        return;
-      }
-
-      if (checkedAddresses.current.has(currentAddress)) {
-        return;
-      }
-
-      if (loading) {
-        return;
-      }
-
-      isProcessingLogin.current = true;
-      setLoading(true);
-      setError('');
-      setWalletChecked(false);
-
-      try {
-        const userData = await getUserByLensAccountId(currentLensAccount.address);
-        checkedAddresses.current.add(currentAddress);
-        setWalletChecked(true);
-
-        if (!userData) {
-          setError('account_not_found');
-          setLoading(false);
-          isProcessingLogin.current = false;
-          return;
-        }
-
-        // Format user data for context
-        const formattedUser: CombinedUser = {
-          id: userData.id,
-          lensAccount: currentLensAccount,
-          username: userData.username,
-          bio: userData.bio || '',
-          wallet: userData.wallet,
-          profilePicture: userData.profilePicture || '/images/profile.png',
-          coverPhoto: userData.coverPhoto || '/images/cover.jpg',
-          trailerVideo: userData.trailerVideo || '/trailer.mp4',
-          earnedTokens: userData.earnedTokens || 0,
-          earnedTokensDay: userData.earnedTokensDay /* || userData.earnedTokensToday*/ || 0,
-          earnedTokensWeek: userData.earnedTokensWeek /* || userData.earnedTokensThisWeek*/ || 0,
-          earnedTokensMonth: userData.earnedTokensMonth /* || userData.earnedTokensThisMonth*/ || 0,
-          personalField1Type: userData.personalField1Type || '',
-          personalField1Value: userData.personalField1Value || '',
-          personalField1Metadata: userData.personalField1Metadata || '',
-          personalField2Type: userData.personalField2Type || '',
-          personalField2Value: userData.personalField2Value || '',
-          personalField2Metadata: userData.personalField2Metadata || '',
-          personalField3Type: userData.personalField3Type || '',
-          personalField3Value: userData.personalField3Value || '',
-          personalField3Metadata: userData.personalField3Metadata || '',
-          lensHandle: userData.lensHandle || '',
-          lensAccountId: userData.lensAccountId || '',
-          lensTransactionHash: userData.lensTransactionHash || '',
-          lensMetadataUri: userData.lensMetadataUri || '',
-          pushSubscription: userData.pushSubscription || '',
-          dailyChallenge: userData.dailyChallenge || '0'.repeat(365),
-          weeklyChallenge: userData.weeklyChallenge || '0'.repeat(52),
-          monthlyChallenge: userData.monthlyChallenge || '0'.repeat(12),
-          followers: Array.isArray(userData.followers) ? userData.followers : [],
-          following: Array.isArray(userData.following) ? userData.following : [],
-          notifications: Array.isArray(userData.notifications) ? userData.notifications : [],
-          completedChallenges: Array.isArray(userData.completedChallenges)
-            ? userData.completedChallenges
-            : [],
-          receivedPrivateChallenges: Array.isArray(userData.receivedPrivateChallenges)
-            ? userData.receivedPrivateChallenges
-            : [],
-          createdPrivateChallenges: Array.isArray(userData.createdPrivateChallenges)
-            ? userData.createdPrivateChallenges
-            : [],
-          createdPublicChallenges: Array.isArray(userData.createdPublicChallenges)
-            ? userData.createdPublicChallenges
-            : [],
-          participatingPublicChallenges: Array.isArray(userData.participatingPublicChallenges)
-            ? userData.participatingPublicChallenges
-            : [],
-        };
-
-        await login(formattedUser);
-        router.push('/home');
-      } catch (err) {
-        console.error('💥 Login error:', err);
-        setError('network_error');
-      } finally {
-        setLoading(false);
-        isProcessingLogin.current = false;
-      }
-    };
-
-    handleUserLogin();
-  }, [thirdWebAccount?.address, currentLensAccount, login, router, isAuthenticated]);
+  }, [isAuthenticated, currentLensAccount, router]);
 
   const { loading: meQueryLoading } = useMeQuery({
     variables: { request: { post: '' } },
@@ -158,8 +42,6 @@ const LoginPage = () => {
     // onError,
     skip: !accessToken,
   });
-
-  console.log('currentLensAccount', currentLensAccount);
 
   // Clear checked addresses when wallet disconnects
   useEffect(() => {
