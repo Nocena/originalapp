@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchUnreadNotificationsCount, markNotificationsAsRead } from '../../lib/graphql';
 
 import Menu from './Menu';
 import MemoryOptimizer from '../MemoryOptimizer';
@@ -11,6 +10,7 @@ import BottomNavbar from './BottomNavbar';
 import VideoBackground from './BackgroundVideo';
 import ArrowBackIcon from '../icons/back';
 import ThematicContainer from '../ui/ThematicContainer';
+import { fetchUnreadNotificationsCount, markNotificationsAsRead } from '../../lib/graphql';
 
 // Check if we're running in a browser environment
 const isBrowser = typeof window !== 'undefined';
