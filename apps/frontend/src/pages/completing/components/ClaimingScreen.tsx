@@ -121,7 +121,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
   onCancel,
   backgroundTaskIds,
 }) => {
-  const { user, updateUser } = useAuth();
+  const { currentLensAccount } = useAuth();
   const account = useActiveAccount();
   const backgroundTasks = useBackgroundTasks();
   const [claimingStage, setClaimingStage] = useState<'ready' | 'claiming' | 'success' | 'failed'>(
@@ -290,14 +290,14 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
   const saveCompletedNFTToDatabase = async (imageUrl: string) => {
     if (
       !completionId ||
-      !user?.id ||
+      !currentLensAccount?.address ||
       !nftState.collectionId ||
       !nftState.templateType ||
       !nftState.templateName
     ) {
       console.warn('Missing data for NFT database save:', {
         completionId,
-        userId: user?.id,
+        userId: currentLensAccount?.address,
         collectionId: nftState.collectionId,
         templateType: nftState.templateType,
         templateName: nftState.templateName,
@@ -322,7 +322,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
       return;
     }
 
-    if (!user?.id) {
+    if (!currentLensAccount?.address) {
       setErrorMessage('User not authenticated. Please log in and try again.');
       return;
     }
@@ -335,8 +335,6 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
     }
 
     console.log('[Claim DEBUG] Starting token claim process...');
-    console.log('[Claim DEBUG] User object:', user);
-    console.log('[Claim DEBUG] User wallet:', user?.wallet);
     console.log('[Claim DEBUG] Connected account:', account?.address);
     setClaimingStage('claiming');
     setErrorMessage('');
@@ -376,7 +374,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
             }
           : undefined;
 
-      const result = await completeChallengeWorkflow(user.id, completionData, account?.address);
+      const result = await completeChallengeWorkflow(currentLensAccount?.address, completionData, account?.address);
 
       if (result.success) {
         console.log('[Claim Success DEBUG] Challenge completion successful:', result);

@@ -37,7 +37,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
   const [followerUsers, setFollowerUsers] = useState<FollowerUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingFollowActions, setPendingFollowActions] = useState<Set<string>>(new Set());
-  const { user: currentUser } = useAuth();
+  const { currentLensAccount } = useAuth();
   const router = useRouter();
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -174,10 +174,11 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
   }, [isOpen, followers, convertToFollowerUser]);
 
   // Memoized follow status check
+/*
   const getIsFollowing = useCallback(
     (userId: string): boolean => {
       return !!(
-        currentUser &&
+        currentLensAccount &&
         currentUser.following &&
         Array.isArray(currentUser.following) &&
         currentUser.following.includes(userId)
@@ -185,8 +186,10 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
     },
     [currentUser]
   );
+*/
 
   const handleFollow = async (targetUserId: string) => {
+/*
     if (!currentUser || !currentUser.id || !targetUserId || currentUser.id === targetUserId) return;
 
     // Add to pending actions to prevent multiple clicks
@@ -254,14 +257,17 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
         return updated;
       });
     }
+*/
   };
 
   const handleProfileRedirect = (clickedUser: FollowerUser) => {
+/*
     if (currentUser?.id === clickedUser.id) {
       router.push(`/profile`);
     } else {
       router.push(`/profile/${clickedUser.id}`);
     }
+*/
     onClose();
   };
 
@@ -326,8 +332,8 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
             <div className="space-y-3">
               {followerUsers.map((userData) => {
                 // Use our getIsFollowing helper to check follow status
-                const isFollowing = getIsFollowing(userData.id);
-                const isCurrentUser = userData.id === currentUser?.id;
+                const isFollowing =  false // getIsFollowing(userData.id);
+                const isCurrentUser = userData.id === currentLensAccount?.address;
                 const isPending = pendingFollowActions.has(userData.id);
 
                 return (

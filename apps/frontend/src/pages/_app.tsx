@@ -29,7 +29,7 @@ export const queryClient = new QueryClient({
 const lensApolloClient = apolloClient(authLink);
 
 function MyAppContent({ Component, pageProps }: AppProps) {
-  const { user, loading, logout } = useAuth();
+  const { currentLensAccount, loading, logout } = useAuth();
   const router = useRouter();
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
@@ -127,10 +127,10 @@ function MyAppContent({ Component, pageProps }: AppProps) {
       publicRoutes.some((route) => currentPathname.startsWith(route)) ||
       currentPathname.startsWith('/admin/');
 
-    if (!loading && !user && !isPublicRoute) {
+    if (!loading && !currentLensAccount && !isPublicRoute) {
       router.replace('/login');
     }
-  }, [user, loading, router, currentPathname]);
+  }, [currentLensAccount, loading, router, currentPathname]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -209,19 +209,19 @@ function MyAppContent({ Component, pageProps }: AppProps) {
   const isSpecialPage = specialPages.includes(currentPathname);
   const shouldUseAppLayout =
     !noLayoutPages.includes(currentPathname) && !isAdminPage && !isSpecialPage;
-  const shouldUseSpecialLayout = isSpecialPage && user;
+  const shouldUseSpecialLayout = isSpecialPage && currentLensAccount;
 
   console.log('Layout decision:', {
     currentPathname,
     isSpecialPage,
     shouldUseAppLayout,
     shouldUseSpecialLayout,
-    user: !!user,
+    user: !!currentLensAccount,
   });
 
   // Handle public routes (login, register, admin)
   if (
-    !user &&
+    !currentLensAccount &&
     (currentPathname === '/login' ||
       currentPathname === '/register' ||
       currentPathname.startsWith('/admin/') ||
@@ -255,7 +255,7 @@ function MyAppContent({ Component, pageProps }: AppProps) {
     );
   }
 
-  if (!user) {
+  if (!currentLensAccount) {
     return (
       <>
         <Head>

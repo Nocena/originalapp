@@ -1,19 +1,13 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import {
-  updateBio,
-  updateProfilePicture,
-  updateCoverPhoto,
-  getUserAvatar,
-} from '../../lib/graphql';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { getUserAvatar, updateBio, updateCoverPhoto, updateProfilePicture } from '../../lib/graphql';
 import { unpinFromPinata } from '../../lib/api/pinata';
-import Image from 'next/image';
 import type { StaticImageData } from 'next/image';
+import Image from 'next/image';
 import imageCompression from 'browser-image-compression';
 import { useAuth } from '../../contexts/AuthContext';
-import { getPageState, updatePageState } from '../../components/PageManager';
+import { getPageState, updatePageState } from '@components/PageManager';
 
 import ThematicContainer from '../../components/ui/ThematicContainer';
-import PrimaryButton from '../../components/ui/PrimaryButton';
 import FollowersPopup from './components/FollowersPopup';
 import AvatarSection from './components/AvatarSection'; // Changed from TrailerSection
 import StatsSection from './components/StatsSection';
@@ -23,43 +17,45 @@ import PenIcon from '../../components/icons/pen';
 
 // Custom hooks
 import useFollowersData from '../../hooks/useFollowersData';
+import getAvatar from 'src/helpers/getAvatar';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
 
 const ProfileView: React.FC = () => {
   const DEFAULT_PROFILE_PIC = '/images/profile.png';
-  const { user, login, updateUser } = useAuth();
+  const { currentLensAccount } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   // Basic profile state
   const [profilePic, setProfilePic] = useState<string | StaticImageData>(
-    user?.profilePicture || defaultProfilePic
+    getAvatar(currentLensAccount)
   );
-  const [coverPhoto, setCoverPhoto] = useState<string>(user?.coverPhoto || '/images/cover.jpg');
-  const [username, setUsername] = useState<string>(user?.username || 'Guest');
-  const [bio, setBio] = useState<string>(user?.bio || 'No bio yet');
+  // TODO: fix it
+  const [coverPhoto, setCoverPhoto] = useState<string>(/*user?.coverPhoto || */'/images/cover.jpg');
+  const [username, setUsername] = useState<string>(/*user?.username ||*/ 'Guest');
+  const [bio, setBio] = useState<string>(/*user?.bio ||*/ 'No bio yet');
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
-  const [tokenBalance, setTokenBalance] = useState<number>(user?.earnedTokens || 0);
+  const [tokenBalance, setTokenBalance] = useState<number>(/*user?.earnedTokens || */0);
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
     'trailer'
   );
 
   // Avatar generation state - NEW
   const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(
-    user?.currentAvatar || null
+    /*user?.currentAvatar ||*/ null
   );
 
   // Challenge data
   const [dailyChallenges, setDailyChallenges] = useState<boolean[]>(
-    user?.dailyChallenge.split('').map((char) => char === '1') || []
+    /*user?.dailyChallenge.split('').map((char) => char === '1') ||*/ []
   );
   const [weeklyChallenges, setWeeklyChallenges] = useState<boolean[]>(
-    user?.weeklyChallenge.split('').map((char) => char === '1') || []
+    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */[]
   );
   const [monthlyChallenges, setMonthlyChallenges] = useState<boolean[]>(
-    user?.monthlyChallenge.split('').map((char) => char === '1') || []
+    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */[]
   );
 
   // Use custom hook for followers data
@@ -69,9 +65,10 @@ const ProfileView: React.FC = () => {
     showFollowersPopup,
     setShowFollowersPopup,
     handleFollowersClick,
-  } = useFollowersData(user?.id);
+  } = useFollowersData(/*user?.id*/undefined);
 
   // Sync user data when user changes
+/*
   useEffect(() => {
     if (user) {
       setDailyChallenges(user.dailyChallenge.split('').map((char) => char === '1'));
@@ -100,8 +97,10 @@ const ProfileView: React.FC = () => {
       });
     }
   }, [user]);
+*/
 
   // NEW: Load avatar data from database on component mount
+/*
   useEffect(() => {
     const loadUserAvatarData = async () => {
       if (user?.id) {
@@ -119,6 +118,7 @@ const ProfileView: React.FC = () => {
 
     loadUserAvatarData();
   }, [user?.id]);
+*/
 
   // Calculate stats for components
   const currentStreak = useMemo(() => {
@@ -147,11 +147,13 @@ const ProfileView: React.FC = () => {
     setGeneratedAvatar(newAvatarUrl);
 
     // Update user context
+/*
     if (user) {
       const updatedUser = { ...user, currentAvatar: newAvatarUrl };
-      login(updatedUser);
+      // login(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
     }
+*/
   };
 
   // Image upload handlers
@@ -168,6 +170,7 @@ const ProfileView: React.FC = () => {
   };
 
   const handleProfilePicUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+/*
     const file = event.target.files?.[0];
     if (file && user) {
       try {
@@ -247,9 +250,11 @@ const ProfileView: React.FC = () => {
         alert('Image compression failed. Please try with a different image.');
       }
     }
+*/
   };
 
   const handleCoverPhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+/*
     const file = event.target.files?.[0];
     if (file && user) {
       try {
@@ -344,12 +349,14 @@ const ProfileView: React.FC = () => {
         alert('Image compression failed. Please try with a different image.');
       }
     }
+*/
   };
 
   // Bio editing handlers
   const handleEditBioClick = () => setIsEditingBio(true);
 
   const handleSaveBioClick = async () => {
+/*
     if (!user || bio === user.bio) {
       setIsEditingBio(false);
       return;
@@ -374,11 +381,12 @@ const ProfileView: React.FC = () => {
       console.error('Failed to update bio:', error);
       alert('Failed to update your bio. Please try again later.');
     }
+*/
   };
 
   const handleCancelEdit = () => {
     setBio(
-      user?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!'
+      currentLensAccount?.metadata?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!'
     );
     setIsEditingBio(false);
   };
@@ -568,7 +576,7 @@ const ProfileView: React.FC = () => {
                   profilePicture={profilePic}
                   generatedAvatar={generatedAvatar}
                   onAvatarUpdated={handleAvatarUpdated}
-                  userID={user?.id}
+                  userID={currentLensAccount?.address}
                   enableAvatarFeature={true}
                 />
               </div>

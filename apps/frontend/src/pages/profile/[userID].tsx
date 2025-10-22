@@ -36,7 +36,7 @@ type FollowerData = string | { id: string; [key: string]: any };
 const OtherProfileView: React.FC = () => {
   const router = useRouter();
   const { userID } = router.query;
-  const { user: currentUser } = useAuth();
+  const { currentLensAccount } = useAuth();
 
   const [user, setUser] = useState<ProfileUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -255,12 +255,13 @@ const OtherProfileView: React.FC = () => {
   }, [isPageVisible, userID, fetchUserData]);
 
   const handleFollowToggle = async () => {
-    if (!currentUser || !user || !currentUser.id || isPendingFollow) return;
+    if (!currentLensAccount || !user || isPendingFollow) return;
 
     // Set pending state
     setIsPendingFollow(true);
 
     // Optimistically update UI
+/*
     setUser((prevUser) => {
       if (!prevUser) return null;
 
@@ -274,8 +275,10 @@ const OtherProfileView: React.FC = () => {
         followers: updatedFollowers,
       };
     });
+*/
 
     // Also update the cached state
+/*
     if (user) {
       const profileCacheKey = `other_profile_${user.id}`;
       const isCurrentlyFollowing = user.followers.includes(currentUser.id);
@@ -300,7 +303,9 @@ const OtherProfileView: React.FC = () => {
         })
       );
     }
+*/
 
+/*
     try {
       // Make API call
       const wasFollowing = user.followers.includes(currentUser.id);
@@ -368,11 +373,12 @@ const OtherProfileView: React.FC = () => {
     } finally {
       setIsPendingFollow(false);
     }
+*/
   };
 
   // Handle "Challenge Me" button click
   const handleChallengeClick = () => {
-    if (!user || !currentUser) return;
+    if (!user || !currentLensAccount) return;
 
     console.log('Challenge button clicked for user:', user.username);
 
@@ -502,7 +508,8 @@ const OtherProfileView: React.FC = () => {
   // If we have user data (either from cache or API), show the profile
   if (user) {
     // Check if current user is following this profile
-    const isFollowing = !!(currentUser && user.followers.includes(currentUser.id));
+    // const isFollowing = !!(currentLensAccount && user.followers.includes(currentUser.id));
+    const isFollowing = false
 
     return (
       <div
@@ -608,7 +615,7 @@ const OtherProfileView: React.FC = () => {
                 onClick={handleFollowToggle}
                 className="flex-1"
                 isActive={!isFollowing}
-                disabled={isPendingFollow || !currentUser}
+                disabled={isPendingFollow || !currentLensAccount}
               />
               {/*
               <PrimaryButton

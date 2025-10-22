@@ -264,7 +264,7 @@ export const createTestRealMoji = async (
  * Hook for RealMoji functionality with validation
  */
 export const useRealMoji = () => {
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
 
   const createRealMoji = async (
     imageBlob: Blob,
@@ -273,7 +273,7 @@ export const useRealMoji = () => {
   ): Promise<{ success: boolean; data?: any; error?: string }> => {
     try {
       // Validate prerequisites
-      const validation = validateRealMojiCreation(user?.id, completionId, reactionType, imageBlob);
+      const validation = validateRealMojiCreation(currentLensAccount?.address, completionId, reactionType, imageBlob);
 
       if (!validation.isValid) {
         return {
@@ -283,7 +283,7 @@ export const useRealMoji = () => {
       }
 
       console.log('🎭 [useRealMoji] Creating RealMoji:', {
-        userId: user?.id,
+        userId: currentLensAccount?.address,
         completionId,
         reactionType,
         imageSize: imageBlob.size,
@@ -292,7 +292,7 @@ export const useRealMoji = () => {
       // Create FormData
       const formData = new FormData();
       formData.append('image', imageBlob, `realmoji-${reactionType}-${Date.now()}.jpg`);
-      formData.append('userId', user!.id);
+      formData.append('userId', currentLensAccount?.address);
       formData.append('completionId', completionId);
       formData.append('reactionType', reactionType);
 
@@ -329,8 +329,8 @@ export const useRealMoji = () => {
 
   return {
     createRealMoji,
-    isAuthenticated: !!user?.id,
-    user,
+    isAuthenticated: !!currentLensAccount?.address,
+    user: currentLensAccount,
   };
 };
 

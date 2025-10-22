@@ -41,7 +41,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
   logPerf(`AppLayout render started`);
 
   const router = useRouter();
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -213,8 +213,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
       logPerf(`App came to foreground`);
       setAppIsVisible(true);
       // Refresh notification count when app comes to foreground
-      if (user?.id) {
-        fetchUnreadNotificationsCount(user.id)
+      if (currentLensAccount?.address) {
+        fetchUnreadNotificationsCount(currentLensAccount.address)
           .then((count) => setUnreadCount(count))
           .catch((error) => console.error('Failed to refresh notifications', error));
       }
@@ -233,7 +233,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
       // Final cleanup
       stopAllCameraStreams();
     };
-  }, [user?.id, stopAllCameraStreams]);
+  }, [currentLensAccount, stopAllCameraStreams]);
 
   // Track when component first mounts
   useEffect(() => {
@@ -286,14 +286,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
 
   // More efficient unread notifications check with caching and visibility detection
   useEffect(() => {
-    if (!user?.id || !isBrowser) return;
+    if (!currentLensAccount?.address || !isBrowser) return;
 
     logPerf(`Setting up notifications check`);
     const checkUnreadNotifications = async () => {
       logPerf(`Checking unread notifications`);
       try {
         const fetchStart = performance.now();
-        const count = await fetchUnreadNotificationsCount(user.id);
+        const count = await fetchUnreadNotificationsCount(currentLensAccount?.address);
         logPerf(
           `Fetched unread count in ${(performance.now() - fetchStart).toFixed(2)}ms: ${count}`
         );
@@ -360,7 +360,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
       clearTimeout(initialCheckTimer);
       clearInterval(interval);
     };
-  }, [user?.id, appIsVisible]);
+  }, [currentLensAccount?.address, appIsVisible]);
 
   // NEW: Listen for navigation messages from service worker
   useEffect(() => {
@@ -404,7 +404,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
     // Handle profile pages with IDs - WITH SAFETY CHECKS
     if (currentPathname.startsWith('/profile/')) {
       // Check if this is the user's own profile
-      if (currentQuery.walletAddress === user?.wallet) {
+      if (currentQuery.walletAddress === currentLensAccount?.address) {
         setCurrentIndex(4); // Own profile
       } else {
         setCurrentIndex(6); // Other user's profile
@@ -418,11 +418,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
       setCurrentIndex(index);
       logPerf(`Set current index to ${index} for path ${currentPathname}`);
     }
-  }, [isRouterReady, currentPathname, currentQuery, user?.wallet]);
+  }, [isRouterReady, currentPathname, currentQuery, currentLensAccount?.address]);
 
   // Safe checks for special page determination
   const isUserProfile =
-    currentPathname.startsWith('/profile/') && currentQuery.walletAddress !== user?.wallet;
+    currentPathname.startsWith('/profile/') && currentQuery.walletAddress !== currentLensAccount?.address;
   const isSpecialPage =
     currentPathname === '/completing' ||
     currentPathname === '/createchallenge' ||
@@ -455,7 +455,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
       };
 
       const targetRoute =
-        index === 6 && user?.wallet ? `/profile/${user.id}` : routeMapping[index] || '/home';
+        index === 6 && currentLensAccount?.address ? `/profile/${currentLensAccount?.address}` : routeMapping[index] || '/home';
       const isGoingToCameraPage = cameraPages.some((page) => targetRoute.startsWith(page));
 
       if (!isGoingToCameraPage) {
@@ -496,12 +496,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
       }
 
       // After navigation, handle any operations that could block
-      if (index === 2 && user?.id) {
+      if (index === 2 && currentLensAccount?.address) {
         // For inbox, perform background operation after navigation
         window.requestAnimationFrame(async () => {
           try {
             // Mark notifications as read
-            await markNotificationsAsRead(user.id);
+            await markNotificationsAsRead(currentLensAccount?.address);
             setUnreadCount(0);
 
             // Update the cache to reflect read notifications
@@ -527,7 +527,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
 
       logPerf(`Navigation completed in ${(performance.now() - navigationStart).toFixed(2)}ms`);
     },
-    [router?.push, user?.id, user?.wallet, stopAllCameraStreams]
+    [router?.push, currentLensAccount, stopAllCameraStreams]
   );
 
   const handleMenuToggle = useCallback(() => {

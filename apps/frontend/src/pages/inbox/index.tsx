@@ -580,14 +580,14 @@ const InboxView = () => {
     }
   };
 
-  const handleSubmitChallenge = async (challenge: CreatePrivateChallengeRequest & { selectedUser: any }) => {
+  const handleSubmitChallenge = async (challenge: CreatePrivateChallengeRequest/* & { selectedUser: any }*/) => {
     if (!currentLensAccount?.address) {
       console.error('User not authenticated');
       return;
     }
 
     console.log('Challenge data:', challenge);
-    console.log('Selected user:', challenge.selectedUser);
+    // console.log('Selected user:', challenge.selectedUser);
 
     try {
       // TODO: fix it

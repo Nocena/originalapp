@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext'; // Add this import
 import InteractionSidebar from './components/InteractionSidebar';
+import getAccount from '../../helpers/getAccount';
+import getAvatar from '../../helpers/getAvatar';
 
 interface ChallengeCompletion {
   id: string;
@@ -64,7 +66,7 @@ interface ChallengeCompletion {
 
 const BrowsingPage: React.FC = () => {
   const router = useRouter();
-  const { user } = useAuth(); // Get current user from auth context
+  const { currentLensAccount } = useAuth(); // Get current user from auth context
   const { challengeId, userId } = router.query;
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -100,7 +102,7 @@ const BrowsingPage: React.FC = () => {
       );
 
       // Get current user ID for like status
-      const currentUserId = user?.id; // Use actual user ID from auth context
+      const currentUserId = currentLensAccount?.address; // Use actual user ID from auth context
 
       // Fetch completions with like and reaction data
       const allCompletions = await fetchChallengeCompletionsWithLikesAndReactions(
@@ -333,12 +335,12 @@ const BrowsingPage: React.FC = () => {
 
   const handleLikeClick = async (completion: ChallengeCompletion) => {
     // Check if user is logged in
-    if (!user?.id) {
+    if (!currentLensAccount?.address) {
       alert('Please log in to like posts');
       return;
     }
 
-    const currentUserId = user.id; // Use actual user ID
+    const currentUserId = currentLensAccount?.address; // Use actual user ID
 
     // Optimistic update for immediate UI feedback
     const wasLiked = completion.localIsLiked || false;
@@ -421,10 +423,10 @@ const BrowsingPage: React.FC = () => {
       reactionType,
       completionId,
       blobSize: imageBlob.size,
-      userId: user?.id,
+      userId: currentLensAccount?.address,
     });
 
-    if (!user?.id) {
+    if (!currentLensAccount?.address) {
       alert('Please log in to create RealMoji reactions');
       return;
     }
@@ -436,7 +438,7 @@ const BrowsingPage: React.FC = () => {
       // Create FormData for the API request
       const formData = new FormData();
       formData.append('image', imageBlob, `realmoji-${reactionType}-${Date.now()}.jpg`);
-      formData.append('userId', user.id);
+      formData.append('userId', currentLensAccount?.address);
       formData.append('completionId', completionId);
       formData.append('reactionType', reactionType);
 
@@ -477,9 +479,9 @@ const BrowsingPage: React.FC = () => {
               emoji: data.emoji || getEmojiForType(data.reactionType),
               selfieUrl: data.selfieUrl,
               user: {
-                id: user.id!,
-                username: user.username || 'You',
-                profilePicture: user.profilePicture || '/images/profile.png',
+                id: currentLensAccount?.address!,
+                username: getAccount(currentLensAccount).username || 'You',
+                profilePicture: getAvatar(currentLensAccount) || '/images/profile.png',
               },
               createdAt: new Date().toISOString(),
             };
@@ -534,7 +536,7 @@ const BrowsingPage: React.FC = () => {
   };
 
   // Don't render anything if user is not loaded yet
-  if (!user) {
+  if (!currentLensAccount) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>

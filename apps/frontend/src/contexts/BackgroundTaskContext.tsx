@@ -251,7 +251,7 @@ interface BackgroundTaskProviderProps {
 
 export const BackgroundTaskProvider: React.FC<BackgroundTaskProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(backgroundTaskReducer, initialState);
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
   const taskProcessorRef = useRef<{ [key: string]: AbortController }>({});
 
   // MINIMAL LOGGING: Only log active tasks summary

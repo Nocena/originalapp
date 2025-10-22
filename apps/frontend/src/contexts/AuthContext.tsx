@@ -207,7 +207,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   logout: () => Promise<void>;
-  currentLensAccount: AccountFragment | null,
+  currentLensAccount: AccountFragment | undefined,
   setCurrentLensAccount: (account: AccountFragment | null) => void,
 }
 

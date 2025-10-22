@@ -19,7 +19,7 @@ interface BlockchainCompletionResult extends CompletionResult {
 
 export function useChallengeCompletion() {
   const [isCompleting, setIsCompleting] = useState(false);
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
   const account = useActiveAccount();
   const { data: isRewardMinter } = useIsRewardMinter(account?.address);
 
@@ -27,7 +27,7 @@ export function useChallengeCompletion() {
     completionData: CompletionData,
     enableBlockchainRewards: boolean = true
   ): Promise<BlockchainCompletionResult> => {
-    if (!user?.id) {
+    if (!currentLensAccount) {
       return { success: false, message: 'User not authenticated' };
     }
 
@@ -36,7 +36,7 @@ export function useChallengeCompletion() {
     try {
       // Pass the user's wallet address to the completion workflow
       const completionResult = await completeChallengeWorkflow(
-        user.id,
+        currentLensAccount.address,
         completionData,
         account?.address // This ensures tokens are minted to the connected wallet
       );
