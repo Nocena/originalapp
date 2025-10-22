@@ -24,7 +24,7 @@ const LoginPage = () => {
   const checkedAddresses = useRef<Set<string>>(new Set());
 
   const router = useRouter();
-  const { login, isAuthenticated, currentLensAccount, setCurrentLensAccount } = useAuth();
+  const { isAuthenticated, currentLensAccount, setCurrentLensAccount, setIsAuthenticated } = useAuth();
   const thirdWebAccount = useActiveAccount();
   // Redirect if already authenticated
   useEffect(() => {
@@ -38,11 +38,13 @@ const LoginPage = () => {
     variables: { request: { post: '' } },
     onCompleted: ({ me, pro }) => {
       setCurrentLensAccount(me.loggedInAs.account);
+      setIsAuthenticated(true)
     },
     // onError,
     skip: !accessToken,
   });
 
+  console.log("currentLensAccount", currentLensAccount)
   // Clear checked addresses when wallet disconnects
   useEffect(() => {
     if (!thirdWebAccount?.address) {
