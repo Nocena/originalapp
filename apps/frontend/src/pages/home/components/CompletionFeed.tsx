@@ -1,11 +1,11 @@
 // components/home/CompletionFeed.tsx - FIXED VERSION
 import React, { useState, useEffect } from 'react';
-import { fetchUserCompletions } from '../../../lib/graphql';
 import CompletionItem from './CompletionItem';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
+import { useAuth } from '../../../contexts/AuthContext';
+import { fetchUserCompletions } from 'src/lib/graphql';
 
 interface CompletionFeedProps {
-  user: any;
   isLoading: boolean;
   followerCompletions: any[];
   selectedTab: 'daily' | 'weekly' | 'monthly';
@@ -14,7 +14,6 @@ interface CompletionFeedProps {
 }
 
 const CompletionFeed: React.FC<CompletionFeedProps> = ({
-  user,
   isLoading,
   followerCompletions,
   selectedTab,
@@ -23,11 +22,12 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
 }) => {
   const [userCompletion, setUserCompletion] = useState<any>(null);
   const [loadingUserCompletion, setLoadingUserCompletion] = useState(true);
+  const { currentLensAccount } = useAuth();
 
   // Fetch user's own completion for the current period
   useEffect(() => {
     const fetchUserCompletion = async () => {
-      if (!user) {
+      if (!currentLensAccount) {
         setLoadingUserCompletion(false);
         return;
       }
@@ -61,14 +61,14 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
           endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
         }
 
-        console.log(`Fetching ${selectedTab} completion for user ${user.id}`, {
+        console.log(`Fetching ${selectedTab} completion for user ${currentLensAccount?.address}`, {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
         });
 
         // Fetch completions for this period
         const completions = await fetchUserCompletions(
-          user.id,
+          currentLensAccount?.address,
           startDate.toISOString(),
           endDate.toISOString(),
           'ai' // Filter for AI challenges
@@ -105,7 +105,7 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
     };
 
     fetchUserCompletion();
-  }, [user, selectedTab, onCompletionStatusChange]);
+  }, [currentLensAccount, selectedTab, onCompletionStatusChange]);
 
   // Show loading state
   if (isLoading || loadingUserCompletion) {
