@@ -50,7 +50,7 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
   }
 
   // Handle the nested structure from your data
-  if (media && media.directoryCID && typeof media.directoryCID === 'string') {
+  if (media && media.directoryCID) {
     try {
       const nestedData = JSON.parse(media.directoryCID);
       if (nestedData.videoCID || nestedData.selfieCID) {

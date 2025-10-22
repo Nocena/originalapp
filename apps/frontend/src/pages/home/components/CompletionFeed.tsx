@@ -68,10 +68,12 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
 
         // Fetch completions for this period
         const completions = await fetchUserCompletions(
-          currentLensAccount?.address,
-          startDate.toISOString(),
-          endDate.toISOString(),
-          'ai' // Filter for AI challenges
+          {
+            userLensAccountId: currentLensAccount?.address,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            challengeType: 'ai' // Filter for AI challenges
+          }
         );
 
         // Find the most recent completion for this period
