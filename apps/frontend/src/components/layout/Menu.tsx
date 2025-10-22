@@ -10,6 +10,8 @@ import FAQMenu from './menu/FAQ';
 import SupportMenu from './menu/Support';
 import FeedbackMenu from './menu/Feedback';
 import Image from 'next/image';
+import getAvatar from 'src/helpers/getAvatar';
+import getAccount from '../../helpers/getAccount';
 
 interface MenuProps {
   isOpen: boolean;
@@ -19,7 +21,7 @@ interface MenuProps {
 }
 
 const Menu: React.FC<MenuProps> = ({ isOpen, onClose, onLogout, showBottomNavbar = false }) => {
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -335,7 +337,7 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose, onLogout, showBottomNavbar
         <div className="w-20 h-20 mx-auto mb-4">
           <ThematicImage className="w-full h-full z-999">
             <Image
-              src={user?.profilePicture || defaultProfilePic}
+              src={getAvatar(currentLensAccount) || defaultProfilePic}
               alt="Profile"
               width={80}
               height={80}
@@ -343,8 +345,8 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose, onLogout, showBottomNavbar
             />
           </ThematicImage>
         </div>
-        <h3 className="text-white font-semibold text-xl mb-1">{user?.username || 'User'}</h3>
-        <p className="text-white/70 text-sm mb-4">{user?.bio || 'No bio yet'}</p>
+        <h3 className="text-white font-semibold text-xl mb-1">{getAccount(currentLensAccount)?.name || 'User'}</h3>
+        <p className="text-white/70 text-sm mb-4">{currentLensAccount?.metadata?.bio || 'No bio yet'}</p>
         <PrimaryButton
           text="Logout"
           onClick={(e) => {

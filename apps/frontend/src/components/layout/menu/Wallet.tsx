@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Wallet, Shield, Zap, Smartphone, Users, Copy } from 'lucide-react';
-import { useAuth } from '../../../contexts/AuthContext';
-import { useActiveAccount } from 'thirdweb/react';
-import { ConnectButton } from 'thirdweb/react';
+import { Copy, Shield, Smartphone, Users, Wallet, Zap } from 'lucide-react';
+import { ConnectButton, useActiveAccount } from 'thirdweb/react';
 import { client, flowChain } from '../../../lib/thirdweb';
 import { wallets } from '../../../lib/thirdweb/wallets';
 import { useNoceniteToken } from '../../../hooks/contracts/useNoceniteToken';
@@ -13,7 +11,6 @@ interface WalletMenuProps {
 }
 
 const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
-  const { user } = useAuth();
   const account = useActiveAccount();
   const nctBalance = useNoceniteToken();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);

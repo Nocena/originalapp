@@ -42,7 +42,7 @@ interface BackgroundTasks {
 const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
   const router = useRouter();
   const backgroundTasks = useBackgroundTasks();
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
 
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -307,12 +307,12 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
 
   // UPDATED: Start NFT generation AND model preloading when challenge begins
   const handleStartChallenge = () => {
-    if (user?.id && challenge) {
+    if (currentLensAccount?.address && challenge) {
       console.log('Starting background tasks when challenge begins...');
 
       try {
         // 1. Start NFT generation (persistent)
-        const nftGenerationId = backgroundTasks.startNFTGeneration(user.id, challenge, true);
+        const nftGenerationId = backgroundTasks.startNFTGeneration(currentLensAccount?.address, challenge, true);
         console.log('NFT generation started:', nftGenerationId);
 
         // 2. Start model preloading (for face recognition)

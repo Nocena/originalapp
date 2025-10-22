@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import getAvatar from '../../../helpers/getAvatar';
 
 interface UserLocationMarkerProps {
   map: any;
@@ -8,8 +9,7 @@ interface UserLocationMarkerProps {
 }
 
 const UserLocationMarker: React.FC<UserLocationMarkerProps> = ({ map, MapLibre, location }) => {
-  const { user } = useAuth();
-  const defaultProfilePic = '/images/profile.png';
+  const { currentLensAccount } = useAuth();
   const markerRef = useRef<any>(null);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const UserLocationMarker: React.FC<UserLocationMarkerProps> = ({ map, MapLibre, 
       markerRef.current.remove();
     }
 
-    const profilePicture = user?.profilePicture || defaultProfilePic;
+    const profilePicture = getAvatar(currentLensAccount);
 
     const el = document.createElement('div');
     el.className = 'user-location-marker';
@@ -128,7 +128,7 @@ const UserLocationMarker: React.FC<UserLocationMarkerProps> = ({ map, MapLibre, 
         markerRef.current.remove();
       }
     };
-  }, [map, MapLibre, location, user?.profilePicture]);
+  }, [map, MapLibre, location]);
 
   return null;
 };

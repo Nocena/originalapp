@@ -61,7 +61,6 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
   onCancel,
   backgroundTaskIds,
 }) => {
-  const { user } = useAuth();
   const backgroundTasks = useBackgroundTasks();
   const [videoUrl, setVideoUrl] = useState<string>('');
   const [photoUrl, setPhotoUrl] = useState<string>('');

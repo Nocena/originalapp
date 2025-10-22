@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
 import type { StaticImageData } from 'next/image';
 import { getUserNFTsByType, updateUserEquippedItems } from '../../../lib/graphql';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -80,23 +79,28 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   >(null);
 
   // Use actual user from auth context
-  const { user, updateUser } = useAuth();
+  const { currentLensAccount } = useAuth();
 
   // Load user's NFTs on component mount
+/*
   useEffect(() => {
     if (user?.id && enableAvatarFeature) {
       loadUserNFTs();
       loadEquippedItems();
     }
   }, [user?.id, enableAvatarFeature]);
+*/
 
   // Load prompt when generatedAvatar changes
+/*
   useEffect(() => {
     if (user?.id && generatedAvatar && enableAvatarFeature) {
       loadCurrentAvatarPrompt();
     }
   }, [user?.id, generatedAvatar, enableAvatarFeature]);
+*/
 
+/*
   const loadUserNFTs = async () => {
     if (!user?.id) return;
 
@@ -114,7 +118,9 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
       setIsLoadingNFTs(false);
     }
   };
+*/
 
+/*
   const loadCurrentAvatarPrompt = async () => {
     if (!user?.id || !generatedAvatar) return;
 
@@ -134,7 +140,9 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
       console.error('Error loading current avatar prompt:', error);
     }
   };
+*/
 
+/*
   const loadEquippedItems = async () => {
     // Load currently equipped items from user data
     if (!user) return;
@@ -164,6 +172,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
       }
     }
   };
+*/
 
   const hasSelectedNFTs = () => {
     return Object.values(selectedNFTs).some((nft) => nft !== null);
@@ -179,6 +188,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
     }));
 
     // Update equipped items in database
+/*
     if (user?.id) {
       try {
         await updateUserEquippedItems(user.id, {
@@ -201,6 +211,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
         console.error('Failed to update equipped items:', error);
       }
     }
+*/
 
     // Auto-apply clothing change immediately (dress-up game style)
     if (generatedAvatar) {
@@ -293,7 +304,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   };
 
   const handleSaveAvatar = async () => {
-    if (!generatedAvatar || !user?.id) {
+    if (!generatedAvatar || !currentLensAccount) {
       console.error('No avatar to save or user not authenticated');
       return;
     }
@@ -328,7 +339,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
 
       // Prepare avatar data
       const avatarData = {
-        userId: user.id,
+        userId: currentLensAccount.address,
         baseImageUrl: baseImageUrl,
         generatedImageUrl: generatedAvatar,
         baseImageCID,
@@ -359,6 +370,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
         console.log('✅ Avatar saved successfully to database!', result.avatarId);
 
         // Update the user context to reflect the new avatar
+/*
         if (updateUser) {
           updateUser({
             currentAvatar: generatedAvatar,
@@ -368,6 +380,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
             equippedShoes: selectedNFTs.shoes,
           } as any);
         }
+*/
 
         alert('Avatar saved successfully!');
       } else {

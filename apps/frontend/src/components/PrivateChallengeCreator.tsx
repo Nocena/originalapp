@@ -9,7 +9,7 @@ interface PrivateChallengeCreatorProps {
 }
 
 const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClose, onSubmit }) => {
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
   const [formData, setFormData] = useState({
     recipientId: '',
     name: '',
@@ -21,7 +21,7 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
 
   const handleUserSelect = (selectedUser: SearchUser) => {
     // Prevent selecting yourself
-    if (user?.id === selectedUser.id) {
+    if (currentLensAccount?.address === selectedUser.id) {
       alert('You cannot send a challenge to yourself!');
       return;
     }

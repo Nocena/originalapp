@@ -9,6 +9,7 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { toggleFollowUser } from '../../lib/graphql';
 import SearchBox, { SearchUser } from './components/SearchBox';
 import Image from 'next/image';
+import { AccountFragment } from '@nocena/indexer';
 
 interface LeaderboardUser {
   rank: number;
@@ -42,7 +43,7 @@ function SearchView() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [lastRefreshTime, setLastRefreshTime] = useState(0);
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
   const router = useRouter();
 
   // Fetch Top NCT Holders leaderboard
@@ -144,14 +145,14 @@ function SearchView() {
 
   // Handle user selection from search - SearchBox will handle its own dropdown
   const handleUserSelect = useCallback(
-    (selectedUser: SearchUser) => {
-      if (user?.id === selectedUser.id) {
+    (account: AccountFragment) => {
+      if (currentLensAccount?.address === account.address) {
         router.push('/profile');
       } else {
-        router.push(`/profile/${selectedUser.id}`);
+        router.push(`/profile/${account.username?.localName}`);
       }
     },
-    [router, user?.id]
+    [router, currentLensAccount]
   );
 
   // Handle follow action

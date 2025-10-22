@@ -24,7 +24,7 @@ const ChallengeMarker: React.FC<ChallengeMarkerProps> = ({
   const markerRef = useRef<any>(null);
   const popupRef = useRef<any>(null);
   const router = useRouter();
-  const { user } = useAuth(); // Add this line
+  const { currentLensAccount } = useAuth(); // Add this line
 
   useEffect(() => {
     if (!map || !MapLibre) return;
@@ -108,7 +108,7 @@ const ChallengeMarker: React.FC<ChallengeMarkerProps> = ({
     // Create popup with challenge details and completion handler - UPDATED to include currentUserId
     const popupContent = ChallengePopup({
       challenge,
-      currentUserId: user?.id, // Add this line
+      currentUserId: currentLensAccount?.address, // Add this line
       onComplete: handleCompleteChallenge,
     });
 
@@ -174,7 +174,7 @@ const ChallengeMarker: React.FC<ChallengeMarkerProps> = ({
       if (markerRef.current) markerRef.current.remove();
       if (popupRef.current) popupRef.current.remove();
     };
-  }, [map, MapLibre, challenge, index, isSelected, onSelect, router, user?.id]); // Add user?.id to dependencies
+  }, [map, MapLibre, challenge, index, isSelected, onSelect, router, currentLensAccount]); // Add user?.id to dependencies
 
   // Update popup visibility when selection changes
   useEffect(() => {
@@ -186,7 +186,7 @@ const ChallengeMarker: React.FC<ChallengeMarkerProps> = ({
       // Re-setup event listeners when popup becomes visible - UPDATED to include currentUserId
       const popupContent = ChallengePopup({
         challenge,
-        currentUserId: user?.id, // Add this line
+        currentUserId: currentLensAccount?.address, // Add this line
         onComplete: (challengeData) => {
           // Navigate to the completing page with challenge details
           router.push({
@@ -225,7 +225,7 @@ const ChallengeMarker: React.FC<ChallengeMarkerProps> = ({
         markerRef.current.setOffset([0, isSelected ? -20 : -16]);
       }
     }
-  }, [isSelected, map, challenge, router, user?.id]); // Add user?.id to dependencies
+  }, [isSelected, map, challenge, router, currentLensAccount]); // Add user?.id to dependencies
 
   return null;
 };

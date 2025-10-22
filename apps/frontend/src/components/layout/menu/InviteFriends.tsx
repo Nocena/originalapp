@@ -17,7 +17,7 @@ interface InviteStats {
 }
 
 const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
-  const { user } = useAuth();
+  const { currentLensAccount } = useAuth();
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [showBrowserWarning, setShowBrowserWarning] = useState(false);
   const [inviteStats, setInviteStats] = useState<InviteStats | null>(null);
@@ -26,10 +26,10 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
 
   // Fetch user's invite statistics and ensure they have exactly 2 codes (only if they don't exist)
   const fetchInviteStats = async () => {
-    if (!user?.id) return;
+    if (!currentLensAccount) return;
 
     try {
-      const response = await fetch(`/api/invite/user-invites?userId=${user.id}`);
+      const response = await fetch(`/api/invite/user-invites?userId=${currentLensAccount.address}`);
       const data = await response.json();
 
       if (response.ok) {
@@ -37,7 +37,7 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
         if (data.inviteCodes.length === 0) {
           await generateMissingInviteCodes(2);
           // Refetch after generating initial codes
-          const updatedResponse = await fetch(`/api/invite/user-invites?userId=${user.id}`);
+          const updatedResponse = await fetch(`/api/invite/user-invites?userId=${currentLensAccount.address}`);
           const updatedData = await updatedResponse.json();
           setInviteStats(updatedData);
         } else if (data.inviteCodes.length > 2) {
@@ -62,7 +62,7 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
 
   // Generate missing invite codes (only for new users)
   const generateMissingInviteCodes = async (count: number) => {
-    if (!user?.id) return;
+    if (!currentLensAccount) return;
 
     try {
       for (let i = 0; i < count; i++) {
@@ -70,7 +70,7 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId: user.id,
+            userId: currentLensAccount.address,
             source: 'initial',
           }),
         });
@@ -82,7 +82,7 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
 
   useEffect(() => {
     fetchInviteStats();
-  }, [user?.id]);
+  }, [currentLensAccount]);
 
   // Detect if user is in an in-app browser
   useEffect(() => {

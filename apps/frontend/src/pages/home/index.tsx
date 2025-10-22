@@ -8,7 +8,7 @@ import {
   getChallengeReward,
   getFallbackChallenge,
   AIChallenge,
-} from '../../lib/utils/challengeUtils';
+} from '@utils/challengeUtils';
 
 // Component imports
 import ChallengeHeader from './components/ChallengeHeader';
@@ -17,6 +17,8 @@ import CompletionFeed from './components/CompletionFeed';
 import CompletionItem from './components/CompletionItem';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
+import getAccount from 'src/helpers/getAccount';
+import getAvatar from '../../helpers/getAvatar';
 
 type ChallengeType = 'daily' | 'weekly' | 'monthly';
 
@@ -134,7 +136,7 @@ const createMockPhotoBlob = (): Blob => {
 
 const HomeView = () => {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { currentLensAccount, loading } = useAuth();
   const [selectedTab, setSelectedTab] = useState<ChallengeType>('daily');
   const [followerCompletions, setFollowerCompletions] = useState<any[]>([]);
   const [isFetchingCompletions, setIsFetchingCompletions] = useState(false);
@@ -151,6 +153,7 @@ const HomeView = () => {
   const isDevelopmentMode = process.env.NODE_ENV === 'development';
 
   // Debug user completion strings
+/*
   useEffect(() => {
     if (user) {
       console.log('User completion data:', {
@@ -163,6 +166,7 @@ const HomeView = () => {
       });
     }
   }, [user]);
+*/
 
   // Fetch challenge from Dgraph when tab changes
   useEffect(() => {
@@ -193,13 +197,13 @@ const HomeView = () => {
 
   // Fetch latest completion when user changes or when completion status changes
   useEffect(() => {
-    if (!user) return;
+    if (!currentLensAccount) return;
 
     const loadLatestCompletion = async () => {
       setIsLoadingLatestCompletion(true);
       try {
         console.log('🔄 Fetching latest completion...');
-        const completion = await fetchLatestUserCompletion(user.id);
+        const completion = await fetchLatestUserCompletion(currentLensAccount.address);
         setLatestCompletion(completion);
         console.log('✅ Latest completion:', completion);
       } catch (error) {
@@ -211,15 +215,15 @@ const HomeView = () => {
     };
 
     loadLatestCompletion();
-  }, [user]);
+  }, [currentLensAccount]);
 
   // Check completion status using the user's completion flags
   const hasCompleted = useMemo(() => {
-    if (!user) return false;
-    const completed = hasCompletedChallenge(user, selectedTab);
+    if (!currentLensAccount) return false;
+    const completed = hasCompletedChallenge(currentLensAccount, selectedTab);
     console.log(`${selectedTab} completion status:`, completed);
     return completed;
-  }, [user, selectedTab]);
+  }, [currentLensAccount, selectedTab]);
 
   // Calculate reward based on challenge data or fallback
   const reward = useMemo(() => {
@@ -234,7 +238,7 @@ const HomeView = () => {
 
   // ONLY fetch follower completions if user has actually completed the challenge
   useEffect(() => {
-    if (!user || loading || !hasCompleted) {
+    if (!currentLensAccount || loading || !hasCompleted) {
       setFollowerCompletions([]);
       setIsFetchingCompletions(false);
       return;
@@ -246,7 +250,7 @@ const HomeView = () => {
       try {
         console.log(`User has completed ${selectedTab} challenge, fetching friend completions...`);
         const today = new Date().toISOString().split('T')[0];
-        const completions = await fetchFollowerCompletions(user.id, today, selectedTab);
+        const completions = await fetchFollowerCompletions(currentLensAccount.address, today, selectedTab);
         setFollowerCompletions(completions);
         console.log('Loaded follower completions:', completions.length);
       } catch (error) {
@@ -258,10 +262,10 @@ const HomeView = () => {
     };
 
     loadFollowerCompletions();
-  }, [user, loading, selectedTab, hasCompleted]);
+  }, [currentLensAccount, loading, selectedTab, hasCompleted]);
 
   const handleCompleteChallenge = async (type: string, frequency: string) => {
-    if (!user) {
+    if (!currentLensAccount) {
       alert('Please login to complete challenges!');
       router.push('/login');
       return;
@@ -305,7 +309,7 @@ const HomeView = () => {
 
   // Handle discover button click - navigate to browsing with all completions
   const handleDiscoverClick = () => {
-    if (!user) {
+    if (!currentLensAccount) {
       alert('Please login to discover challenges!');
       router.push('/login');
       return;
@@ -318,7 +322,7 @@ const HomeView = () => {
 
   // Development function to test claiming screen
   const handleTestClaiming = async () => {
-    if (!user || !currentChallenge) {
+    if (!currentLensAccount || !currentChallenge) {
       alert('Need user and challenge data to test claiming');
       return;
     }
@@ -409,7 +413,7 @@ const HomeView = () => {
     <div className="text-white p-4 min-h-screen mt-20">
       <div className="max-w-4xl mx-auto">
         {/* Development Mode Controls */}
-        {isDevelopmentMode && user && currentChallenge && (
+        {isDevelopmentMode && currentLensAccount && currentChallenge && (
           <div className="mb-6 px-4 py-3 bg-yellow-900/20 border border-yellow-700/50 rounded-xl">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-yellow-400 font-medium">🛠️ Development Mode</span>
@@ -454,13 +458,13 @@ const HomeView = () => {
             />
 
             {/* Show latest completion using CompletionItem if user has completed and it matches current tab */}
-            {hasCompleted && latestCompletionMatchesTab && latestCompletion && user && (
+            {hasCompleted && latestCompletionMatchesTab && latestCompletion && currentLensAccount && (
               <div className="mt-8">
                 <CompletionItem
                   profile={{
-                    userId: user.id,
-                    username: user.username,
-                    profilePicture: user.profilePicture,
+                    userId: currentLensAccount.address,
+                    username: getAccount(currentLensAccount).username,
+                    profilePicture: getAvatar(currentLensAccount),
                   }}
                   completion={latestCompletion}
                   isSelf={true}
@@ -472,7 +476,7 @@ const HomeView = () => {
             {hasCompleted && (
               <div className="mt-8">
                 <CompletionFeed
-                  user={user}
+                  user={currentLensAccount}
                   isLoading={isFetchingCompletions}
                   followerCompletions={followerCompletions}
                   selectedTab={selectedTab}
