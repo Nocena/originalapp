@@ -208,14 +208,16 @@ interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   currentLensAccount: AccountFragment | undefined,
-  setCurrentLensAccount: (account: AccountFragment | null) => void,
+  setCurrentLensAccount: (account: AccountFragment | undefined) => void,
+  setIsAuthenticated: (value: boolean) => void,
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
-  loading: true,
-  currentLensAccount: null,
+  loading: false,
+  currentLensAccount: undefined,
   setCurrentLensAccount: () => {},
+  setIsAuthenticated: () => {},
   logout: async () => {},
 });
 
@@ -227,8 +229,8 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [currentLensAccount, setCurrentLensAccount] = useState<AccountFragment | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [currentLensAccount, setCurrentLensAccount] = useState<AccountFragment | undefined>(undefined);
 
   // Refs to track state and prevent multiple calls
   const lastWalletAddress = useRef<string | null>(null);
@@ -260,7 +262,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('[AuthContext] Logout initiated');
       signOut();
       setIsAuthenticated(false);
-      setCurrentLensAccount(null)
+      setCurrentLensAccount(undefined)
       lastWalletAddress.current = null;
 
       // Disconnect the active wallet if there is one
@@ -277,7 +279,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('[AuthContext] Error during logout:', error);
       // Still clear local state even if wallet disconnect fails
-      setCurrentLensAccount(null);
+      setCurrentLensAccount(undefined);
       setIsAuthenticated(false);
       lastWalletAddress.current = null;
     } finally {
@@ -294,6 +296,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       logout,
       currentLensAccount,
       setCurrentLensAccount,
+      setIsAuthenticated,
     }}>
       {children}
     </AuthContext.Provider>
