@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchFollowerCompletions, fetchLatestUserCompletion } from '../../lib/graphql';
+import { fetchFollowerCompletions } from '../../lib/graphql';
 import {
   getCurrentChallenge,
   getChallengeReward,
@@ -19,6 +19,7 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import getAccount from 'src/helpers/getAccount';
 import getAvatar from '../../helpers/getAvatar';
+import { fetchLatestUserCompletion } from 'src/lib/graphql/features/challenge-completion';
 
 type ChallengeType = 'daily' | 'weekly' | 'monthly';
 
@@ -476,7 +477,6 @@ const HomeView = () => {
             {hasCompleted && (
               <div className="mt-8">
                 <CompletionFeed
-                  user={currentLensAccount}
                   isLoading={isFetchingCompletions}
                   followerCompletions={followerCompletions}
                   selectedTab={selectedTab}

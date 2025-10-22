@@ -3,8 +3,8 @@ import { generateId, normalizeWallet } from '../../utils';
 import type { User } from '../../../../contexts/AuthContext';
 import * as queries from './queries';
 import * as mutations from './mutations';
-import { createPublicClient, http, defineChain } from 'viem';
-import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../../../lib/constants';
+import { createPublicClient, defineChain, http } from 'viem';
+import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../../constants';
 import noceniteTokenArtifact from '../../../../lib/contracts/nocenite.json';
 // ============================================================================
 // QUERY FUNCTIONS
@@ -594,7 +594,7 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
     );
 
     // Filter out users with 0 balance and sort by balance
-    const leaderboard = usersWithBalances
+    return usersWithBalances
       .filter((user: any) => user.balance > 0)
       .sort((a: any, b: any) => b.balance - a.balance)
       .slice(0, limit)
@@ -610,8 +610,6 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
         monthTokens: 0,
         lastUpdate: new Date().toISOString(),
       }));
-
-    return leaderboard;
   } catch (error) {
     console.error('Error in getBlockchainLeaderboard:', error);
     throw error;
