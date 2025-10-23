@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { useActiveAccount } from 'thirdweb/react';
 
-import { getUserById, toggleFollowUser } from '../../lib/graphql';
-import { useAuth, User as AuthUser } from '../../contexts/AuthContext';
+import { toggleFollowUser } from '../../lib/graphql';
+import { useAuth } from '../../contexts/AuthContext';
+import { useAccountQuery } from '@nocena/indexer';
 import { getPageState, updatePageState } from '../../components/PageManager';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import ThematicContainer from '../../components/ui/ThematicContainer';
@@ -11,6 +13,8 @@ import FollowersPopup from './components/FollowersPopup';
 import TrailerSection from './components/AvatarSection';
 import StatsSection from './components/StatsSection';
 import CalendarSection from './components/CalendarSection';
+import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
+import type { AccountFragment } from '@nocena/indexer';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -37,17 +41,44 @@ const OtherProfileView: React.FC = () => {
   const router = useRouter();
   const { userID } = router.query;
   const { currentLensAccount } = useAuth();
+  const activeAccount = useActiveAccount();
 
   const [user, setUser] = useState<ProfileUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [isPendingFollow, setIsPendingFollow] = useState(false);
   const [showFollowersPopup, setShowFollowersPopup] = useState(false);
+  const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
     'trailer'
   );
+
+  // Fetch Lens account for the user
+  const {
+    data: lensData,
+    loading: lensLoading,
+    error: lensError,
+  } = useAccountQuery({
+    variables: {
+      request: { address: userID as string },
+    },
+    skip: !userID,
+  });
+
+  // Log Lens query status
+  useEffect(() => {
+    if (userID) {
+      console.log('Lens query status:', {
+        userID,
+        lensLoading,
+        lensError: lensError?.message,
+        hasData: !!lensData,
+        hasAccount: !!lensData?.account,
+      });
+    }
+  }, [userID, lensLoading, lensError, lensData]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -136,45 +167,34 @@ const OtherProfileView: React.FC = () => {
         }
       }
 
-      // If no fresh data or forced refresh, get from API
-      const fullUser = await getUserById(userId);
+      // Use Lens account data if available
+      console.log('Lens query result:', { lensData, userId, hasAccount: !!lensData?.account });
 
-      if (fullUser) {
-        // Convert the AuthUser to ProfileUser format
+      if (lensData?.account) {
+        const lensAccount = lensData.account;
         const profileUser: ProfileUser = {
-          id: fullUser.id,
-          username: fullUser.username,
-          profilePicture: fullUser.profilePicture,
-          coverPhoto: fullUser.coverPhoto,
-          trailerVideo: fullUser.trailerVideo,
-          bio: fullUser.bio,
-          earnedTokens: fullUser.earnedTokens,
-          dailyChallenge: fullUser.dailyChallenge,
-          weeklyChallenge: fullUser.weeklyChallenge,
-          monthlyChallenge: fullUser.monthlyChallenge,
-          // Extract follower IDs from User objects
-          followers: Array.isArray(fullUser.followers)
-            ? fullUser.followers.map((f: FollowerData) => (typeof f === 'string' ? f : f.id))
-            : [],
+          id: lensAccount.address,
+          username: lensAccount.username?.localName || 'Anonymous',
+          profilePicture: lensAccount.metadata?.picture || defaultProfilePic,
+          coverPhoto: lensAccount.metadata?.coverPicture || '/images/cover.jpg',
+          trailerVideo: '/trailer.mp4',
+          bio: lensAccount.metadata?.bio || '',
+          earnedTokens: 0, // TODO: Requires wallet address in Dgraph to fetch NCT balance
+          dailyChallenge: '0'.repeat(365),
+          weeklyChallenge: '0'.repeat(52),
+          monthlyChallenge: '0'.repeat(12),
+          followers: [],
         };
 
         setUser(profileUser);
-        setError(null);
-
-        // Update PageManager state
-        updatePageState(profileCacheKey, profileUser);
-
-        // Also update localStorage for faster loads
-        localStorage.setItem(
-          `nocena_${profileCacheKey}`,
-          JSON.stringify({
-            data: profileUser,
-            timestamp: Date.now(),
-          })
-        );
-      } else {
-        setError(new Error('User not found'));
+        updatePageState('profile', { user: profileUser, timestamp: Date.now() });
+        return;
       }
+
+      // Fallback if no Lens data
+      console.error('No Lens account found for:', userId);
+      setError(new Error('User not found'));
+      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching full user data:', error);
       setError(error instanceof Error ? error : new Error('An unknown error occurred'));
@@ -261,7 +281,7 @@ const OtherProfileView: React.FC = () => {
     setIsPendingFollow(true);
 
     // Optimistically update UI
-/*
+    /*
     setUser((prevUser) => {
       if (!prevUser) return null;
 
@@ -278,7 +298,7 @@ const OtherProfileView: React.FC = () => {
 */
 
     // Also update the cached state
-/*
+    /*
     if (user) {
       const profileCacheKey = `other_profile_${user.id}`;
       const isCurrentlyFollowing = user.followers.includes(currentUser.id);
@@ -305,7 +325,7 @@ const OtherProfileView: React.FC = () => {
     }
 */
 
-/*
+    /*
     try {
       // Make API call
       const wasFollowing = user.followers.includes(currentUser.id);
@@ -379,19 +399,7 @@ const OtherProfileView: React.FC = () => {
   // Handle "Challenge Me" button click
   const handleChallengeClick = () => {
     if (!user || !currentLensAccount) return;
-
-    console.log('Challenge button clicked for user:', user.username);
-
-    // Navigate to create challenge with private mode and target user data
-    router.push({
-      pathname: '/createchallenge',
-      query: {
-        isPrivate: 'true',
-        targetUserId: user.id,
-        targetUsername: user.username,
-        targetProfilePic: user.profilePicture || defaultProfilePic,
-      },
-    });
+    setShowPrivateChallengeCreator(true);
   };
 
   // Handle followers click
@@ -509,7 +517,7 @@ const OtherProfileView: React.FC = () => {
   if (user) {
     // Check if current user is following this profile
     // const isFollowing = !!(currentLensAccount && user.followers.includes(currentUser.id));
-    const isFollowing = false
+    const isFollowing = false;
 
     return (
       <div
@@ -617,15 +625,16 @@ const OtherProfileView: React.FC = () => {
                 isActive={!isFollowing}
                 disabled={isPendingFollow || !currentLensAccount}
               />
-              {/*
-              <PrimaryButton
-                text="Challenge Me"
-                onClick={handleChallengeClick}
-                className="flex-1"
-                isActive={false}
-                disabled={!currentUser || currentUser.id === user.id}
-              />
-              */}
+              {/* Only show Challenge button if viewing someone else's profile */}
+              {currentLensAccount?.address !== user.id && (
+                <PrimaryButton
+                  text="Challenge"
+                  onClick={handleChallengeClick}
+                  className="flex-1"
+                  isActive={false}
+                  disabled={!currentLensAccount}
+                />
+              )}
             </div>
 
             {/* Three Section Menu using ThematicContainer */}
@@ -685,6 +694,49 @@ const OtherProfileView: React.FC = () => {
           followers={user.followers}
           isFollowers={true}
         />
+
+        {/* Private Challenge Creator Modal */}
+        {showPrivateChallengeCreator && lensData?.account && (
+          <PrivateChallengeCreator
+            onClose={() => setShowPrivateChallengeCreator(false)}
+            onSubmit={async (challenge) => {
+              // Handle challenge submission
+              try {
+                const response = await fetch('/api/private-challenge/create', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    ...challenge,
+                    creatorId: currentLensAccount?.address,
+                    creatorWalletAddress: activeAccount?.address,
+                    creatorUsername: currentLensAccount?.username?.localName || 'Unknown',
+                    creatorProfilePicture:
+                      currentLensAccount?.metadata?.picture || '/images/profile.png',
+                    recipientUsername: user.username || 'User',
+                  }),
+                });
+
+                if (response.ok) {
+                  alert('Challenge sent successfully!');
+                  setShowPrivateChallengeCreator(false);
+                } else {
+                  const data = await response.json();
+                  alert(`Failed: ${data.error || 'Unknown error'}`);
+                }
+              } catch (error) {
+                console.error('Error sending challenge:', error);
+                alert('Failed to send challenge');
+              }
+            }}
+            prefilledUser={{
+              id: lensData.account.address,
+              username: lensData.account.username?.localName || user.username,
+              profilePicture: lensData.account.metadata?.picture || user.profilePicture,
+              wallet: lensData.account.address,
+              earnedTokens: user.earnedTokens,
+            }}
+          />
+        )}
       </div>
     );
   }

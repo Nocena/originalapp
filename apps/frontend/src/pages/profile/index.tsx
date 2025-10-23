@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { getUserAvatar, updateBio, updateCoverPhoto, updateProfilePicture } from '../../lib/graphql';
+import { useActiveAccount } from 'thirdweb/react';
+import {
+  getUserAvatar,
+  updateBio,
+  updateCoverPhoto,
+  updateProfilePicture,
+} from '../../lib/graphql';
 import { unpinFromPinata } from '../../lib/api/pinata';
 import type { StaticImageData } from 'next/image';
 import Image from 'next/image';
@@ -12,12 +18,14 @@ import FollowersPopup from './components/FollowersPopup';
 import AvatarSection from './components/AvatarSection'; // Changed from TrailerSection
 import StatsSection from './components/StatsSection';
 import CalendarSection from './components/CalendarSection';
+import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 
 import PenIcon from '../../components/icons/pen';
 
 // Custom hooks
 import useFollowersData from '../../hooks/useFollowersData';
 import getAvatar from 'src/helpers/getAvatar';
+import { CreatePrivateChallengeRequest } from '../../types/notifications';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -25,22 +33,35 @@ const nocenix = '/nocenix.ico';
 const ProfileView: React.FC = () => {
   const DEFAULT_PROFILE_PIC = '/images/profile.png';
   const { currentLensAccount } = useAuth();
+  const activeAccount = useActiveAccount();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  // Update profile data when Lens account loads
+  useEffect(() => {
+    if (currentLensAccount) {
+      setUsername(currentLensAccount.username?.localName || 'Guest');
+      setBio(currentLensAccount.metadata?.bio || 'No bio yet');
+      setProfilePic(getAvatar(currentLensAccount) || DEFAULT_PROFILE_PIC);
+    }
+  }, [currentLensAccount]);
 
   // Basic profile state
   const [profilePic, setProfilePic] = useState<string | StaticImageData>(
     getAvatar(currentLensAccount)
   );
   // TODO: fix it
-  const [coverPhoto, setCoverPhoto] = useState<string>(/*user?.coverPhoto || */'/images/cover.jpg');
+  const [coverPhoto, setCoverPhoto] = useState<string>(
+    /*user?.coverPhoto || */ '/images/cover.jpg'
+  );
   const [username, setUsername] = useState<string>(/*user?.username ||*/ 'Guest');
   const [bio, setBio] = useState<string>(/*user?.bio ||*/ 'No bio yet');
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
-  const [tokenBalance, setTokenBalance] = useState<number>(/*user?.earnedTokens || */0);
+  const [tokenBalance, setTokenBalance] = useState<number>(/*user?.earnedTokens || */ 0);
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
     'trailer'
   );
+  const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
 
   // Avatar generation state - NEW
   const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(
@@ -52,10 +73,10 @@ const ProfileView: React.FC = () => {
     /*user?.dailyChallenge.split('').map((char) => char === '1') ||*/ []
   );
   const [weeklyChallenges, setWeeklyChallenges] = useState<boolean[]>(
-    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */[]
+    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */ []
   );
   const [monthlyChallenges, setMonthlyChallenges] = useState<boolean[]>(
-    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */[]
+    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */ []
   );
 
   // Use custom hook for followers data
@@ -65,10 +86,10 @@ const ProfileView: React.FC = () => {
     showFollowersPopup,
     setShowFollowersPopup,
     handleFollowersClick,
-  } = useFollowersData(/*user?.id*/undefined);
+  } = useFollowersData(/*user?.id*/ undefined);
 
   // Sync user data when user changes
-/*
+  /*
   useEffect(() => {
     if (user) {
       setDailyChallenges(user.dailyChallenge.split('').map((char) => char === '1'));
@@ -100,7 +121,7 @@ const ProfileView: React.FC = () => {
 */
 
   // NEW: Load avatar data from database on component mount
-/*
+  /*
   useEffect(() => {
     const loadUserAvatarData = async () => {
       if (user?.id) {
@@ -147,7 +168,7 @@ const ProfileView: React.FC = () => {
     setGeneratedAvatar(newAvatarUrl);
 
     // Update user context
-/*
+    /*
     if (user) {
       const updatedUser = { ...user, currentAvatar: newAvatarUrl };
       // login(updatedUser);
@@ -170,7 +191,7 @@ const ProfileView: React.FC = () => {
   };
 
   const handleProfilePicUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-/*
+    /*
     const file = event.target.files?.[0];
     if (file && user) {
       try {
@@ -254,7 +275,7 @@ const ProfileView: React.FC = () => {
   };
 
   const handleCoverPhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-/*
+    /*
     const file = event.target.files?.[0];
     if (file && user) {
       try {
@@ -356,7 +377,7 @@ const ProfileView: React.FC = () => {
   const handleEditBioClick = () => setIsEditingBio(true);
 
   const handleSaveBioClick = async () => {
-/*
+    /*
     if (!user || bio === user.bio) {
       setIsEditingBio(false);
       return;
@@ -386,9 +407,39 @@ const ProfileView: React.FC = () => {
 
   const handleCancelEdit = () => {
     setBio(
-      currentLensAccount?.metadata?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!'
+      currentLensAccount?.metadata?.bio ||
+        'Creator building the future of social challenges 🚀\nJoin me on this journey!'
     );
     setIsEditingBio(false);
+  };
+
+  // Handle private challenge creation
+  const handlePrivateChallengeSubmit = async (challenge: CreatePrivateChallengeRequest) => {
+    try {
+      const response = await fetch('/api/private-challenge/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...challenge,
+          creatorId: currentLensAccount?.address,
+          creatorWalletAddress: activeAccount?.address,
+          creatorUsername: currentLensAccount?.username?.localName || 'Anonymous',
+          creatorProfilePicture: currentLensAccount?.metadata?.picture || '/images/profile.png',
+          recipientUsername: challenge.selectedUser?.username || 'User',
+        }),
+      });
+
+      if (response.ok) {
+        alert('Private challenge sent successfully!');
+        setShowPrivateChallengeCreator(false);
+      } else {
+        const data = await response.json();
+        alert(`Failed to send private challenge: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error sending private challenge:', error);
+      alert('Error sending private challenge');
+    }
   };
 
   const getButtonColor = (section: string) => {
@@ -546,6 +597,44 @@ const ProfileView: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Private Challenge Creator */}
+          {currentLensAccount && (
+            <>
+              {/* Private Challenge Creator Modal */}
+              {showPrivateChallengeCreator && (
+                <PrivateChallengeCreator
+                  onClose={() => setShowPrivateChallengeCreator(false)}
+                  onSubmit={handlePrivateChallengeSubmit}
+                />
+              )}
+
+              <div className="mb-6">
+                <ThematicContainer
+                  asButton={false}
+                  glassmorphic={true}
+                  color="nocenaPurple"
+                  rounded="xl"
+                  className="p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Challenge Any User</h3>
+                      <p className="text-gray-300 text-sm">
+                        Create a personalized challenge and see if they can complete it!
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowPrivateChallengeCreator(true)}
+                      className="bg-nocenaPink hover:bg-nocenaPink/80 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Challenge
+                    </button>
+                  </div>
+                </ThematicContainer>
+              </div>
+            </>
+          )}
 
           {/* Three Section Menu using ThematicContainer */}
           <div className="flex justify-center mb-6 space-x-4">
