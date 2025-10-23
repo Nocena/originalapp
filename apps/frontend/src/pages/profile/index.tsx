@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -34,9 +34,7 @@ const ProfileView: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Basic profile state
-  const [profilePic, setProfilePic] = useState<string>(
-    currentLensAccount?.metadata?.picture
-  );
+  const [profilePic, setProfilePic] = useState<string>(currentLensAccount?.metadata?.picture);
   const [showFollowersPopup, setShowFollowersPopup] = useState<boolean>(false);
   const [coverPhoto, setCoverPhoto] = useState<string>(currentLensAccount?.metadata?.coverPicture);
   const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || "");
@@ -69,39 +67,27 @@ const ProfileView: React.FC = () => {
   const stats = accountStatsData?.accountStats.graphFollowStats;
 
   // Sync user data when user changes
-/*
   useEffect(() => {
-    if (user) {
-      setDailyChallenges(user.dailyChallenge.split('').map((char) => char === '1'));
-      setWeeklyChallenges(user.weeklyChallenge.split('').map((char) => char === '1'));
-      setMonthlyChallenges(user.monthlyChallenge.split('').map((char) => char === '1'));
-      setTokenBalance(user.earnedTokens || 0);
-      setProfilePic(user.profilePicture || defaultProfilePic);
-      setCoverPhoto(user.coverPhoto || '/images/cover.jpg');
-      setUsername(user.username);
+    if (currentLensAccount) {
+      // setDailyChallenges(user.dailyChallenge.split('').map((char) => char === '1'));
+      // setWeeklyChallenges(user.weeklyChallenge.split('').map((char) => char === '1'));
+      // setMonthlyChallenges(user.monthlyChallenge.split('').map((char) => char === '1'));
+      // setTokenBalance(user.earnedTokens || 0);
+      setProfilePic(currentLensAccount?.metadata?.picture);
+      setCoverPhoto(currentLensAccount?.metadata?.coverPicture);
+      setUsername(currentLensAccount?.metadata?.name || '');
       setBio(
-        user.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!'
+        currentLensAccount?.metadata?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!'
       );
 
       // NEW: Avatar data loading
-      setGeneratedAvatar(user.currentAvatar || null);
-
-      console.log('🎨 ProfileView: User avatar data loaded:', {
-        currentAvatar: user.currentAvatar,
-        baseAvatar: user.baseAvatar,
-        equippedItems: {
-          cap: user.equippedCap?.name || 'None',
-          hoodie: user.equippedHoodie?.name || 'None',
-          pants: user.equippedPants?.name || 'None',
-          shoes: user.equippedShoes?.name || 'None',
-        },
-      });
+      // setGeneratedAvatar(user.currentAvatar || null);
     }
-  }, [user]);
-*/
+  }, [currentLensAccount]);
 
   const [getCurrentAccountDetails] = useMeLazyQuery({
-    fetchPolicy: "no-cache"
+    fetchPolicy: "no-cache",
+    variables: { request: { post: '' } },
   });
 
   // Calculate stats for components
