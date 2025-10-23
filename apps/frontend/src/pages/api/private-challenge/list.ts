@@ -1,3 +1,10 @@
+/**
+ * List Private Challenges API
+ *
+ * Get all challenges received by a user.
+ * Currently uses mock database.
+ */
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import { privateChallengeDb } from '../../../lib/api/mockPrivateChallengeDb';
 
@@ -13,16 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    // Fetch challenges where user is the recipient
     const challenges = await privateChallengeDb.getChallengesByRecipient(userId);
 
     res.status(200).json({
       success: true,
-      challenges
+      challenges,
     });
-
   } catch (error) {
-    console.error('Error fetching private challenges:', error);
+    console.error('Error fetching challenges:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 }

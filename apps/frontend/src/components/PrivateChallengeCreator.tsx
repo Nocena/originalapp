@@ -1,50 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CreatePrivateChallengeRequest } from '../types/notifications';
 import SearchBox, { SearchUser } from '../pages/search/components/SearchBox';
 import { useAuth } from '../contexts/AuthContext';
+import type { AccountFragment } from '@nocena/indexer';
 
 interface PrivateChallengeCreatorProps {
   onClose: () => void;
   onSubmit: (challenge: CreatePrivateChallengeRequest) => void;
+  prefilledUser?: SearchUser; // Optional pre-filled user
 }
 
-const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClose, onSubmit }) => {
+const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
+  onClose,
+  onSubmit,
+  prefilledUser,
+}) => {
   const { currentLensAccount } = useAuth();
   const [formData, setFormData] = useState({
-    recipientId: '',
+    recipientId: prefilledUser?.id || '',
+    recipientWalletAddress: prefilledUser?.wallet || '',
     name: '',
     description: '',
     rewardAmount: 50,
   });
-  const [selectedUser, setSelectedUser] = useState<SearchUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<SearchUser | null>(prefilledUser || null);
   const [rewardError, setRewardError] = useState<string>('');
 
-  const handleUserSelect = (selectedUser: SearchUser) => {
+  // Update form data when prefilledUser changes
+  useEffect(() => {
+    if (prefilledUser) {
+      setSelectedUser(prefilledUser);
+      setFormData((prev) => ({
+        ...prev,
+        recipientId: prefilledUser.id,
+        recipientWalletAddress: prefilledUser.wallet,
+      }));
+    }
+  }, [prefilledUser]);
+
+  const handleUserSelect = (account: AccountFragment) => {
     // Prevent selecting yourself
-    if (currentLensAccount?.address === selectedUser.id) {
+    if (currentLensAccount?.address === account.address) {
       alert('You cannot send a challenge to yourself!');
       return;
     }
-    
-    setSelectedUser(selectedUser);
-    setFormData({ ...formData, recipientId: selectedUser.id });
+
+    // Convert AccountFragment to SearchUser format for compatibility
+    const searchUser: SearchUser = {
+      id: account.address,
+      username: account.username?.localName || account.address,
+      profilePicture: account.metadata?.picture || '',
+      wallet: account.address,
+      earnedTokens: 0,
+    };
+
+    setSelectedUser(searchUser);
+    setFormData({
+      ...formData,
+      recipientId: account.address,
+      recipientWalletAddress: account.address,
+    });
   };
 
   const handleRewardChange = (value: string) => {
     const numValue = parseInt(value) || 0;
-    
+
     if (numValue > 250) {
       setRewardError('Exceeds private challenge limit');
     } else {
       setRewardError('');
     }
-    
+
     setFormData({ ...formData, rewardAmount: numValue });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.description && formData.recipientId && !rewardError && formData.rewardAmount > 0) {
+    if (
+      formData.name &&
+      formData.description &&
+      formData.recipientId &&
+      !rewardError &&
+      formData.rewardAmount > 0
+    ) {
       onSubmit({
         ...formData,
         selectedUser,
@@ -53,10 +91,16 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 relative z-50"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3 className="text-xl font-semibold mb-4">Create Private Challenge</h3>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">Challenge Name</label>
@@ -105,20 +149,14 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({ onClo
                 </button>
               </div>
             ) : (
-              <SearchBox 
-                onUserSelect={handleUserSelect} 
-                currentUserId={user?.id}
-                maxHeight="max-h-48"
-              />
+              <SearchBox onUserSelect={handleUserSelect} maxHeight="max-h-48" />
             )}
           </div>
 
           <div>
             <div className="flex items-center space-x-2 mb-2">
               <label className="block text-sm font-medium">Reward Amount (max 250)</label>
-              {rewardError && (
-                <span className="text-red-400 text-sm">{rewardError}</span>
-              )}
+              {rewardError && <span className="text-red-400 text-sm">{rewardError}</span>}
             </div>
             <input
               type="number"

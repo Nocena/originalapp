@@ -64,7 +64,8 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
   backgroundTasksRef.current = backgroundTasks;
 
   useEffect(() => {
-    const { type, frequency, title, description, reward, challengeId, creatorWalletAddress } = router.query;
+    const { type, frequency, title, description, reward, challengeId, creatorWalletAddress } =
+      router.query;
 
     if (title && description && reward) {
       let challengeData: Challenge;
@@ -312,7 +313,11 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
 
       try {
         // 1. Start NFT generation (persistent)
-        const nftGenerationId = backgroundTasks.startNFTGeneration(currentLensAccount?.address, challenge, true);
+        const nftGenerationId = backgroundTasks.startNFTGeneration(
+          currentLensAccount?.address,
+          challenge,
+          true
+        );
         console.log('NFT generation started:', nftGenerationId);
 
         // 2. Start model preloading (for face recognition)

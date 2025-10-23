@@ -32,7 +32,7 @@ const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
   lng,
   onSubmit,
 }) => {
-  const { user: currentUser } = useContext(AuthContext);
+  const { currentLensAccount: currentUser } = useContext(AuthContext);
   const router = useRouter();
   const [challengeName, setChallengeName] = useState('');
   const [description, setDescription] = useState('');
@@ -80,7 +80,7 @@ const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
     e.preventDefault();
 
     // Check if user is logged in
-    if (!currentUser || !currentUser.id) {
+    if (!currentUser || !currentUser.address) {
       toast.error('You must be logged in to create a challenge');
       return;
     }
@@ -110,7 +110,7 @@ const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: currentUser.id,
+          userId: currentUser.address,
           challengeData,
           mode,
         }),

@@ -120,12 +120,7 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({
         <h2 className="text-3xl font-bold mb-4">{challenge.title}</h2>
         <p className="text-lg text-gray-300 mb-8 font-light">{challenge.description}</p>
 
-        <div className="flex flex-col items-center space-y-6">
-          <PrimaryButton
-            text="Complete Challenge"
-            onClick={() => onCompleteChallenge('AI', selectedTab)}
-          />
-
+        <div className="flex justify-center">
           <ThematicContainer asButton={false} color="nocenaPink" className="px-4 py-1">
             <div className="flex items-center space-x-1">
               <span className="text-xl font-semibold">{reward}</span>

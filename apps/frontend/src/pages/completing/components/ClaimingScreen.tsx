@@ -374,7 +374,11 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
             }
           : undefined;
 
-      const result = await completeChallengeWorkflow(currentLensAccount?.address, completionData, account?.address);
+      const result = await completeChallengeWorkflow(
+        currentLensAccount?.address,
+        completionData,
+        account?.address
+      );
 
       if (result.success) {
         console.log('[Claim Success DEBUG] Challenge completion successful:', result);

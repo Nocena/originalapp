@@ -345,8 +345,12 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose, onLogout, showBottomNavbar
             />
           </ThematicImage>
         </div>
-        <h3 className="text-white font-semibold text-xl mb-1">{getAccount(currentLensAccount)?.name || 'User'}</h3>
-        <p className="text-white/70 text-sm mb-4">{currentLensAccount?.metadata?.bio || 'No bio yet'}</p>
+        <h3 className="text-white font-semibold text-xl mb-1">
+          {getAccount(currentLensAccount)?.name || 'User'}
+        </h3>
+        <p className="text-white/70 text-sm mb-4">
+          {currentLensAccount?.metadata?.bio || 'No bio yet'}
+        </p>
         <PrimaryButton
           text="Logout"
           onClick={(e) => {
@@ -513,8 +517,8 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose, onLogout, showBottomNavbar
               gradientFrom="from-blue-400"
               gradientTo="to-blue-600"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-.962 6.502-.542 1.06-1.097 1.117-1.816.75-.293-.149-.677-.363-1.077-.598-.358-.208-.954-.44-1.155-.596-.177-.138-.362-.301-.244-.615.09-.23.827-.96 1.529-1.681.388-.396.47-.688.215-.702-.154-.008-.22.176-.373.297-.409.32-1.302.952-1.821 1.22-.562.292-.78.07-1.295-.11-.538-.188-1.058-.398-1.058-.398s-.375-.336.263-.695c.865-.488 1.673-.912 1.673-.912l-.003-.004z" />
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121L7.942 13.98l-2.955-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.954z"/>
               </svg>
             </SocialButton>
           </div>

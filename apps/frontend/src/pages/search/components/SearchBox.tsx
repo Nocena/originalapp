@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { searchUsers } from '../../../lib/graphql';
 import { sanitizeInput } from '../../../lib/utils/security';
 import { useAuth, User as AuthUser } from '../../../contexts/AuthContext';
 
 import ThematicImage from '../../../components/ui/ThematicImage';
 import Image from 'next/image';
-import { AccountFragment, AccountsOrderBy, AccountsRequest, PageSize, useAccountsQuery } from '@nocena/indexer';
+import {
+  AccountFragment,
+  AccountsOrderBy,
+  AccountsRequest,
+  PageSize,
+  useAccountsQuery,
+} from '@nocena/indexer';
 import getAvatar from 'src/helpers/getAvatar';
 
 // Local interface for search results that's compatible with both old and new user structures
@@ -28,7 +33,12 @@ interface SearchBoxProps {
   maxHeight?: string; // Add custom max height for dropdown
 }
 
-const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users, maxHeight = "max-h-80" }) => {
+const SearchBox: React.FC<SearchBoxProps> = ({
+  onUserSelect,
+  onSearch,
+  users,
+  maxHeight = 'max-h-80',
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,17 +50,26 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users, ma
   const request: AccountsRequest = {
     pageSize: PageSize.Fifty,
     orderBy: AccountsOrderBy.BestMatch,
-    filter: { searchBy: { localNameQuery: searchQuery } }
+    filter: { searchBy: { localNameQuery: searchQuery } },
   };
 
   const { data, error, fetchMore, loading } = useAccountsQuery({
-    skip: !searchQuery,
-    variables: { request }
+    skip: !searchQuery || searchQuery.length < 2,
+    variables: { request },
   });
 
   const accounts = data?.accounts?.items;
-  // const pageInfo = data?.accounts?.pageInfo;
-  // const hasMore = pageInfo?.next;
+
+  // Update loading state and dropdown visibility
+  useEffect(() => {
+    if (searchQuery.length >= 2) {
+      setIsDropdownOpen(true);
+      setIsLoading(loading);
+    } else {
+      setIsDropdownOpen(false);
+      setIsLoading(false);
+    }
+  }, [searchQuery, loading]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -77,7 +96,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users, ma
       if (currentLensAccount?.address === account.address) {
         router.push('/profile');
       } else {
-        router.push(`/profile/${account.username?.localName}`);
+        router.push(`/profile/${account.address}`);
       }
     }
 
@@ -94,9 +113,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users, ma
           className="w-full p-3 bg-gray-800 text-white rounded-lg focus:outline-none"
           value={searchQuery}
           onChange={(e) => setSearchQuery(sanitizeInput(e.target.value))}
-          onFocus={() =>
-            searchQuery.trim() !== '' && accounts && accounts.length > 0 && setIsDropdownOpen(true)
-          }
+          onFocus={() => searchQuery.length >= 2 && setIsDropdownOpen(true)}
         />
 
         {isLoading && (
@@ -106,44 +123,53 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onUserSelect, onSearch, users, ma
         )}
       </div>
 
-      {isDropdownOpen && accounts && accounts.length > 0 && (
-        <ul className={`absolute top-full mt-2 w-full bg-gray-900 rounded-lg shadow-lg overflow-hidden z-50 ${maxHeight} overflow-y-auto`}>
-          {accounts?.map((account) => {
-            const isCurrentUser = currentLensAccount?.address === account.address;
-            return (
-              <li
-                key={account.address}
-                onClick={() => !isCurrentUser && handleProfileRedirect(account)}
-                className={`flex items-center gap-4 p-3 transition-colors ${
-                  isCurrentUser 
-                    ? 'opacity-50 cursor-not-allowed bg-gray-800' 
-                    : 'hover:bg-gray-700 cursor-pointer'
-                }`}
-              >
-                <ThematicImage className="rounded-full flex-shrink-0">
-                  <Image
-                    src={getAvatar(account) || '/images/profile.png'}
-                    alt="Profile"
-                    width={96}
-                    height={96}
-                    className="w-10 h-10 object-cover rounded-full"
-                  />
-                </ThematicImage>
+      {isDropdownOpen && searchQuery.length >= 2 && (
+        <div
+          className={`absolute top-full mt-2 w-full bg-gray-900 rounded-lg shadow-lg overflow-hidden z-50 ${maxHeight} overflow-y-auto`}
+        >
+          {loading ? (
+            <div className="p-3 text-gray-400 text-center">
+              <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+              Searching...
+            </div>
+          ) : accounts && accounts.length > 0 ? (
+            <ul>
+              {accounts.map((account) => {
+                const isCurrentUser = currentLensAccount?.address === account.address;
+                return (
+                  <li
+                    key={account.address}
+                    onClick={() => !isCurrentUser && handleProfileRedirect(account)}
+                    className={`flex items-center gap-4 p-3 transition-colors ${
+                      isCurrentUser
+                        ? 'opacity-50 cursor-not-allowed bg-gray-800'
+                        : 'hover:bg-gray-700 cursor-pointer'
+                    }`}
+                  >
+                    <ThematicImage className="rounded-full flex-shrink-0">
+                      <Image
+                        src={getAvatar(account) || '/images/profile.png'}
+                        alt="Profile"
+                        width={96}
+                        height={96}
+                        className="w-10 h-10 object-cover rounded-full"
+                      />
+                    </ThematicImage>
 
-                <span className={`font-medium truncate ${
-                  isCurrentUser ? 'text-gray-500' : 'text-white'
-                }`}>
-                  {account.username?.localName}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {isDropdownOpen && accounts && accounts.length === 0 && !isLoading && (
-        <div className="absolute top-full mt-2 w-full bg-gray-900 rounded-lg shadow-lg p-3 text-gray-400 text-center z-50">
-          No users found.
+                    <span
+                      className={`font-medium truncate ${
+                        isCurrentUser ? 'text-gray-500' : 'text-white'
+                      }`}
+                    >
+                      {account.username?.localName}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="p-3 text-gray-400 text-center">No users found.</div>
+          )}
         </div>
       )}
     </div>

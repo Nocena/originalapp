@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
+import { useActiveAccount } from 'thirdweb/react';
 
 import ThematicImage from '../../components/ui/ThematicImage';
 import ThematicContainer from '../../components/ui/ThematicContainer';
@@ -44,13 +45,31 @@ function SearchView() {
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [lastRefreshTime, setLastRefreshTime] = useState(0);
   const { currentLensAccount } = useAuth();
+  const activeAccount = useActiveAccount(); // Get actual connected wallet
   const router = useRouter();
 
   // Fetch Top NCT Holders leaderboard
   const fetchLeaderboard = useCallback(async (): Promise<LeaderboardUser[]> => {
     try {
       console.log('🔍 Fetching leaderboard...');
-      const response = await fetch('/api/leaderboard?source=blockchain&limit=25');
+
+      // Build URL with actual connected wallet address if available
+      let url = '/api/leaderboard?source=blockchain&limit=25';
+      if (activeAccount?.address) {
+        url += `&userAddress=${activeAccount.address}`;
+        if (currentLensAccount?.username?.localName) {
+          url += `&username=${encodeURIComponent(currentLensAccount.username.localName)}`;
+        }
+        console.log('👤 Including connected wallet address:', activeAccount.address);
+      } else if (currentLensAccount?.address) {
+        url += `&userAddress=${currentLensAccount.address}`;
+        if (currentLensAccount?.username?.localName) {
+          url += `&username=${encodeURIComponent(currentLensAccount.username.localName)}`;
+        }
+        console.log('👤 Including Lens account address:', currentLensAccount.address);
+      }
+
+      const response = await fetch(url);
 
       if (!response.ok) {
         console.log('❌ Response not ok:', response.status);
@@ -149,7 +168,7 @@ function SearchView() {
       if (currentLensAccount?.address === account.address) {
         router.push('/profile');
       } else {
-        router.push(`/profile/${account.username?.localName}`);
+        router.push(`/profile/${account.address}`);
       }
     },
     [router, currentLensAccount]
@@ -159,10 +178,10 @@ function SearchView() {
   const handleFollow = useCallback(
     async (targetUserId: string) => {
       if (
-        !user ||
-        !user.id ||
+        !currentLensAccount ||
+        !currentLensAccount.address ||
         !targetUserId ||
-        user.id === targetUserId ||
+        currentLensAccount.address === targetUserId ||
         pendingFollowActions.has(targetUserId)
       ) {
         return;
@@ -171,7 +190,7 @@ function SearchView() {
       setPendingFollowActions((prev) => new Set(prev).add(targetUserId));
 
       try {
-        await toggleFollowUser(user.id, targetUserId, user.following.includes(targetUserId));
+        await toggleFollowUser(currentLensAccount.address, targetUserId, false);
         // Refresh leaderboards to update follow states
         // You might want to implement a more efficient update here
       } catch (error) {
@@ -184,25 +203,25 @@ function SearchView() {
         });
       }
     },
-    [user, pendingFollowActions]
+    [currentLensAccount, pendingFollowActions]
   );
 
   // Handle profile navigation
   const handleProfileNavigation = useCallback(
     (leaderboardUser: LeaderboardUser) => {
-      if (user?.id === leaderboardUser.userId) {
+      if (currentLensAccount?.address === leaderboardUser.userId) {
         router.push('/profile');
       } else {
         router.push(`/profile/${leaderboardUser.userId}`);
       }
     },
-    [router, user?.id]
+    [router, currentLensAccount?.address]
   );
 
   // Render top 3 leaderboard items (podium style)
   const renderTopThreeItem = useCallback(
     (item: LeaderboardUser, index: number) => {
-      const isCurrentUser = user?.id === item.userId;
+      const isCurrentUser = currentLensAccount?.address === item.userId;
       const isPending = pendingFollowActions.has(item.userId);
 
       // Podium heights and styles
@@ -302,13 +321,13 @@ function SearchView() {
         </div>
       );
     },
-    [user?.id, pendingFollowActions, handleProfileNavigation, handleFollow]
+    [currentLensAccount?.address, pendingFollowActions, handleProfileNavigation, handleFollow]
   );
 
   // Render remaining items (clean list style)
   const renderRemainingItem = useCallback(
     (item: LeaderboardUser, index: number) => {
-      const isCurrentUser = user?.id === item.userId;
+      const isCurrentUser = currentLensAccount?.address === item.userId;
       const isPending = pendingFollowActions.has(item.userId);
 
       return (
@@ -373,7 +392,7 @@ function SearchView() {
         </ThematicContainer>
       );
     },
-    [user?.id, pendingFollowActions, handleProfileNavigation, handleFollow]
+    [currentLensAccount?.address, pendingFollowActions, handleProfileNavigation, handleFollow]
   );
 
   return (
@@ -433,9 +452,11 @@ function SearchView() {
               )}
 
               {/* Current user position - always show if not in top 10 */}
-              {user &&
+              {currentLensAccount &&
                 (() => {
-                  const userPosition = leaderboard.findIndex((item) => item.userId === user.id);
+                  const userPosition = leaderboard.findIndex(
+                    (item) => item.userId === currentLensAccount.address
+                  );
                   if (userPosition >= 10) {
                     const userItem = leaderboard[userPosition];
                     return (

@@ -1,3 +1,10 @@
+/**
+ * Sent Private Challenges API
+ *
+ * Get all challenges created by a user.
+ * Currently uses mock database.
+ */
+
 import { NextApiRequest, NextApiResponse } from 'next';
 import { privateChallengeDb } from '../../../lib/api/mockPrivateChallengeDb';
 
@@ -13,16 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    // Fetch challenges created by this user
     const challenges = await privateChallengeDb.getChallengesByCreator(userId);
 
     res.status(200).json({
       success: true,
-      challenges
+      challenges,
     });
-
   } catch (error) {
-    console.error('Error fetching sent private challenges:', error);
+    console.error('Error fetching sent challenges:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 }

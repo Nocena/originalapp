@@ -2,12 +2,33 @@
 import { getLeaderboard, getBlockchainLeaderboard } from '../../lib/graphql';
 
 export default async function handler(req: any, res: any) {
+  console.log('🔥 API /leaderboard called with method:', req.method);
+  console.log('🔥 Query params:', req.query);
+
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
-    const { period = 'all-time', limit = 50, source = 'database' } = req.query;
+    const {
+      period = 'all-time',
+      limit = 50,
+      source = 'database',
+      userAddress,
+      username,
+    } = req.query;
+    console.log(
+      '🔥 Parsed params - period:',
+      period,
+      'limit:',
+      limit,
+      'source:',
+      source,
+      'userAddress:',
+      userAddress,
+      'username:',
+      username
+    );
 
     const limitNum = parseInt(limit);
     if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
@@ -17,19 +38,25 @@ export default async function handler(req: any, res: any) {
     let leaderboard;
 
     if (source === 'blockchain') {
-      // Use blockchain balances
-      console.log('🔍 Fetching blockchain leaderboard...');
-      leaderboard = await getBlockchainLeaderboard(limitNum);
-      console.log('📊 Blockchain leaderboard result:', leaderboard);
-    } else {
-      // Use database fields (original behavior)
-      if (!['all-time', 'today', 'week', 'month'].includes(period)) {
-        return res
-          .status(400)
-          .json({ message: 'Invalid period. Must be: all-time, today, week, or month' });
+      console.log(
+        '🔥 Calling getBlockchainLeaderboard with user address:',
+        userAddress,
+        'username:',
+        username
+      );
+      try {
+        leaderboard = await getBlockchainLeaderboard(limitNum, userAddress, username);
+        console.log('🔥 getBlockchainLeaderboard returned:', leaderboard?.length || 0, 'items');
+      } catch (error) {
+        console.error('🔥 Error in getBlockchainLeaderboard:', error);
+        leaderboard = [];
       }
+    } else {
+      console.log('🔥 Calling regular getLeaderboard...');
       leaderboard = await getLeaderboard(period, limitNum);
     }
+
+    console.log('🔥 Final leaderboard length:', leaderboard?.length || 0);
 
     res.status(200).json({
       success: true,
@@ -40,7 +67,7 @@ export default async function handler(req: any, res: any) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Leaderboard API error:', error);
+    console.error('🔥 Leaderboard API error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch leaderboard',

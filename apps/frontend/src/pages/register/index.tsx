@@ -60,7 +60,6 @@ const RegisterPage = () => {
   const registrationAttemptRef = useRef<string | null>(null);
 
   const router = useRouter();
-  const { login } = useAuth();
   const account = useActiveAccount();
 
   const onError = (error?: any) => {

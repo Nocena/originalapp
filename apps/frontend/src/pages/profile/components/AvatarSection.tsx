@@ -81,7 +81,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   const { currentLensAccount } = useAuth();
 
   // Load user's NFTs on component mount
-/*
+  /*
   useEffect(() => {
     if (user?.id && enableAvatarFeature) {
       loadUserNFTs();
@@ -91,7 +91,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
 */
 
   // Load prompt when generatedAvatar changes
-/*
+  /*
   useEffect(() => {
     if (user?.id && generatedAvatar && enableAvatarFeature) {
       loadCurrentAvatarPrompt();
@@ -99,7 +99,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   }, [user?.id, generatedAvatar, enableAvatarFeature]);
 */
 
-/*
+  /*
   const loadUserNFTs = async () => {
     if (!user?.id) return;
 
@@ -119,7 +119,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   };
 */
 
-/*
+  /*
   const loadCurrentAvatarPrompt = async () => {
     if (!user?.id || !generatedAvatar) return;
 
@@ -141,7 +141,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
   };
 */
 
-/*
+  /*
   const loadEquippedItems = async () => {
     // Load currently equipped items from user data
     if (!user) return;
@@ -187,7 +187,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
     }));
 
     // Update equipped items in database
-/*
+    /*
     if (user?.id) {
       try {
         await updateUserEquippedItems(user.id, {
@@ -369,7 +369,7 @@ const AvatarSection: React.FC<AvatarSectionProps> = ({
         console.log('✅ Avatar saved successfully to database!', result.avatarId);
 
         // Update the user context to reflect the new avatar
-/*
+        /*
         if (updateUser) {
           updateUser({
             currentAvatar: generatedAvatar,
