@@ -422,7 +422,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
 
   // Safe checks for special page determination
   const isUserProfile =
-    currentPathname.startsWith('/profile/') && currentQuery.walletAddress !== currentLensAccount?.address;
+    currentPathname.startsWith('/profile/') &&
+    currentQuery.walletAddress !== currentLensAccount?.address;
   const isSpecialPage =
     currentPathname === '/completing' ||
     currentPathname === '/createchallenge' ||
@@ -455,7 +456,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
       };
 
       const targetRoute =
-        index === 6 && currentLensAccount?.address ? `/profile/${currentLensAccount?.address}` : routeMapping[index] || '/home';
+        index === 6 && currentLensAccount?.address
+          ? `/profile/${currentLensAccount?.address}`
+          : routeMapping[index] || '/home';
       const isGoingToCameraPage = cameraPages.some((page) => targetRoute.startsWith(page));
 
       if (!isGoingToCameraPage) {

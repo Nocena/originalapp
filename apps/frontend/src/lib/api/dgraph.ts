@@ -2826,96 +2826,15 @@ export async function fetchLatestUserCompletion(
   userId: string,
   challengeType: 'ai' | 'private' | 'public' = 'ai'
 ): Promise<any | null> {
-  const axios = (await import('axios')).default;
-  const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
-
   try {
-    let hasCondition = 'has: aiChallenge';
-    if (challengeType === 'private') {
-      hasCondition = 'has: privateChallenge';
-    } else if (challengeType === 'public') {
-      hasCondition = 'has: publicChallenge';
-    }
-
-    const query = `
-      query GetLatestUserCompletion($userId: String!) {
-        getUser(id: $userId) {
-          completedChallenges(
-            filter: { 
-              and: [
-                { ${hasCondition} },
-                { challengeType: { eq: "${challengeType}" } }
-              ]
-            }
-            order: { desc: completionDate }
-            first: 1
-          ) {
-            id
-            media
-            completionDate
-            completionDay
-            completionWeek
-            completionMonth
-            completionYear
-            status
-            challengeType
-            likesCount
-            user {
-              id
-              username
-              profilePicture
-            }
-            aiChallenge {
-              id
-              title
-              description
-              frequency
-              reward
-              day
-              week
-              month
-              year
-            }
-            privateChallenge {
-              id
-              title
-              description
-              reward
-            }
-            publicChallenge {
-              id
-              title
-              description
-              reward
-            }
-          }
-        }
-      }
-    `;
-
     console.log('Fetching latest completion for user:', userId);
 
-    const response = await axios.post(
-      DGRAPH_ENDPOINT,
-      {
-        query,
-        variables: {
-          userId,
-        },
-      },
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-
-    if (response.data.errors) {
-      console.error('GraphQL errors:', response.data.errors);
-      throw new Error('Failed to fetch latest user completion');
-    }
-
-    const completions = response.data.data?.getUser?.completedChallenges || [];
-    return completions.length > 0 ? completions[0] : null;
+    // For now, return null since we need to implement completion tracking in the new system
+    console.log('Latest completion fetch not yet implemented for new SearchResult system');
+    return null;
   } catch (error) {
     console.error('Error fetching latest user completion:', error);
-    throw error;
+    return null;
   }
 }
 

@@ -1,5 +1,13 @@
 import type { Account, AccountFragment } from '@nocena/indexer';
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useActiveAccount, useActiveWallet, useDisconnect } from 'thirdweb/react';
 import { signOut } from '../store/persisted/useAuthStore';
 
@@ -207,9 +215,9 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   logout: () => Promise<void>;
-  currentLensAccount: AccountFragment | undefined,
-  setCurrentLensAccount: (account: AccountFragment | undefined) => void,
-  setIsAuthenticated: (value: boolean) => void,
+  currentLensAccount: AccountFragment | undefined;
+  setCurrentLensAccount: (account: AccountFragment | undefined) => void;
+  setIsAuthenticated: (value: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -230,7 +238,9 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [currentLensAccount, setCurrentLensAccount] = useState<AccountFragment | undefined>(undefined);
+  const [currentLensAccount, setCurrentLensAccount] = useState<AccountFragment | undefined>(
+    undefined
+  );
 
   // Refs to track state and prevent multiple calls
   const lastWalletAddress = useRef<string | null>(null);
@@ -262,7 +272,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('[AuthContext] Logout initiated');
       signOut();
       setIsAuthenticated(false);
-      setCurrentLensAccount(undefined)
+      setCurrentLensAccount(undefined);
       lastWalletAddress.current = null;
 
       // Disconnect the active wallet if there is one
@@ -290,14 +300,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [currentLensAccount, activeWallet, disconnect]);
 
   return (
-    <AuthContext.Provider value={{
-      isAuthenticated,
-      loading,
-      logout,
-      currentLensAccount,
-      setCurrentLensAccount,
-      setIsAuthenticated,
-    }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        loading,
+        logout,
+        currentLensAccount,
+        setCurrentLensAccount,
+        setIsAuthenticated,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

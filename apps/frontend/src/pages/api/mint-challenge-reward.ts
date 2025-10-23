@@ -1,5 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createWalletClient, http, keccak256, encodeAbiParameters, defineChain, parseEther } from 'viem';
+import {
+  createWalletClient,
+  http,
+  keccak256,
+  encodeAbiParameters,
+  defineChain,
+  parseEther,
+} from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { CONTRACTS } from '../../lib/constants';
 import challengeRewardsArtifact from '../../lib/contracts/challengeRewards.json';
@@ -32,7 +39,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { userAddress, challengeFrequency, challengeType, challengeId, creatorAddress, recipientReward, creatorReward, ipfsHash } = req.body;
+    const {
+      userAddress,
+      challengeFrequency,
+      challengeType,
+      challengeId,
+      creatorAddress,
+      recipientReward,
+      creatorReward,
+      ipfsHash,
+    } = req.body;
 
     // Validate required parameters based on challenge type
     if (!userAddress || !ipfsHash) {
@@ -41,7 +57,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (challengeType === 'PRIVATE') {
       if (!challengeId || !creatorAddress || !recipientReward || !creatorReward) {
-        return res.status(400).json({ error: 'Missing required parameters for private challenge: challengeId, creatorAddress, recipientReward, creatorReward' });
+        return res.status(400).json({
+          error:
+            'Missing required parameters for private challenge: challengeId, creatorAddress, recipientReward, creatorReward',
+        });
       }
     } else if (!challengeFrequency) {
       return res.status(400).json({ error: 'Missing required parameter: challengeFrequency' });
@@ -71,7 +90,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (challengeType === 'PRIVATE') {
       // Private challenge - single transaction with dual minting
       if (!challengeId || !creatorAddress || !recipientReward) {
-        return res.status(400).json({ error: 'Missing required parameters for private challenge: challengeId, creatorAddress, recipientReward' });
+        return res.status(400).json({
+          error:
+            'Missing required parameters for private challenge: challengeId, creatorAddress, recipientReward',
+        });
       }
 
       // Create message hash for dual minting
@@ -95,12 +117,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         address: CONTRACTS.ChallengeRewards as `0x${string}`,
         abi: challengeRewardsArtifact,
         functionName: 'completePrivateChallenge',
-        args: [userAddress, creatorAddress, parseEther(recipientReward.toString()), ipfsHash, signature],
+        args: [
+          userAddress,
+          creatorAddress,
+          parseEther(recipientReward.toString()),
+          ipfsHash,
+          signature,
+        ],
       });
-      
+
       console.log('✅ Private challenge dual minting completed:', txHash);
       console.log('💰 Recipient reward:', recipientReward, 'NCT');
-      console.log('💰 Creator reward:', Math.floor(recipientReward * 0.1), 'NCT (auto-calculated 10%)');
+      console.log(
+        '💰 Creator reward:',
+        Math.floor(recipientReward * 0.1),
+        'NCT (auto-calculated 10%)'
+      );
 
       return res.status(200).json({
         success: true,
@@ -110,7 +142,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else {
       // AI challenge function (existing logic)
       const functionName = `complete${challengeFrequency.charAt(0).toUpperCase() + challengeFrequency.slice(1)}Challenge`;
-      
+
       // Create message hash for AI challenge
       const messageHash = keccak256(
         encodeAbiParameters(

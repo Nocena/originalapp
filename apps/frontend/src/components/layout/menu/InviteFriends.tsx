@@ -37,7 +37,9 @@ const InviteFriends: React.FC<InviteFriendsProps> = ({ onBack }) => {
         if (data.inviteCodes.length === 0) {
           await generateMissingInviteCodes(2);
           // Refetch after generating initial codes
-          const updatedResponse = await fetch(`/api/invite/user-invites?userId=${currentLensAccount.address}`);
+          const updatedResponse = await fetch(
+            `/api/invite/user-invites?userId=${currentLensAccount.address}`
+          );
           const updatedData = await updatedResponse.json();
           setInviteStats(updatedData);
         } else if (data.inviteCodes.length > 2) {

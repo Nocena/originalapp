@@ -345,8 +345,12 @@ const Menu: React.FC<MenuProps> = ({ isOpen, onClose, onLogout, showBottomNavbar
             />
           </ThematicImage>
         </div>
-        <h3 className="text-white font-semibold text-xl mb-1">{getAccount(currentLensAccount)?.name || 'User'}</h3>
-        <p className="text-white/70 text-sm mb-4">{currentLensAccount?.metadata?.bio || 'No bio yet'}</p>
+        <h3 className="text-white font-semibold text-xl mb-1">
+          {getAccount(currentLensAccount)?.name || 'User'}
+        </h3>
+        <p className="text-white/70 text-sm mb-4">
+          {currentLensAccount?.metadata?.bio || 'No bio yet'}
+        </p>
         <PrimaryButton
           text="Logout"
           onClick={(e) => {

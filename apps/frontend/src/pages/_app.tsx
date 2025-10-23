@@ -37,7 +37,7 @@ function MyAppContent({ Component, pageProps }: AppProps) {
   const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
   const { permissionManager } = usePermissions();
 
-  console.log("isRouteChanging",isRouteChanging, loading)
+  // console.log('isRouteChanging', isRouteChanging, loading);
 
   // Safe pathname access
   const currentPathname = router?.pathname || '';

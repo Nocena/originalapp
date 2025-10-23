@@ -273,7 +273,12 @@ export const useRealMoji = () => {
   ): Promise<{ success: boolean; data?: any; error?: string }> => {
     try {
       // Validate prerequisites
-      const validation = validateRealMojiCreation(currentLensAccount?.address, completionId, reactionType, imageBlob);
+      const validation = validateRealMojiCreation(
+        currentLensAccount?.address,
+        completionId,
+        reactionType,
+        imageBlob
+      );
 
       if (!validation.isValid) {
         return {

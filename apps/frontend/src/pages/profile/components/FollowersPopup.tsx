@@ -174,7 +174,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
   }, [isOpen, followers, convertToFollowerUser]);
 
   // Memoized follow status check
-/*
+  /*
   const getIsFollowing = useCallback(
     (userId: string): boolean => {
       return !!(
@@ -189,7 +189,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
 */
 
   const handleFollow = async (targetUserId: string) => {
-/*
+    /*
     if (!currentUser || !currentUser.id || !targetUserId || currentUser.id === targetUserId) return;
 
     // Add to pending actions to prevent multiple clicks
@@ -261,7 +261,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
   };
 
   const handleProfileRedirect = (clickedUser: FollowerUser) => {
-/*
+    /*
     if (currentUser?.id === clickedUser.id) {
       router.push(`/profile`);
     } else {
@@ -332,7 +332,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
             <div className="space-y-3">
               {followerUsers.map((userData) => {
                 // Use our getIsFollowing helper to check follow status
-                const isFollowing =  false // getIsFollowing(userData.id);
+                const isFollowing = false; // getIsFollowing(userData.id);
                 const isCurrentUser = userData.id === currentLensAccount?.address;
                 const isPending = pendingFollowActions.has(userData.id);
 
