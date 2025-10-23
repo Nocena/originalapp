@@ -136,16 +136,6 @@ export const PRIVATE_CHALLENGE_FIELDS = gql`
     expiresAt
     isActive
     isCompleted
-    creator {
-      id
-      username
-      profilePicture
-    }
-    targetUser {
-      id
-      username
-      profilePicture
-    }
   }
 `;
 

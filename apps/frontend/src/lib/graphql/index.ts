@@ -13,6 +13,7 @@ export * from './fragments';
 
 // Export features
 export * from './features/user';
+export * from './features/privateChallenge';
 
 // Export utilities
 export { generateId, normalizeWallet, generateRandomId } from './utils';
@@ -21,7 +22,6 @@ export { generateId, normalizeWallet, generateRandomId } from './utils';
 export {
   getUserByWallet as getUserFromDgraph,
   getUserById as getUserByIdFromDgraph,
-  // All other functions keep their names
   fetchAllUsers,
   searchUsers,
   fetchUserFollowers,
@@ -42,6 +42,24 @@ export {
   resetTimeBasedEarnings,
 } from './features/user';
 
-// Temporary re-exports from old dgraph.ts
-// These will be migrated incrementally
-export * from '../api/dgraph';
+// Export specific functions from old dgraph.ts (not conflicting ones)
+export {
+  createNotification,
+  fetchNotifications,
+  fetchUnreadNotificationsCount,
+  markNotificationsAsRead,
+  generateInviteCode,
+  validateInviteCode,
+  markInviteAsUsed,
+  handleChallengeCreation,
+  getUserInviteStats,
+  createRealMojiReaction,
+  fetchFollowerCompletions,
+  fetchLatestUserCompletion,
+  fetchUserCompletions,
+  getUserNFTsByType,
+  toggleCompletionLike,
+  updateUserEquippedItems,
+  uploadRealMojiToIPFS,
+  getUserAvatar,
+} from '../api/dgraph';
