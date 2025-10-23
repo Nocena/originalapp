@@ -26,7 +26,7 @@ export const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
 
-const lensApolloClient = apolloClient(authLink);
+export const lensApolloClient = apolloClient(authLink);
 
 function MyAppContent({ Component, pageProps }: AppProps) {
   const { currentLensAccount, loading, logout } = useAuth();

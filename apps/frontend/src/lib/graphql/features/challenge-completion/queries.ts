@@ -98,3 +98,52 @@ export const FETCH_LATEST_USER_COMPLETION = gql`
         }
     }
 `;
+
+
+export const FETCH_COMPLETIONS_OF_USERS = gql`
+    query FetchUserCompletions(
+        $userLensAccountIds: [String!]!
+        $startDate: DateTime!
+        $endDate: DateTime!
+        $challengeType: String
+    ) {
+        queryChallengeCompletion(
+            filter: {
+                userLensAccountId: { in: $userLensAccountIds }
+                completionDate: { between: { min: $startDate, max: $endDate } }
+                challengeType: { eq: $challengeType }
+            }
+            order: { desc: completionDate }
+        ) {
+            id
+            media
+            completionDate
+            completionDay
+            completionWeek
+            completionMonth
+            completionYear
+            status
+            challengeType
+            likesCount
+            aiChallenge {
+                id
+                title
+                description
+                frequency
+                reward
+            }
+            privateChallenge {
+                id
+                title
+                description
+                reward
+            }
+            publicChallenge {
+                id
+                title
+                description
+                reward
+            }
+        }
+    }
+`;

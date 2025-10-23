@@ -18,8 +18,9 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import getAccount from 'src/helpers/getAccount';
 import getAvatar from '../../helpers/getAvatar';
-import { fetchLatestUserCompletion } from 'src/lib/graphql/features/challenge-completion';
+import { fetchFollowingsCompletions, fetchLatestUserCompletion } from 'src/lib/graphql/features/challenge-completion';
 import { fetchFollowerCompletions } from 'src/lib/graphql';
+import { BasicCompletionType } from '../../lib/graphql/features/challenge-completion/types';
 
 type ChallengeType = 'daily' | 'weekly' | 'monthly';
 
@@ -139,7 +140,7 @@ const HomeView = () => {
   const router = useRouter();
   const { currentLensAccount, loading } = useAuth();
   const [selectedTab, setSelectedTab] = useState<ChallengeType>('daily');
-  const [followerCompletions, setFollowerCompletions] = useState<any[]>([]);
+  const [followerCompletions, setFollowerCompletions] = useState<BasicCompletionType[]>([]);
   const [isFetchingCompletions, setIsFetchingCompletions] = useState(false);
 
   // Challenge state
@@ -251,7 +252,7 @@ const HomeView = () => {
       try {
         console.log(`User has completed ${selectedTab} challenge, fetching friend completions...`);
         const today = new Date().toISOString().split('T')[0];
-        const completions = await fetchFollowerCompletions(currentLensAccount.address, today, selectedTab);
+        const completions = await fetchFollowingsCompletions(currentLensAccount.address, today, selectedTab);
         setFollowerCompletions(completions);
         console.log('Loaded follower completions:', completions.length);
       } catch (error) {
@@ -462,11 +463,7 @@ const HomeView = () => {
             {hasCompleted && latestCompletionMatchesTab && latestCompletion && currentLensAccount && (
               <div className="mt-8">
                 <CompletionItem
-                  profile={{
-                    userId: currentLensAccount.address,
-                    username: getAccount(currentLensAccount).username,
-                    profilePicture: getAvatar(currentLensAccount),
-                  }}
+                  account={currentLensAccount}
                   completion={latestCompletion}
                   isSelf={true}
                 />
