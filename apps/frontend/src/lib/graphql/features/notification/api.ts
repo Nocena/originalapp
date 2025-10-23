@@ -1,6 +1,5 @@
 import graphqlClient from '../../client';
-import { FETCH_UNREAD_NOTIFICATIONS_COUNT } from './queries';
-import { MARK_NOTIFICATIONS_AS_READ } from './mutations';
+import { FETCH_NOTIFICATIONS, FETCH_UNREAD_NOTIFICATIONS_COUNT } from './queries';
 import * as mutations from './mutations';
 import { generateId } from '../../utils';
 
@@ -28,7 +27,7 @@ export async function markNotificationsAsRead(userLensAccountId: string): Promis
   try {
     const { data } = await graphqlClient.mutate(
       {
-        mutation: MARK_NOTIFICATIONS_AS_READ,
+        mutation: mutations.MARK_NOTIFICATIONS_AS_READ,
         variables: { userLensAccountId },
       });
 
@@ -46,8 +45,8 @@ export async function markNotificationsAsRead(userLensAccountId: string): Promis
  * NOTE: Not currently used - using dgraph.ts createNotification instead
  */
 export async function createNotification(data: {
-  userId: string;
-  triggeredById: string;
+  userLensAccountId: string;
+  triggeredByLensAccountId: string;
   content: string;
   notificationType: string;
   privateChallengeId?: string;
@@ -57,8 +56,8 @@ export async function createNotification(data: {
 
     const input: any = {
       id: notificationId,
-      userId: data.userId,
-      triggeredById: data.triggeredById,
+      userLensAccountId: data.userLensAccountId,
+      triggeredByLensAccountId: data.triggeredByLensAccountId,
       content: data.content,
       notificationType: data.notificationType,
       isRead: false,
@@ -80,3 +79,24 @@ export async function createNotification(data: {
     throw error;
   }
 }
+
+
+/**
+ * Fetch notifications for a user
+ * @param userLensAccountId - User's Lens account ID
+ * @returns Promise<Notification[]>
+ */
+export const fetchNotifications = async (userLensAccountId: string) => {
+  try {
+    const { data } = await graphqlClient.query({
+      query: FETCH_NOTIFICATIONS,
+      variables: { userLensAccountId },
+      fetchPolicy: 'network-only', // ensures fresh data
+    });
+
+    return data?.queryNotification || [];
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    return [];
+  }
+};
