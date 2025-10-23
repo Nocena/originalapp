@@ -26,7 +26,7 @@ export const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
 
-const lensApolloClient = apolloClient(authLink);
+export const lensApolloClient = apolloClient(authLink);
 
 function MyAppContent({ Component, pageProps }: AppProps) {
   const { currentLensAccount, loading, logout } = useAuth();
@@ -36,9 +36,6 @@ function MyAppContent({ Component, pageProps }: AppProps) {
   const [isRouteChanging, setIsRouteChanging] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
   const { permissionManager } = usePermissions();
-
-  // console.log('isRouteChanging', isRouteChanging, loading);
-
   // Safe pathname access
   const currentPathname = router?.pathname || '';
 

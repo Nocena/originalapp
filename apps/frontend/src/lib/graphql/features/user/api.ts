@@ -3,8 +3,8 @@ import { generateId, normalizeWallet } from '../../utils';
 import type { User } from '../../../../contexts/AuthContext';
 import * as queries from './queries';
 import * as mutations from './mutations';
-import { createPublicClient, http, defineChain } from 'viem';
-import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../../../lib/constants';
+import { createPublicClient, defineChain, http } from 'viem';
+import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../../constants';
 import noceniteTokenArtifact from '../../../../lib/contracts/nocenite.json';
 // ============================================================================
 // QUERY FUNCTIONS
@@ -141,12 +141,26 @@ export async function getLeaderboard(
   offset: number = 0
 ): Promise<any[]> {
   try {
-    // Use blockchain leaderboard for all timeframes since we don't have time-based tracking yet
-    console.log(`⚠️ getLeaderboard: Using blockchain data for ${timeFrame} leaderboard`);
-    return await getBlockchainLeaderboard(limit);
+    const { data } = await graphqlClient.query({
+      query: queries.GET_LEADERBOARD,
+      variables: { first: limit, offset },
+    });
+
+    // Filter and sort on client side based on timeFrame
+    let users = data.queryUser || [];
+
+    if (timeFrame === 'today') {
+      users.sort((a: any, b: any) => b.earnedTokensToday - a.earnedTokensToday);
+    } else if (timeFrame === 'week') {
+      users.sort((a: any, b: any) => b.earnedTokensThisWeek - a.earnedTokensThisWeek);
+    } else if (timeFrame === 'month') {
+      users.sort((a: any, b: any) => b.earnedTokensThisMonth - a.earnedTokensThisMonth);
+    }
+
+    return users;
   } catch (error) {
     console.error('Error getting leaderboard:', error);
-    return [];
+    throw error;
   }
 }
 
@@ -512,123 +526,92 @@ function formatUserData(userData: any): User {
 // BLOCKCHAIN LEADERBOARD
 // ============================================================================
 
-// Cache holders to avoid rescanning blockchain every time
-let cachedHolders: Array<{
-  wallet: string;
-  balance: number;
-  username: string;
-  profilePicture: string;
-}> = [];
-let lastScanBlock = 0n;
-
-export const getBlockchainLeaderboard = async (
-  limit: number = 25,
-  currentUserAddress?: string,
-  currentUsername?: string
-): Promise<any[]> => {
+export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[]> => {
   try {
-    const { createPublicClient, http, parseAbiItem } = await import('viem');
-    const { CONTRACTS, FLOW_TESTNET_CONFIG } = await import('../../../constants');
-
-    const publicClient = createPublicClient({
-      chain: {
-        id: FLOW_TESTNET_CONFIG.id,
-        name: FLOW_TESTNET_CONFIG.name,
-        nativeCurrency: FLOW_TESTNET_CONFIG.nativeCurrency,
-        rpcUrls: {
-          default: { http: ['https://testnet.evm.nodes.onflow.org'] },
-        },
-      },
-      transport: http('https://testnet.evm.nodes.onflow.org'),
+    // Get all users with wallet addresses
+    const { data } = await graphqlClient.query({
+      query: queries.GET_ALL_USERS_WITH_WALLETS,
+      variables: { limit: 1000 }, // Get more users to check balances
     });
 
-    const currentBlock = await publicClient.getBlockNumber();
+    const users = data.queryUser || [];
 
-    // Only rescan if we haven't scanned recently (scan last 10000 blocks)
-    if (cachedHolders.length === 0 || currentBlock - lastScanBlock > 1000n) {
-      console.log('🔍 Scanning recent Transfer events for NCT holders...');
-
-      const fromBlock = currentBlock > 10000n ? currentBlock - 10000n : 0n;
-
-      const logs = await publicClient.getLogs({
-        address: CONTRACTS.Nocenite as `0x${string}`,
-        event: parseAbiItem(
-          'event Transfer(address indexed from, address indexed to, uint256 value)'
-        ),
-        fromBlock,
-        toBlock: 'latest',
-      });
-
-      console.log(`📋 Found ${logs.length} recent Transfer events`);
-
-      const potentialHolders = new Set<string>();
-      logs.forEach((log: any) => {
-        if (log.args?.to && log.args.to !== '0x0000000000000000000000000000000000000000') {
-          potentialHolders.add(log.args.to.toLowerCase());
-        }
-      });
-
-      // Add current user if provided
-      if (currentUserAddress) {
-        potentialHolders.add(currentUserAddress.toLowerCase());
-      }
-
-      console.log(`👥 Checking balances for ${potentialHolders.size} addresses`);
-
-      const balancePromises = Array.from(potentialHolders).map(async (wallet) => {
-        try {
-          const balance = (await publicClient.readContract({
-            address: CONTRACTS.Nocenite as `0x${string}`,
-            abi: [parseAbiItem('function balanceOf(address) view returns (uint256)')],
-            functionName: 'balanceOf',
-            args: [wallet as `0x${string}`],
-          })) as bigint;
-
-          const balanceInTokens = Number(balance) / Math.pow(10, 18);
-
-          if (balanceInTokens === 0) return null;
-
-          return {
-            wallet,
-            balance: balanceInTokens,
-            username:
-              wallet === currentUserAddress?.toLowerCase()
-                ? 'You'
-                : `holder-${wallet.slice(2, 10)}`,
-            profilePicture: '/images/profile.png',
-          };
-        } catch {
-          return null;
-        }
-      });
-
-      cachedHolders = (await Promise.all(balancePromises)).filter(
-        (r): r is NonNullable<typeof r> => r !== null
-      );
-      lastScanBlock = currentBlock;
-
-      console.log(`✅ Found ${cachedHolders.length} wallets with NCT balance`);
-    } else {
-      console.log(`📦 Using cached holders (${cachedHolders.length} wallets)`);
+    if (users.length === 0) {
+      return [];
     }
 
-    return cachedHolders
-      .sort((a, b) => b.balance - a.balance)
+    // Filter users with wallets and get blockchain balances
+    const usersWithWallets = users.filter((user: any) => {
+      if (!user.wallet || user.wallet.trim() === '') return false;
+      // Validate wallet address format (40 hex characters after 0x)
+      const walletRegex = /^0x[a-fA-F0-9]{40}$/;
+      return walletRegex.test(user.wallet);
+    });
+
+    if (usersWithWallets.length === 0) {
+      return [];
+    }
+
+    // Get blockchain balances for all users with wallets
+    const usersWithBalances = await Promise.all(
+      usersWithWallets.map(async (user: any) => {
+        try {
+          // Create public client for reading blockchain data
+          const publicClient = createPublicClient({
+            chain: defineChain(FLOW_TESTNET_CONFIG),
+            transport: http(),
+          });
+
+          // Get NCT token balance with error handling
+          let balance = 0n;
+          try {
+            console.log(`🔍 Checking balance for wallet: ${user.wallet}`);
+            balance = (await publicClient.readContract({
+              address: CONTRACTS.Nocenite as `0x${string}`,
+              abi: noceniteTokenArtifact,
+              functionName: 'balanceOf',
+              args: [user.wallet],
+            })) as bigint;
+            console.log(`💰 Balance for ${user.wallet}: ${balance.toString()}`);
+          } catch (error) {
+            // Silently handle errors and return 0 balance
+            console.error(`❌ Error getting balance for ${user.wallet}:`, error);
+            balance = 0n;
+          }
+
+          // Convert from wei to tokens (18 decimals)
+          const balanceInTokens = Number(balance) / Math.pow(10, 18);
+
+          return {
+            ...user,
+            balance: Math.floor(balanceInTokens),
+          };
+        } catch (error) {
+          console.error(`Error fetching balance for ${user.wallet}:`, error);
+          return { ...user, balance: 0 };
+        }
+      })
+    );
+
+    // Filter out users with 0 balance and sort by balance
+    return usersWithBalances
+      .filter((user: any) => user.balance > 0)
+      .sort((a: any, b: any) => b.balance - a.balance)
       .slice(0, limit)
-      .map((result, index) => ({
+      .map((user: any, index: number) => ({
         rank: index + 1,
-        userId: result.wallet,
-        username: result.username,
-        profilePicture: result.profilePicture,
-        currentPeriodTokens: Math.floor(result.balance),
-        allTimeTokens: Math.floor(result.balance),
+        userId: user.id,
+        username: user.username,
+        profilePicture: user.profilePicture || '/images/profile.png',
+        currentPeriodTokens: user.balance,
+        allTimeTokens: user.balance,
         todayTokens: 0,
         weekTokens: 0,
         monthTokens: 0,
         lastUpdate: new Date().toISOString(),
       }));
   } catch (error) {
-    console.error('❌ Error getting blockchain leaderboard:', error);
-    return [];
+    console.error('Error in getBlockchainLeaderboard:', error);
+    throw error;
   }
 };

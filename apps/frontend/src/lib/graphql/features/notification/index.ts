@@ -1,2 +1,3 @@
 export * from './api';
-export * from './mutations';
+export * as notificationQueries from './queries';
+export * as notificationMutations from './mutations';

@@ -1,15 +1,8 @@
 // pages/home/index.tsx - WITH DISCOVER BUTTON
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import { useActiveAccount } from 'thirdweb/react';
-import { fetchFollowerCompletions, fetchLatestUserCompletion } from '../../lib/graphql';
-import {
-  getCurrentChallenge,
-  getChallengeReward,
-  getFallbackChallenge,
-  AIChallenge,
-} from '@utils/challengeUtils';
+import { AIChallenge, getChallengeReward, getCurrentChallenge, getFallbackChallenge } from '@utils/challengeUtils';
 
 // Component imports
 import ChallengeHeader from './components/ChallengeHeader';
@@ -18,11 +11,8 @@ import CompletionFeed from './components/CompletionFeed';
 import CompletionItem from './components/CompletionItem';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
-import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
-import ThematicContainer from '../../components/ui/ThematicContainer';
-import getAccount from 'src/helpers/getAccount';
-import getAvatar from '../../helpers/getAvatar';
-import { CreatePrivateChallengeRequest } from '../../types/notifications';
+import { fetchFollowingsCompletions, fetchLatestUserCompletion } from 'src/lib/graphql/features/challenge-completion';
+import { BasicCompletionType } from '../../lib/graphql/features/challenge-completion/types';
 
 type ChallengeType = 'daily' | 'weekly' | 'monthly';
 
@@ -141,11 +131,9 @@ const createMockPhotoBlob = (): Blob => {
 const HomeView = () => {
   const router = useRouter();
   const { currentLensAccount, loading } = useAuth();
-  const activeAccount = useActiveAccount();
   const [selectedTab, setSelectedTab] = useState<ChallengeType>('daily');
-  const [followerCompletions, setFollowerCompletions] = useState<any[]>([]);
+  const [followerCompletions, setFollowerCompletions] = useState<BasicCompletionType[]>([]);
   const [isFetchingCompletions, setIsFetchingCompletions] = useState(false);
-  const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
 
   // Challenge state
   const [currentChallenge, setCurrentChallenge] = useState<AIChallenge | null>(null);
@@ -159,7 +147,7 @@ const HomeView = () => {
   const isDevelopmentMode = process.env.NODE_ENV === 'development';
 
   // Debug user completion strings
-  /*
+/*
   useEffect(() => {
     if (user) {
       console.log('User completion data:', {
@@ -256,11 +244,7 @@ const HomeView = () => {
       try {
         console.log(`User has completed ${selectedTab} challenge, fetching friend completions...`);
         const today = new Date().toISOString().split('T')[0];
-        const completions = await fetchFollowerCompletions(
-          currentLensAccount.address,
-          today,
-          selectedTab
-        );
+        const completions = await fetchFollowingsCompletions(currentLensAccount.address, today, selectedTab);
         setFollowerCompletions(completions);
         console.log('Loaded follower completions:', completions.length);
       } catch (error) {
@@ -273,35 +257,6 @@ const HomeView = () => {
 
     loadFollowerCompletions();
   }, [currentLensAccount, loading, selectedTab, hasCompleted]);
-
-  // Handle private challenge creation
-  const handlePrivateChallengeSubmit = async (challenge: CreatePrivateChallengeRequest) => {
-    try {
-      const response = await fetch('/api/private-challenge/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...challenge,
-          creatorId: currentLensAccount?.address,
-          creatorWalletAddress: activeAccount?.address,
-          creatorUsername: currentLensAccount?.username?.localName || 'Anonymous',
-          creatorProfilePicture: currentLensAccount?.metadata?.picture || '/images/profile.png',
-          recipientUsername: challenge.selectedUser?.username || 'User',
-        }),
-      });
-
-      if (response.ok) {
-        alert('Private challenge sent successfully!');
-        setShowPrivateChallengeCreator(false);
-      } else {
-        const data = await response.json();
-        alert(`Failed to send private challenge: ${data.error || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Error sending private challenge:', error);
-      alert('Error sending private challenge');
-    }
-  };
 
   const handleCompleteChallenge = async (type: string, frequency: string) => {
     if (!currentLensAccount) {
@@ -471,42 +426,6 @@ const HomeView = () => {
           </div>
         )}
 
-        {/* Private Challenge Creator Modal */}
-        {showPrivateChallengeCreator && (
-          <PrivateChallengeCreator
-            onClose={() => setShowPrivateChallengeCreator(false)}
-            onSubmit={handlePrivateChallengeSubmit}
-          />
-        )}
-
-        {/* Private Challenge Creator Button */}
-        {currentLensAccount && (
-          <div className="mb-6">
-            <ThematicContainer
-              asButton={false}
-              glassmorphic={true}
-              color="nocenaPurple"
-              rounded="xl"
-              className="p-4"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Challenge a Friend</h3>
-                  <p className="text-gray-300 text-sm">
-                    Send custom challenges to your friends and compete for rewards!
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowPrivateChallengeCreator(true)}
-                  className="bg-nocenaPink hover:bg-nocenaPink/80 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                >
-                  Create Challenge
-                </button>
-              </div>
-            </ThematicContainer>
-          </div>
-        )}
-
         {/* Challenge Type Tabs */}
         <ChallengeHeader selectedTab={selectedTab} onTabChange={setSelectedTab} />
 
@@ -523,7 +442,6 @@ const HomeView = () => {
             <div className="mt-6 flex justify-center mb-8">
               <PrimaryButton onClick={handleDiscoverClick} isActive={true} text="Discover" />
             </div>
-
             {/* Always show the challenge form - it will display completion state if completed */}
             <ChallengeForm
               challenge={currentChallenge}
@@ -533,39 +451,21 @@ const HomeView = () => {
               onCompleteChallenge={handleCompleteChallenge}
             />
 
-            {/* Complete Challenge Button - only show if not completed and challenge is active */}
-            {!hasCompleted && currentChallenge && currentChallenge.isActive && (
-              <div className="mt-6 flex justify-center">
-                <PrimaryButton
-                  text="Complete Challenge"
-                  onClick={() => handleCompleteChallenge('AI', selectedTab)}
+            {/* Show latest completion using CompletionItem if user has completed and it matches current tab */}
+            {hasCompleted && latestCompletionMatchesTab && latestCompletion && currentLensAccount && (
+              <div className="mt-8">
+                <CompletionItem
+                  account={currentLensAccount}
+                  completion={latestCompletion}
+                  isSelf={true}
                 />
               </div>
             )}
-
-            {/* Show latest completion using CompletionItem if user has completed and it matches current tab */}
-            {hasCompleted &&
-              latestCompletionMatchesTab &&
-              latestCompletion &&
-              currentLensAccount && (
-                <div className="mt-8">
-                  <CompletionItem
-                    profile={{
-                      userId: currentLensAccount.address,
-                      username: getAccount(currentLensAccount).username,
-                      profilePicture: getAvatar(currentLensAccount),
-                    }}
-                    completion={latestCompletion}
-                    isSelf={true}
-                  />
-                </div>
-              )}
 
             {/* Show completion feed if user has completed the challenge */}
             {hasCompleted && (
               <div className="mt-8">
                 <CompletionFeed
-                  user={currentLensAccount}
                   isLoading={isFetchingCompletions}
                   followerCompletions={followerCompletions}
                   selectedTab={selectedTab}

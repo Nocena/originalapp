@@ -1,15 +1,12 @@
 // components/home/CompletionItem.tsx - FIXED VERSION
 import React from 'react';
 import Image from 'next/image';
-import { getProfilePictureUrl, getVideoUrl, getSelfieUrl } from '../../../lib/api/pinata';
+import { getSelfieUrl, getVideoUrl } from '../../../lib/api/pinata';
 import IPFSMediaLoader from '../../../components/IPFSMediaLoader';
 import ThematicContainer from '../../../components/ui/ThematicContainer';
-
-interface ProfileInfo {
-  userId: string;
-  username: string;
-  profilePicture: string | null;
-}
+import type { AccountFragment } from '@nocena/indexer';
+import getAvatar from '../../../helpers/getAvatar';
+import { BasicCompletionType } from '../../../lib/graphql/features/challenge-completion/types';
 
 interface MediaMetadata {
   // New format (individual CIDs) - this is what you're using now
@@ -28,12 +25,12 @@ interface MediaMetadata {
 }
 
 interface CompletionItemProps {
-  profile: ProfileInfo;
-  completion: any;
+  account: AccountFragment;
+  completion: BasicCompletionType;
   isSelf: boolean;
 }
 
-const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, isSelf }) => {
+const CompletionItem: React.FC<CompletionItemProps> = ({ account, completion, isSelf }) => {
   // Parse media metadata from the completion
   let media: MediaMetadata | null = null;
 
@@ -50,7 +47,7 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
   }
 
   // Handle the nested structure from your data
-  if (media && media.directoryCID && typeof media.directoryCID === 'string') {
+  if (media && media.directoryCID) {
     try {
       const nestedData = JSON.parse(media.directoryCID);
       if (nestedData.videoCID || nestedData.selfieCID) {
@@ -61,12 +58,12 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
     }
   }
 
-  const completionDate = new Date(completion.completionDate || completion.date);
+  const completionDate = new Date(completion.completionDate);
 
   // Get media URLs using the centralized functions
   const videoUrl = media ? getVideoUrl(media) : null;
   const selfieUrl = media ? getSelfieUrl(media) : null;
-  const profilePicUrl = getProfilePictureUrl(profile.profilePicture);
+  const profilePicUrl = getAvatar(account)
 
   // Debug logging
   console.log('Completion data:', completion);
@@ -92,7 +89,7 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
         >
           <Image
             src={profilePicUrl}
-            alt={profile.username}
+            alt={'account username'}
             width={48}
             height={48}
             className="object-cover w-full h-full"
@@ -104,7 +101,7 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ profile, completion, is
         </ThematicContainer>
 
         <div className="ml-4 flex-1">
-          <p className="font-bold text-white text-lg">{profile.username}</p>
+          <p className="font-bold text-white text-lg">{account.username?.localName}</p>
           <p className="text-sm text-gray-300">
             {completionDate.toLocaleDateString()} at {completionDate.toLocaleTimeString()}
           </p>

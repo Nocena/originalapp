@@ -1,13 +1,16 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
 
 import ThematicContainer from '../../../components/ui/ThematicContainer';
 import ThematicImage from '../../../components/ui/ThematicImage';
 import PrimaryButton from '../../../components/ui/PrimaryButton';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { useAuth, User as AuthUser } from '../../../contexts/AuthContext';
-import { getUserById, toggleFollowUser } from '../../../lib/graphql';
+import { AccountFragment, PageSize, useFollowersQuery, useFollowMutation, useUnfollowMutation } from '@nocena/indexer';
+import { useRouter } from 'next/router';
+import getAvatar from '../../../helpers/getAvatar';
+import getAccount from '../../../helpers/getAccount';
+import useTransactionLifecycle from '../../../hooks/useTransactionLifecycle';
 
 const nocenixIcon = '/nocenix.ico';
 
@@ -24,40 +27,38 @@ export interface FollowerUser {
 interface FollowersPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  followers: string[];
   isFollowers?: boolean; // true for followers, false for following
 }
 
 const FollowersPopup: React.FC<FollowersPopupProps> = ({
   isOpen,
   onClose,
-  followers,
   isFollowers = true,
 }) => {
-  const [followerUsers, setFollowerUsers] = useState<FollowerUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [pendingFollowActions, setPendingFollowActions] = useState<Set<string>>(new Set());
   const { currentLensAccount } = useAuth();
-  const router = useRouter();
+  const router = useRouter()
 
   const contentRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number | null>(null);
   const touchMoveY = useRef<number | null>(null);
 
-  // Convert AuthUser to FollowerUser
-  const convertToFollowerUser = useCallback((user: AuthUser | null): FollowerUser | null => {
-    if (!user) return null;
+  const { data, error, fetchMore, loading: isLoading } = useFollowersQuery({
+    skip: !currentLensAccount,
+    variables: { request: {
+        pageSize: PageSize.Fifty,
+        account: currentLensAccount?.address
+      }
+    }
+  });
+  const followers = data?.followers?.items;
+  const pageInfo = data?.followers?.pageInfo;
+  const hasMore = pageInfo?.next;
 
-    return {
-      id: user.id,
-      username: user.username,
-      profilePicture: user.profilePicture,
-      earnedTokens: user.earnedTokens,
-      bio: user.bio,
-      // Handle followers based on the updated type (now it's just an array of strings)
-      followers: Array.isArray(user.followers) ? user.followers : [],
-    };
-  }, []);
+  const onError = (error: any) => {
+    // setIsSubmitting(false);
+    // errorToast(error);
+  };
 
   // Setup touch handlers for swipe down to close
   useEffect(() => {
@@ -120,162 +121,80 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
     };
   }, [onClose]);
 
-  // More efficient follower data fetching
-  useEffect(() => {
-    if (!isOpen || followers.length === 0) {
-      setIsLoading(false);
-      setFollowerUsers([]);
-      return;
-    }
-
-    const fetchFollowers = async () => {
-      setIsLoading(true);
-      try {
-        // Batch requests in groups of 5 to avoid overwhelming the server
-        const batchSize = 5;
-        const results: FollowerUser[] = [];
-
-        for (let i = 0; i < followers.length; i += batchSize) {
-          const batch = followers.slice(i, i + batchSize);
-          const userPromises = batch.map((id) => getUserById(id));
-          const batchResults = await Promise.all(userPromises);
-
-          // Process batch results
-          for (const user of batchResults) {
-            if (user) {
-              const formattedUser = convertToFollowerUser(user);
-              if (formattedUser) {
-                results.push(formattedUser);
-              }
-            }
-          }
-
-          // Update UI after each batch for better UX if there are many followers
-          if (results.length > 0) {
-            setFollowerUsers((prevUsers) => {
-              // Keep existing users and add new ones, avoid duplicates
-              const existingIds = new Set(prevUsers.map((u) => u.id));
-              const newUsers = results.filter((u) => !existingIds.has(u.id));
-              return [...prevUsers, ...newUsers];
-            });
-          }
-        }
-
-        // Final update to ensure all results are included
-        setFollowerUsers(results);
-      } catch (error) {
-        console.error('Error fetching followers:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFollowers();
-  }, [isOpen, followers, convertToFollowerUser]);
-
-  // Memoized follow status check
-  /*
-  const getIsFollowing = useCallback(
-    (userId: string): boolean => {
-      return !!(
-        currentLensAccount &&
-        currentUser.following &&
-        Array.isArray(currentUser.following) &&
-        currentUser.following.includes(userId)
-      );
-    },
-    [currentUser]
-  );
-*/
-
-  const handleFollow = async (targetUserId: string) => {
-    /*
-    if (!currentUser || !currentUser.id || !targetUserId || currentUser.id === targetUserId) return;
-
-    // Add to pending actions to prevent multiple clicks
-    if (pendingFollowActions.has(targetUserId)) return;
-    setPendingFollowActions((prev) => new Set(prev).add(targetUserId));
-
-    // Immediately update UI for better user experience
-    setFollowerUsers((prevUsers) =>
-      prevUsers.map((u) =>
-        u.id === targetUserId
-          ? {
-              ...u,
-              followers: u.followers.includes(currentUser.id)
-                ? u.followers.filter((id) => id !== currentUser.id)
-                : [...u.followers, currentUser.id],
-            }
-          : u
-      )
-    );
-
-    try {
-      // Make API call in the background
-      const success = await toggleFollowUser(
-        currentUser.id,
-        targetUserId,
-        getIsFollowing(targetUserId)
-      );
-
-      // If API call fails, revert the UI change
-      if (!success) {
-        setFollowerUsers((prevUsers) =>
-          prevUsers.map((u) =>
-            u.id === targetUserId
-              ? {
-                  ...u,
-                  followers: u.followers.includes(currentUser.id)
-                    ? u.followers.filter((id) => id !== currentUser.id)
-                    : [...u.followers, currentUser.id],
-                }
-              : u
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Error toggling follow:', error);
-
-      // Revert UI change on error
-      setFollowerUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === targetUserId
-            ? {
-                ...u,
-                followers: u.followers.includes(currentUser.id)
-                  ? u.followers.filter((id) => id !== currentUser.id)
-                  : [...u.followers, currentUser.id],
-              }
-            : u
-        )
-      );
-    } finally {
-      // Remove from pending actions
-      setPendingFollowActions((prev) => {
-        const updated = new Set(prev);
-        updated.delete(targetUserId);
-        return updated;
-      });
-    }
-*/
+  const onCompleted = () => {
+    // updateCache();
+    // setIsSubmitting(false);
+    // onFollow?.();
   };
 
-  const handleProfileRedirect = (clickedUser: FollowerUser) => {
-    /*
-    if (currentUser?.id === clickedUser.id) {
+  const handleTransactionLifecycle = useTransactionLifecycle();
+
+  const [follow] = useFollowMutation({
+    onCompleted: async ({ follow }) => {
+      if (follow.__typename === "FollowResponse") {
+        return onCompleted();
+      }
+
+      if (follow.__typename === "AccountFollowOperationValidationFailed") {
+        return onError({ message: follow.reason });
+      }
+
+      return await handleTransactionLifecycle({
+        transactionData: follow,
+        onCompleted,
+        onError
+      });
+    },
+    onError
+  });
+
+  const [unfollow] = useUnfollowMutation({
+    onCompleted: async ({ unfollow }) => {
+      if (unfollow.__typename === "UnfollowResponse") {
+        return onCompleted();
+      }
+
+      if (unfollow.__typename === "AccountFollowOperationValidationFailed") {
+        return onError({ message: unfollow.reason });
+      }
+
+      return await handleTransactionLifecycle({
+        transactionData: unfollow,
+        onCompleted,
+        onError
+      });
+    },
+    onError
+  });
+
+  const handleFollow = async (targetAccountAddress: string) => {
+    return await follow({
+      variables: { request: { account: targetAccountAddress } }
+    });
+  };
+
+  const handleUnfollow = async (targetAccountAddress: string) => {
+    return await unfollow({
+      variables: { request: { account: targetAccountAddress } }
+    });
+  };
+
+  const handleProfileRedirect = (clickedUser: AccountFragment) => {
+    if (currentLensAccount?.address === clickedUser.address) {
       router.push(`/profile`);
     } else {
-      router.push(`/profile/${clickedUser.id}`);
+      router.push(`/profile/${clickedUser.address}`);
     }
-*/
     onClose();
   };
 
   // Show empty or partial results while loading
+/*
   const showPartialResults = useMemo(
     () => !isLoading || (followerUsers.length > 0 && isLoading),
     [isLoading, followerUsers.length]
   );
+*/
 
   if (!isOpen) return null;
 
@@ -320,33 +239,33 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
             WebkitOverflowScrolling: 'touch',
           }}
         >
-          {isLoading && followerUsers.length === 0 ? (
+          {isLoading ? (
             <div className="flex justify-center py-8">
               <LoadingSpinner />
             </div>
-          ) : showPartialResults && followerUsers.length === 0 ? (
+          ) : /*showPartialResults &&*/ (!followers || followers?.length === 0) ? (
             <div className="text-center py-8 text-gray-400">
               {isFollowers ? 'No followers yet' : 'Not following anyone yet'}
             </div>
           ) : (
             <div className="space-y-3">
-              {followerUsers.map((userData) => {
+              {followers.map(({follower}) => {
                 // Use our getIsFollowing helper to check follow status
-                const isFollowing = false; // getIsFollowing(userData.id);
-                const isCurrentUser = userData.id === currentLensAccount?.address;
-                const isPending = pendingFollowActions.has(userData.id);
+                const isFollowing =  follower.operations?.isFollowedByMe || false
+                const isCurrentUser = follower.address === currentLensAccount?.address;
+                const isPending = pendingFollowActions.has(follower.address);
 
                 return (
                   <div
-                    key={userData.id}
+                    key={follower.address}
                     className="py-3 cursor-pointer"
-                    onClick={() => handleProfileRedirect(userData)}
+                    onClick={() => handleProfileRedirect(follower)}
                   >
                     <div className="flex items-center">
                       <div className="flex items-center gap-4 flex-1 min-w-0">
                         <ThematicImage className="rounded-full flex-shrink-0">
                           <Image
-                            src={userData.profilePicture || '/images/profile.png'}
+                            src={getAvatar(follower) || '/images/profile.png'}
                             alt="Profile"
                             width={48}
                             height={48}
@@ -355,11 +274,11 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
                         </ThematicImage>
 
                         <div className="flex-1 min-w-0 mr-2">
-                          <div className="text-lg font-bold truncate">{userData.username}</div>
+                          <div className="text-lg font-bold truncate">{getAccount(follower).name}</div>
                           <div className="flex items-center mt-0.5">
                             <Image src={nocenixIcon} alt="Nocenix" width={16} height={16} />
                             <span className="text-sm ml-1 text-gray-400">
-                              {userData.earnedTokens} NOCENIX
+                              0 NOCENIX
                             </span>
                           </div>
                         </div>
@@ -381,10 +300,10 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
                           }
                           onClick={(e) => {
                             e.stopPropagation(); // Prevent profile navigation when clicking the button
-                            if (!isCurrentUser) handleFollow(userData.id);
+                            if (!isCurrentUser) isFollowing ? handleUnfollow(follower.address) : handleFollow(follower.address);
                           }}
                           className="px-4 py-1 text-sm min-w-[5rem] h-8"
-                          isActive={!!isFollowing}
+                          isActive={isFollowing}
                           disabled={isCurrentUser || isPending}
                         />
                       </div>
@@ -394,7 +313,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
               })}
 
               {/* Show loading indicator at bottom when loading more */}
-              {isLoading && followerUsers.length > 0 && (
+              {isLoading && hasMore && (
                 <div className="flex justify-center py-4">
                   <LoadingSpinner size="sm" />
                 </div>
