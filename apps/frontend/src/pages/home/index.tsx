@@ -1,13 +1,8 @@
 // pages/home/index.tsx - WITH DISCOVER BUTTON
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import {
-  getCurrentChallenge,
-  getChallengeReward,
-  getFallbackChallenge,
-  AIChallenge,
-} from '@utils/challengeUtils';
+import { AIChallenge, getChallengeReward, getCurrentChallenge, getFallbackChallenge } from '@utils/challengeUtils';
 
 // Component imports
 import ChallengeHeader from './components/ChallengeHeader';
@@ -16,10 +11,7 @@ import CompletionFeed from './components/CompletionFeed';
 import CompletionItem from './components/CompletionItem';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
-import getAccount from 'src/helpers/getAccount';
-import getAvatar from '../../helpers/getAvatar';
 import { fetchFollowingsCompletions, fetchLatestUserCompletion } from 'src/lib/graphql/features/challenge-completion';
-import { fetchFollowerCompletions } from 'src/lib/graphql';
 import { BasicCompletionType } from '../../lib/graphql/features/challenge-completion/types';
 
 type ChallengeType = 'daily' | 'weekly' | 'monthly';

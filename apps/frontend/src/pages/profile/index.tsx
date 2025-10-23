@@ -1,11 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { getUserAvatar, updateBio, updateCoverPhoto, updateProfilePicture } from '../../lib/graphql';
-import { unpinFromPinata } from '../../lib/api/pinata';
-import type { StaticImageData } from 'next/image';
+import React, { useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import imageCompression from 'browser-image-compression';
 import { useAuth } from '../../contexts/AuthContext';
-import { getPageState, updatePageState } from '@components/PageManager';
 
 import ThematicContainer from '../../components/ui/ThematicContainer';
 import FollowersPopup from './components/FollowersPopup';
@@ -14,42 +9,52 @@ import StatsSection from './components/StatsSection';
 import CalendarSection from './components/CalendarSection';
 
 import PenIcon from '../../components/icons/pen';
+import type { AccountOptions, MetadataAttribute } from '@lens-protocol/metadata';
+import { account as accountMetadata, MetadataAttributeType } from '@lens-protocol/metadata';
 
 // Custom hooks
-import useFollowersData from '../../hooks/useFollowersData';
-import getAvatar from 'src/helpers/getAvatar';
+import { toast } from 'react-hot-toast';
+import trimify from '../../helpers/trimify';
+import uploadMetadata from 'src/helpers/uploadMetadata';
+import { useAccountStatsQuery, useMeLazyQuery, useSetAccountMetadataMutation } from '@nocena/indexer';
+import useTransactionLifecycle from '../../hooks/useTransactionLifecycle';
+import usePollTransactionStatus from '../../hooks/usePollTransactionStatus';
+import { uploadImageFile } from 'src/helpers/accountPictureUtils';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
 
 const ProfileView: React.FC = () => {
   const DEFAULT_PROFILE_PIC = '/images/profile.png';
-  const { currentLensAccount } = useAuth();
+  const { currentLensAccount, setCurrentLensAccount } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
+  console.log("currentLensAccount", currentLensAccount)
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Basic profile state
-  const [profilePic, setProfilePic] = useState<string | StaticImageData>(
-    getAvatar(currentLensAccount)
+  const [profilePic, setProfilePic] = useState<string>(
+    currentLensAccount?.metadata?.picture
   );
-  // TODO: fix it
-  const [coverPhoto, setCoverPhoto] = useState<string>(/*user?.coverPhoto || */'/images/cover.jpg');
-  const [username, setUsername] = useState<string>(/*user?.username ||*/ 'Guest');
-  const [bio, setBio] = useState<string>(/*user?.bio ||*/ 'No bio yet');
+  const [showFollowersPopup, setShowFollowersPopup] = useState<boolean>(false);
+  const [coverPhoto, setCoverPhoto] = useState<string>(currentLensAccount?.metadata?.coverPicture);
+  const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || "");
+  const [bio, setBio] = useState<string>(currentLensAccount?.metadata?.bio || "");
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
-  const [tokenBalance, setTokenBalance] = useState<number>(/*user?.earnedTokens || */0);
+  const [tokenBalance, setTokenBalance] = useState<number>(/*user?.earnedTokens ||*/ 0);
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
     'trailer'
   );
 
   // Avatar generation state - NEW
   const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(
-    /*user?.currentAvatar ||*/ null
+    currentLensAccount?.metadata?.picture || null
   );
 
   // Challenge data
   const [dailyChallenges, setDailyChallenges] = useState<boolean[]>(
-    /*user?.dailyChallenge.split('').map((char) => char === '1') ||*/ []
+    /*user?.dailyChallenge.split('').map((char) => char === '1') || */[]
   );
   const [weeklyChallenges, setWeeklyChallenges] = useState<boolean[]>(
     /*user?.weeklyChallenge.split('').map((char) => char === '1') || */[]
@@ -58,14 +63,10 @@ const ProfileView: React.FC = () => {
     /*user?.monthlyChallenge.split('').map((char) => char === '1') || */[]
   );
 
-  // Use custom hook for followers data
-  const {
-    followersCount,
-    followers,
-    showFollowersPopup,
-    setShowFollowersPopup,
-    handleFollowersClick,
-  } = useFollowersData(/*user?.id*/undefined);
+  const { data: accountStatsData, loading: accountStatsLoading } = useAccountStatsQuery({
+    variables: { request: { account: currentLensAccount?.address } }
+  });
+  const stats = accountStatsData?.accountStats.graphFollowStats;
 
   // Sync user data when user changes
 /*
@@ -99,26 +100,9 @@ const ProfileView: React.FC = () => {
   }, [user]);
 */
 
-  // NEW: Load avatar data from database on component mount
-/*
-  useEffect(() => {
-    const loadUserAvatarData = async () => {
-      if (user?.id) {
-        try {
-          const avatarData = await getUserAvatar(user.id);
-          if (avatarData?.currentAvatar) {
-            setGeneratedAvatar(avatarData.currentAvatar);
-            console.log('🎨 Loaded avatar from database:', avatarData.currentAvatar);
-          }
-        } catch (error) {
-          console.error('Error loading avatar data:', error);
-        }
-      }
-    };
-
-    loadUserAvatarData();
-  }, [user?.id]);
-*/
+  const [getCurrentAccountDetails] = useMeLazyQuery({
+    fetchPolicy: "no-cache"
+  });
 
   // Calculate stats for components
   const currentStreak = useMemo(() => {
@@ -133,6 +117,9 @@ const ProfileView: React.FC = () => {
     return streak;
   }, [dailyChallenges]);
 
+  const handleTransactionLifecycle = useTransactionLifecycle();
+  const pollTransactionStatus = usePollTransactionStatus();
+
   const totalChallenges = useMemo(() => {
     return (
       dailyChallenges.filter(Boolean).length +
@@ -141,16 +128,95 @@ const ProfileView: React.FC = () => {
     );
   }, [dailyChallenges, weeklyChallenges, monthlyChallenges]);
 
+  const onCompleted = (hash: string) => {
+    pollTransactionStatus(hash, async () => {
+      const accountData = await getCurrentAccountDetails();
+      setCurrentLensAccount(accountData?.data?.me.loggedInAs.account);
+      setIsSubmitting(false);
+      toast.success("Account updated");
+    });
+  };
+
+  const onError = (error: Error) => {
+    setIsSubmitting(false);
+    toast.error(error.message);
+  };
+
+  const [setAccountMetadata] = useSetAccountMetadataMutation({
+    onCompleted: async ({ setAccountMetadata }) => {
+      if (setAccountMetadata.__typename === "SetAccountMetadataResponse") {
+        return onCompleted(setAccountMetadata.hash);
+      }
+
+      return await handleTransactionLifecycle({
+        transactionData: setAccountMetadata,
+        onCompleted,
+        onError
+      });
+    },
+    onError
+  });
+
+  const updateAccount = async (
+    pfpUrl: string | undefined,
+    coverUrl: string | undefined
+  ) => {
+    if (!currentLensAccount) {
+      return toast.error("Please sign in your wallet.");
+    }
+
+    setIsSubmitting(true);
+    const otherAttributes =
+      currentLensAccount.metadata?.attributes
+        ?.filter(
+          (attr) =>
+            !["app", "location", "timestamp", "website", "x"].includes(attr.key)
+        )
+        .map(({ key, type, value }) => ({
+          key,
+          type: MetadataAttributeType[type] as any,
+          value
+        })) || [];
+
+    const preparedAccountMetadata: AccountOptions = {
+      ...(username && { name: username }),
+      ...(bio && { bio }),
+      attributes: [
+        ...(otherAttributes as MetadataAttribute[]),
+        {
+          key: "timestamp",
+          type: MetadataAttributeType.STRING,
+          value: new Date().toISOString()
+        }
+      ],
+      coverPicture: coverUrl || undefined,
+      picture: pfpUrl || undefined
+    };
+    console.log("preparedAccountMetadata", preparedAccountMetadata)
+    preparedAccountMetadata.attributes =
+      preparedAccountMetadata.attributes?.filter((m) => {
+        return m.key !== "" && Boolean(trimify(m.value));
+      });
+    const metadataUri = await uploadMetadata(
+      accountMetadata(preparedAccountMetadata)
+    );
+
+    return await setAccountMetadata({
+      variables: { request: { metadataUri } }
+    });
+  };
+
+
   // NEW: Updated avatar handler
   const handleAvatarUpdated = (newAvatarUrl: string) => {
     console.log('🎉 Avatar updated in ProfileView:', newAvatarUrl);
     setGeneratedAvatar(newAvatarUrl);
+/*
 
     // Update user context
-/*
     if (user) {
       const updatedUser = { ...user, currentAvatar: newAvatarUrl };
-      // login(updatedUser);
+      login(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
     }
 */
@@ -170,218 +236,37 @@ const ProfileView: React.FC = () => {
   };
 
   const handleProfilePicUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-/*
     const file = event.target.files?.[0];
-    if (file && user) {
-      try {
-        const options = {
-          maxSizeMB: 0.5,
-          maxWidthOrHeight: 512,
-          useWebWorker: true,
-          fileType: 'image/webp',
-        };
-
-        const compressedFile = await imageCompression(file, options);
-        const reader = new FileReader();
-
-        reader.onloadend = async () => {
-          try {
-            const base64String = (reader.result as string).replace(/^data:.+;base64,/, '');
-
-            // Clean up old profile picture
-            if (
-              user.profilePicture &&
-              user.profilePicture !== DEFAULT_PROFILE_PIC &&
-              !user.profilePicture.includes('/images/profile.png')
-            ) {
-              const oldCid = user.profilePicture.includes('/')
-                ? user.profilePicture.split('/').pop()
-                : user.profilePicture;
-              if (oldCid) {
-                await unpinFromPinata(oldCid).catch((error) => {
-                  console.warn('Failed to unpin old profile picture:', error);
-                });
-              }
-            }
-
-            // Upload new image with all required fields
-            const response = await fetch('/api/pinFileToIPFS', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                file: base64String,
-                fileName: `profile-${user.id}-${Date.now()}.webp`,
-                fileType: 'image',
-              }),
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-            }
-
-            const { ipfsHash } = await response.json();
-            const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
-
-            setProfilePic(ipfsUrl);
-            await updateProfilePicture(user.id, ipfsUrl);
-
-            // Update user state
-            const updatedUser = { ...user, profilePicture: ipfsUrl };
-            login(updatedUser);
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-
-            const profileCacheKey = `profile_${user.id}`;
-            updatePageState(profileCacheKey, {
-              ...(getPageState()[profileCacheKey]?.data || {}),
-              profilePicture: ipfsUrl,
-            });
-
-            console.log('Profile picture successfully updated.');
-          } catch (error) {
-            console.error('Upload error:', error);
-            alert('Failed to update profile picture. Please try again.');
-          }
-        };
-
-        reader.readAsDataURL(compressedFile);
-      } catch (error) {
-        console.error('Image compression failed:', error);
-        alert('Image compression failed. Please try with a different image.');
-      }
+    if (file && currentLensAccount) {
+      const decentralizedUrl = await uploadImageFile(file);
+      await updateAccount(decentralizedUrl, coverPhoto);
     }
-*/
   };
 
   const handleCoverPhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-/*
     const file = event.target.files?.[0];
-    if (file && user) {
-      try {
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          alert('Please select a valid image file.');
-          return;
-        }
-
-        // Check file size (max 10MB for cover photo)
-        if (file.size > 10 * 1024 * 1024) {
-          alert('Image file must be smaller than 10MB.');
-          return;
-        }
-
-        const options = {
-          maxSizeMB: 2,
-          maxWidthOrHeight: 1920,
-          useWebWorker: true,
-          fileType: 'image/webp',
-        };
-
-        const compressedFile = await imageCompression(file, options);
-        const reader = new FileReader();
-
-        reader.onloadend = async () => {
-          try {
-            const base64String = (reader.result as string).replace(/^data:.+;base64,/, '');
-
-            // Clean up old cover photo if it's not the default
-            if (
-              user.coverPhoto &&
-              user.coverPhoto !== '/images/cover.jpg' &&
-              !user.coverPhoto.includes('/images/cover.jpg')
-            ) {
-              const oldCid = user.coverPhoto.includes('/')
-                ? user.coverPhoto.split('/').pop()
-                : user.coverPhoto;
-              if (oldCid) {
-                await unpinFromPinata(oldCid).catch((error) => {
-                  console.warn('Failed to unpin old cover photo:', error);
-                });
-              }
-            }
-
-            // Upload new cover photo to IPFS with all required fields
-            const response = await fetch('/api/pinFileToIPFS', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                file: base64String,
-                fileName: `cover-${user.id}-${Date.now()}.webp`,
-                fileType: 'image',
-              }),
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-            }
-
-            const { ipfsHash } = await response.json();
-            const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
-
-            setCoverPhoto(ipfsUrl);
-
-            // Update in database
-            await updateCoverPhoto(user.id, ipfsUrl);
-
-            // Update user state
-            const updatedUser = { ...user, coverPhoto: ipfsUrl };
-            login(updatedUser);
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-
-            // Update page cache
-            const profileCacheKey = `profile_${user.id}`;
-            updatePageState(profileCacheKey, {
-              ...(getPageState()[profileCacheKey]?.data || {}),
-              coverPhoto: ipfsUrl,
-            });
-
-            console.log('Cover photo successfully updated.');
-          } catch (error) {
-            console.error('Upload error:', error);
-            alert('Failed to update cover photo. Please try again.');
-          }
-        };
-
-        reader.readAsDataURL(compressedFile);
-      } catch (error) {
-        console.error('Image compression failed:', error);
-        alert('Image compression failed. Please try with a different image.');
-      }
+    if (file && currentLensAccount) {
+      const decentralizedUrl = await uploadImageFile(file);
+      await updateAccount(profilePic, decentralizedUrl);
     }
-*/
   };
 
   // Bio editing handlers
   const handleEditBioClick = () => setIsEditingBio(true);
 
   const handleSaveBioClick = async () => {
-/*
-    if (!user || bio === user.bio) {
+    if (!currentLensAccount || bio === currentLensAccount?.metadata?.bio) {
       setIsEditingBio(false);
       return;
     }
 
     try {
-      await updateBio(user.id, bio);
-
-      const updatedUser = { ...user, bio };
-      login(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-
-      const profileCacheKey = `profile_${user.id}`;
-      updatePageState(profileCacheKey, {
-        ...(getPageState()[profileCacheKey]?.data || {}),
-        bio,
-      });
-
-      console.log('Bio successfully updated.');
+      await updateAccount(profilePic, coverPhoto);
       setIsEditingBio(false);
     } catch (error) {
       console.error('Failed to update bio:', error);
-      alert('Failed to update your bio. Please try again later.');
+      // alert('Failed to update your bio. Please try again later.');
     }
-*/
   };
 
   const handleCancelEdit = () => {
@@ -421,11 +306,7 @@ const ProfileView: React.FC = () => {
       <div className="min-h-screen mb-20">
         {/* Cover Photo Section */}
         <div className="relative h-80 overflow-hidden">
-          {coverPhoto !== '/images/cover.jpg' ? (
-            <Image src={coverPhoto} alt="Cover" fill className="object-cover" />
-          ) : (
-            <Image src="/images/cover.jpg" alt="Cover" fill className="object-cover" />
-          )}
+          <Image src={coverPhoto || '/images/cover.jpg'} alt="Cover" fill className="object-cover" />
 
           {/* Gradient overlay for smooth blending effect */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-transparent via-70% to-black/80" />
@@ -458,7 +339,7 @@ const ProfileView: React.FC = () => {
                 <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 p-1">
                   <div className="w-full h-full bg-slate-900/80 backdrop-blur-sm rounded-full p-1">
                     <Image
-                      src={profilePic}
+                      src={profilePic || defaultProfilePic}
                       alt="Profile"
                       width={120}
                       height={120}
@@ -473,9 +354,9 @@ const ProfileView: React.FC = () => {
                 <div className="flex items-center space-x-6">
                   <div
                     className="text-center cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={handleFollowersClick}
+                    onClick={() => setShowFollowersPopup(true)}
                   >
-                    <div className="text-2xl font-bold">{followersCount}</div>
+                    <div className="text-2xl font-bold">{stats?.followers}</div>
                     <div className="text-sm text-white/60">Followers</div>
                   </div>
                   <div className="w-px h-8 bg-white/20"></div>
@@ -607,7 +488,6 @@ const ProfileView: React.FC = () => {
       <FollowersPopup
         isOpen={showFollowersPopup}
         onClose={() => setShowFollowersPopup(false)}
-        followers={followers}
         isFollowers={true}
       />
     </div>
