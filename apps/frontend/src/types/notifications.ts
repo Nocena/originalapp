@@ -55,6 +55,7 @@ export interface CreatePrivateChallengeRequest {
   name: string;
   description: string;
   rewardAmount: number;
+  selectedUser?: any;
 }
 
 export interface PrivateChallengeResponse {
