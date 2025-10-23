@@ -756,8 +756,10 @@ async function main() {
       console.log('\n✅ Monthly challenge generated and saved successfully!');
 
       // Step 4: Send push notifications
+/*
       console.log('\n🔔 Sending push notifications to users...');
       await sendPushNotifications(monthlyChallenge);
+*/
 
       console.log('\n🎉 Monthly challenge process completed successfully!');
       console.log('\n📋 Summary:');

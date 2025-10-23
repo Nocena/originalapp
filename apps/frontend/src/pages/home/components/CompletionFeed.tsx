@@ -4,10 +4,11 @@ import CompletionItem from './CompletionItem';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
 import { useAuth } from '../../../contexts/AuthContext';
 import { fetchUserCompletions } from 'src/lib/graphql';
+import { BasicCompletionType } from '../../../lib/graphql/features/challenge-completion/types';
 
 interface CompletionFeedProps {
   isLoading: boolean;
-  followerCompletions: any[];
+  followerCompletions: BasicCompletionType[];
   selectedTab: 'daily' | 'weekly' | 'monthly';
   hasCompleted: boolean; // Add this prop to receive completion state from parent
   onCompletionStatusChange?: (hasCompleted: boolean, completion?: any) => void; // Optional callback
@@ -68,10 +69,12 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
 
         // Fetch completions for this period
         const completions = await fetchUserCompletions(
-          currentLensAccount?.address,
-          startDate.toISOString(),
-          endDate.toISOString(),
-          'ai' // Filter for AI challenges
+          {
+            userLensAccountId: currentLensAccount?.address,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            challengeType: 'ai' // Filter for AI challenges
+          }
         );
 
         // Find the most recent completion for this period
@@ -128,22 +131,11 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
           <h4 className="text-lg font-semibold text-white mb-3">Friends' Completions</h4>
           <div className="space-y-4">
             {followerCompletions.map((item, index) => {
-              // Ensure we have a proper profile object
-              const profile = {
-                userId: item.userId || item.user?.id || item.id || `unknown-${index}`,
-                username:
-                  item.username || item.user?.username || item.displayName || 'Unknown User',
-                profilePicture: item.profilePicture || item.user?.profilePicture || null,
-              };
-
-              // Ensure we have a completion object
-              const completion = item.completion || item;
-
               return (
                 <CompletionItem
-                  key={`follower-${profile.userId}-${index}`}
-                  profile={profile}
-                  completion={completion}
+                  key={`follower-${item.userLensAccountId}-${index}`}
+                  account={item.userAccount!}
+                  completion={item}
                   isSelf={false}
                 />
               );
@@ -153,16 +145,12 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
       )}
 
       {/* Show user's own completion if they have completed */}
-      {hasUserCompleted && userCompletion && (
+      {hasUserCompleted && userCompletion && currentLensAccount && (
         <div>
           <h4 className="text-lg font-semibold text-white mb-3">Your Completion</h4>
           <CompletionItem
-            key={`user-${user.id}`}
-            profile={{
-              userId: user.id,
-              username: user.username,
-              profilePicture: user.profilePicture,
-            }}
+            key={`user-${currentLensAccount.address}`}
+            account={currentLensAccount}
             completion={userCompletion}
             isSelf={true}
           />
