@@ -7,7 +7,11 @@ import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';
 import { getPageState, updatePageState } from '../../components/PageManager';
-import { CreatePrivateChallengeRequest, NotificationBase, PrivateChallengeInvite } from '../../types/notifications';
+import {
+  CreatePrivateChallengeRequest,
+  NotificationBase,
+  PrivateChallengeInvite,
+} from '../../types/notifications';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import ThematicContainer from '../../components/ui/ThematicContainer';
 
@@ -306,7 +310,13 @@ const InboxView = () => {
       fetchUserNotifications(notifications.length === 0);
     }
     console.timeEnd('should-fetch-check');
-  }, [currentLensAccount?.address, isVisible, notifications.length, initialRenderComplete, fetchUserNotifications]);
+  }, [
+    currentLensAccount?.address,
+    isVisible,
+    notifications.length,
+    initialRenderComplete,
+    fetchUserNotifications,
+  ]);
 
   // Set up background refresh when page is visible
   useEffect(() => {
@@ -454,18 +464,20 @@ const InboxView = () => {
 
   const fetchPrivateChallenges = async () => {
     if (!currentLensAccount?.address) return;
-    
+
     console.log('Fetching challenges for user ID:', currentLensAccount?.address);
-    
+
     try {
-      const response = await fetch(`/api/private-challenge/list?userId=${currentLensAccount?.address}`);
+      const response = await fetch(
+        `/api/private-challenge/list?userId=${currentLensAccount?.address}`
+      );
       const result = await response.json();
-      
+
       if (response.ok) {
         // Show pending and completed challenges (exclude rejected/expired/failed/cleared)
         const activeChallenges = result.challenges.filter(
-          (challenge: PrivateChallengeInvite) => 
-            (challenge.status === 'pending' || challenge.status === 'completed')/* &&
+          (challenge: PrivateChallengeInvite) =>
+            challenge.status === 'pending' || challenge.status === 'completed' /* &&
             challenge.status !== 'cleared'*/
         );
         setPrivateChallenges(activeChallenges);
@@ -481,11 +493,15 @@ const InboxView = () => {
   const handleChallengeResponse = async (challengeId: string, action: 'accept' | 'reject') => {
     if (!currentLensAccount?.address) return;
 
-    console.log('Responding to challenge:', { challengeId, action, userId: currentLensAccount?.address });
+    console.log('Responding to challenge:', {
+      challengeId,
+      action,
+      userId: currentLensAccount?.address,
+    });
 
     // Handle accept by navigating to completion (no status change yet)
     if (action === 'accept') {
-      const challenge = privateChallenges.find(c => c.id === challengeId);
+      const challenge = privateChallenges.find((c) => c.id === challengeId);
       if (challenge) {
         router.push({
           pathname: '/completing',
@@ -533,11 +549,13 @@ const InboxView = () => {
 
   const fetchSentChallenges = async () => {
     if (!currentLensAccount?.address) return;
-    
+
     try {
-      const response = await fetch(`/api/private-challenge/sent?userId=${currentLensAccount?.address}`);
+      const response = await fetch(
+        `/api/private-challenge/sent?userId=${currentLensAccount?.address}`
+      );
       const result = await response.json();
-      
+
       if (response.ok) {
         // Filter out cleared challenges from display
         const activeChallenges = result.challenges.filter(
@@ -580,7 +598,9 @@ const InboxView = () => {
     }
   };
 
-  const handleSubmitChallenge = async (challenge: CreatePrivateChallengeRequest/* & { selectedUser: any }*/) => {
+  const handleSubmitChallenge = async (
+    challenge: CreatePrivateChallengeRequest /* & { selectedUser: any }*/
+  ) => {
     if (!currentLensAccount?.address) {
       console.error('User not authenticated');
       return;
@@ -591,7 +611,7 @@ const InboxView = () => {
 
     try {
       // TODO: fix it
-/*
+      /*
       const response = await fetch('/api/private-challenge/create', {
         method: 'POST',
         headers: {
@@ -731,28 +751,6 @@ const InboxView = () => {
           </div>
         )}
 
-        {/* Create Challenge Button */}
-        <div className="mb-6">
-          <ThematicContainer
-            asButton={false}
-            glassmorphic={true}
-            color="nocenaPurple"
-            rounded="xl"
-            className="p-4"
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Private Challenges</h2>
-              <button 
-                onClick={handleCreateChallenge}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                style={{ backgroundColor: '#6A4CFF' }}
-              >
-                Create Challenge
-              </button>
-            </div>
-          </ThematicContainer>
-        </div>
-
         {/* Received Challenges Section */}
         <div className="mb-3 mt-12">
           <ThematicContainer
@@ -774,7 +772,12 @@ const InboxView = () => {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               <div className="flex items-center space-x-3">
@@ -782,12 +785,16 @@ const InboxView = () => {
               </div>
             </div>
           </ThematicContainer>
-          
+
           {/* Collapsible received challenge list */}
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            showReceivedChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            {privateChallenges.some(c => ['completed', 'rejected', 'expired', 'failed'].includes(c.status)) && (
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              showReceivedChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            {privateChallenges.some((c) =>
+              ['completed', 'rejected', 'expired', 'failed'].includes(c.status)
+            ) && (
               <div className="flex justify-end mb-3">
                 <button
                   onClick={clearCompletedChallenges}
@@ -798,77 +805,89 @@ const InboxView = () => {
               </div>
             )}
             {privateChallenges.length === 0 ? (
-              <div className="text-gray-400 text-center py-4">
-                No challenges received yet
-              </div>
+              <div className="text-gray-400 text-center py-4">No challenges received yet</div>
             ) : (
               <div className="space-y-3">
                 {privateChallenges.map((challenge) => (
-                <ThematicContainer
-                  key={challenge.id}
-                  asButton={false}
-                  glassmorphic={true}
-                  color="nocenaBlue"
-                  rounded="xl"
-                  className="p-4"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-semibold">{challenge.name}</h3>
+                  <ThematicContainer
+                    key={challenge.id}
+                    asButton={false}
+                    glassmorphic={true}
+                    color="nocenaBlue"
+                    rounded="xl"
+                    className="p-4"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="font-semibold">{challenge.name}</h3>
+                        {challenge.status === 'completed' && (
+                          <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30">
+                            ✓ Completed
+                          </span>
+                        )}
+                      </div>
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          challenge.status === 'pending'
+                            ? 'bg-yellow-600'
+                            : challenge.status === 'accepted'
+                              ? 'bg-blue-600'
+                              : challenge.status === 'completed'
+                                ? 'bg-green-600'
+                                : challenge.status === 'rejected'
+                                  ? 'bg-red-600'
+                                  : challenge.status === 'expired'
+                                    ? 'bg-gray-600'
+                                    : challenge.status === 'failed'
+                                      ? 'bg-orange-600'
+                                      : 'bg-gray-600'
+                        }`}
+                      >
+                        {challenge.status}
+                      </span>
+                    </div>
+                    <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">
+                        From{' '}
+                        <button
+                          onClick={() => router.push(`/profile/${challenge.creatorId}`)}
+                          className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
+                        >
+                          @{challenge.creatorUsername}
+                        </button>
+                      </span>
+                      {challenge.status === 'pending' && challenge.expiresAt && (
+                        <span className="text-xs text-yellow-400">
+                          Expires: {new Date(challenge.expiresAt).toLocaleString()}
+                        </span>
+                      )}
                       {challenge.status === 'completed' && (
-                        <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full border border-green-500/30">
-                          ✓ Completed
+                        <span className="text-xs text-gray-400">
+                          Recipient: +{challenge.rewardAmount} NCT • Creator: +
+                          {Math.floor(challenge.rewardAmount * 0.1)} NCT
                         </span>
                       )}
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      challenge.status === 'pending' ? 'bg-yellow-600' :
-                      challenge.status === 'accepted' ? 'bg-blue-600' :
-                      challenge.status === 'completed' ? 'bg-green-600' :
-                      challenge.status === 'rejected' ? 'bg-red-600' :
-                      challenge.status === 'expired' ? 'bg-gray-600' :
-                      challenge.status === 'failed' ? 'bg-orange-600' :
-                      'bg-gray-600'
-                    }`}>
-                      {challenge.status}
-                    </span>
-                  </div>
-                  <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
-                      From{' '}
-                      <button
-                        onClick={() => router.push(`/profile/${challenge.creatorId}`)}
-                        className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
-                      >
-                        @{challenge.creatorUsername}
-                      </button>
-                    </span>
-                    {challenge.status === 'completed' && (
-                      <span className="text-xs text-gray-400">
-                        Recipient: +{challenge.rewardAmount} NCT • Creator: +{Math.floor(challenge.rewardAmount * 0.1)} NCT
-                      </span>
+                    {challenge.status === 'pending' && (
+                      <div className="flex space-x-2 mt-3">
+                        <button
+                          onClick={() => handleChallengeResponse(challenge.id, 'reject')}
+                          className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          onClick={() => handleChallengeResponse(challenge.id, 'accept')}
+                          className="px-3 py-1 bg-green-500 hover:bg-green-600 rounded text-sm transition-colors"
+                        >
+                          Accept
+                        </button>
+                      </div>
                     )}
-                  </div>
-                  {challenge.status === 'pending' && (
-                    <div className="flex space-x-2 mt-3">
-                      <button 
-                        onClick={() => handleChallengeResponse(challenge.id, 'reject')}
-                        className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm transition-colors"
-                      >
-                        Reject
-                      </button>
-                      <button 
-                        onClick={() => handleChallengeResponse(challenge.id, 'accept')}
-                        className="px-3 py-1 bg-green-500 hover:bg-green-600 rounded text-sm transition-colors"
-                      >
-                        Accept
-                      </button>
-                    </div>
-                  )}
-                </ThematicContainer>
-              ))}
-            </div>
+                  </ThematicContainer>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -894,7 +913,12 @@ const InboxView = () => {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               <div className="flex items-center space-x-3">
@@ -902,12 +926,16 @@ const InboxView = () => {
               </div>
             </div>
           </ThematicContainer>
-          
+
           {/* Collapsible sent challenge list */}
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            showSentChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            {sentChallenges.some(c => ['completed', 'rejected', 'expired', 'failed'].includes(c.status)) && (
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+              showSentChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            {sentChallenges.some((c) =>
+              ['completed', 'rejected', 'expired', 'failed'].includes(c.status)
+            ) && (
               <div className="flex justify-end mb-3">
                 <button
                   onClick={clearCompletedChallenges}
@@ -918,54 +946,66 @@ const InboxView = () => {
               </div>
             )}
             {sentChallenges.length === 0 ? (
-              <div className="text-gray-400 text-center py-4">
-                No challenges sent yet
-              </div>
+              <div className="text-gray-400 text-center py-4">No challenges sent yet</div>
             ) : (
               <div className="space-y-3">
                 {sentChallenges.map((challenge) => (
-                <ThematicContainer
-                  key={challenge.id}
-                  asButton={false}
-                  glassmorphic={true}
-                  color="nocenaPink"
-                  rounded="xl"
-                  className="p-4"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">{challenge.name}</h3>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      challenge.status === 'pending' ? 'bg-yellow-600' :
-                      challenge.status === 'accepted' ? 'bg-blue-600' :
-                      challenge.status === 'completed' ? 'bg-green-600' :
-                      challenge.status === 'rejected' ? 'bg-red-600' :
-                      challenge.status === 'expired' ? 'bg-gray-600' :
-                      challenge.status === 'failed' ? 'bg-orange-600' :
-                      'bg-gray-600'
-                    }`}>
-                      {challenge.status}
-                    </span>
-                  </div>
-                  <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">
-                      Sent to{' '}
-                      <button
-                        onClick={() => router.push(`/profile/${challenge.recipientId}`)}
-                        className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
+                  <ThematicContainer
+                    key={challenge.id}
+                    asButton={false}
+                    glassmorphic={true}
+                    color="nocenaPink"
+                    rounded="xl"
+                    className="p-4"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold">{challenge.name}</h3>
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          challenge.status === 'pending'
+                            ? 'bg-yellow-600'
+                            : challenge.status === 'accepted'
+                              ? 'bg-blue-600'
+                              : challenge.status === 'completed'
+                                ? 'bg-green-600'
+                                : challenge.status === 'rejected'
+                                  ? 'bg-red-600'
+                                  : challenge.status === 'expired'
+                                    ? 'bg-gray-600'
+                                    : challenge.status === 'failed'
+                                      ? 'bg-orange-600'
+                                      : 'bg-gray-600'
+                        }`}
                       >
-                        @{challenge.recipientUsername}
-                      </button>
-                    </span>
-                    {challenge.status === 'completed' && (
-                      <span className="text-xs text-gray-400">
-                        Recipient: +{challenge.rewardAmount} NCT • Creator: +{Math.floor(challenge.rewardAmount * 0.1)} NCT
+                        {challenge.status}
                       </span>
-                    )}
-                  </div>
-                </ThematicContainer>
-              ))}
-            </div>
+                    </div>
+                    <p className="text-gray-300 text-sm mb-2">{challenge.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">
+                        Sent to{' '}
+                        <button
+                          onClick={() => router.push(`/profile/${challenge.recipientId}`)}
+                          className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
+                        >
+                          @{challenge.recipientUsername}
+                        </button>
+                      </span>
+                      {challenge.status === 'pending' && challenge.expiresAt && (
+                        <span className="text-xs text-yellow-400">
+                          Expires: {new Date(challenge.expiresAt).toLocaleString()}
+                        </span>
+                      )}
+                      {challenge.status === 'completed' && (
+                        <span className="text-xs text-gray-400">
+                          Recipient: +{challenge.rewardAmount} NCT • Creator: +
+                          {Math.floor(challenge.rewardAmount * 0.1)} NCT
+                        </span>
+                      )}
+                    </div>
+                  </ThematicContainer>
+                ))}
+              </div>
             )}
           </div>
         </div>
