@@ -147,3 +147,92 @@ export const FETCH_COMPLETIONS_OF_USERS = gql`
         }
     }
 `;
+
+export const FETCH_ALL_COMPLETIONS = gql`
+    query GetAllChallengeCompletions {
+        queryChallengeCompletion(order: { desc: completionDate }) {
+            id
+            userLensAccountId
+            completionDate
+            media
+            challengeType
+            likesCount
+            likedByLensAccountIds
+            reactions {
+                id
+                reactionType
+                selfieCID
+                createdAt
+                userLensAccountId
+            }
+            publicChallenge {
+                id
+                title
+                description
+                reward
+            }
+            aiChallenge {
+                id
+                title
+                description
+                reward
+                frequency
+            }
+            privateChallenge {
+                id
+                title
+                description
+                reward
+            }
+        }
+    }
+`;
+
+export const FETCH_COMPLETIONS_BY_CHALLENGE = gql`
+    query GetChallengeCompletionsByChallenge($challengeId: String!) {
+        queryChallengeCompletion(
+            filter: {
+                or: [
+                    { and: [{ has: publicChallenge }, { publicChallenge: { id: { eq: $challengeId } } }] },
+                    { and: [{ has: privateChallenge }, { privateChallenge: { id: { eq: $challengeId } } }] },
+                    { and: [{ has: aiChallenge }, { aiChallenge: { id: { eq: $challengeId } } }] }
+                ]
+            }
+            order: { desc: completionDate }
+        ) {
+            id
+            userLensAccountId
+            completionDate
+            media
+            challengeType
+            likesCount
+            likedByLensAccountIds
+            reactions {
+                id
+                reactionType
+                selfieCID
+                createdAt
+                userLensAccountId
+            }
+            publicChallenge {
+                id
+                title
+                description
+                reward
+            }
+            aiChallenge {
+                id
+                title
+                description
+                reward
+                frequency
+            }
+            privateChallenge {
+                id
+                title
+                description
+                reward
+            }
+        }
+    }
+`;

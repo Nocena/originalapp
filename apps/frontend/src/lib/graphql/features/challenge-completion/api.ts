@@ -1,8 +1,14 @@
 import graphqlClient from '../../client';
-import { FETCH_COMPLETIONS_OF_USERS, FETCH_LATEST_USER_COMPLETION, FETCH_USER_COMPLETIONS } from './queries';
+import {
+  FETCH_ALL_COMPLETIONS, FETCH_COMPLETIONS_BY_CHALLENGE,
+  FETCH_COMPLETIONS_OF_USERS,
+  FETCH_LATEST_USER_COMPLETION,
+  FETCH_USER_COMPLETIONS,
+} from './queries';
 import { BasicCompletionType, FetchUserCompletionsParams } from './types';
 import { getDateRange } from '../follow/utils';
 import { fetchFollowingData } from '../../../lens/api';
+import { getEmojiForReactionType } from './utils';
 // ============================================================================
 // QUERY FUNCTIONS
 // ============================================================================
@@ -139,6 +145,41 @@ export async function fetchFollowingsCompletions(  userLensAccountAddress: strin
     }));
   } catch (error) {
     console.error('Error fetching user completions:', error);
+    throw error;
+  }
+}
+
+export async function fetchChallengeCompletionsWithLikesAndReactions(
+  challengeId?: string,
+  userId?: string
+): Promise<any[]> {
+  try {
+    const { data } = await graphqlClient.query({
+      query: challengeId ? FETCH_COMPLETIONS_BY_CHALLENGE : FETCH_ALL_COMPLETIONS,
+      variables: challengeId ? { challengeId } : undefined,
+      fetchPolicy: "no-cache",
+    });
+
+    const completions = data?.queryChallengeCompletion || [];
+
+    return completions.map((completion: any) => ({
+      ...completion,
+      totalLikes: completion.likesCount || 0,
+      isLiked: userId
+        ? completion.likedByLensAccountIds?.includes(userId)
+        : false,
+      recentLikes: completion.likedByLensAccountIds?.slice(0, 5) || [],
+      totalReactions: completion.reactions?.length || 0,
+      recentReactions: (completion.reactions || []).map((reaction: any) => ({
+        ...reaction,
+        emoji: getEmojiForReactionType(reaction.reactionType),
+        selfieUrl: reaction.selfieCID
+          ? `https://gateway.pinata.cloud/ipfs/${reaction.selfieCID}`
+          : null,
+      })),
+    }));
+  } catch (error) {
+    console.error("❌ Error fetching completions with likes and reactions:", error);
     throw error;
   }
 }

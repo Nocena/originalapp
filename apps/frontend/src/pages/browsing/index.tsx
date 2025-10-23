@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'; // Add this import
 import InteractionSidebar from './components/InteractionSidebar';
 import getAccount from '../../helpers/getAccount';
 import getAvatar from '../../helpers/getAvatar';
+import { fetchChallengeCompletionsWithLikesAndReactions } from '../../lib/graphql';
 
 interface ChallengeCompletion {
   id: string;
@@ -95,12 +96,6 @@ const BrowsingPage: React.FC = () => {
   const fetchChallengeCompletions = async () => {
     try {
       setLoading(true);
-
-      // Import the enhanced function from dgraph.ts
-      const { fetchChallengeCompletionsWithLikesAndReactions } = await import(
-        '../../../src/lib/api/dgraph'
-      );
-
       // Get current user ID for like status
       const currentUserId = currentLensAccount?.address; // Use actual user ID from auth context
 
@@ -111,9 +106,12 @@ const BrowsingPage: React.FC = () => {
       );
 
       if (allCompletions.length === 0) {
+        return
+/*
         throw new Error(
           challengeId ? 'No completions found for this challenge' : 'No completions found'
         );
+*/
       }
 
       // Process media URLs for each completion
