@@ -210,7 +210,7 @@ To add a new query:
 **Pages:**
 - login/index.tsx
 - index.tsx
-- profile/index.tsx, profile/[userID].tsx
+- profile/index.tsx, profile/[accountLocalName].tsx
 - home/index.tsx
 - inbox/index.tsx
 - search/index.tsx
