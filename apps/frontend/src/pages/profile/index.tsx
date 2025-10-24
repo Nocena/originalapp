@@ -1,12 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useAuth } from '../../contexts/AuthContext';
+import { createPublicClient, defineChain, http } from 'viem';
 
 import ThematicContainer from '../../components/ui/ThematicContainer';
 import FollowersPopup from './components/FollowersPopup';
 import AvatarSection from './components/AvatarSection'; // Changed from TrailerSection
 import StatsSection from './components/StatsSection';
 import CalendarSection from './components/CalendarSection';
+import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../lib/constants';
+import noceniteTokenArtifact from '../../lib/contracts/nocenite.json';
 
 import PenIcon from '../../components/icons/pen';
 import type { AccountOptions, MetadataAttribute } from '@lens-protocol/metadata';
@@ -42,7 +45,8 @@ const ProfileView: React.FC = () => {
   const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || "");
   const [bio, setBio] = useState<string>(currentLensAccount?.metadata?.bio || "");
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
-  const [tokenBalance, setTokenBalance] = useState<number>(/*user?.earnedTokens ||*/ 0);
+  const [tokenBalance, setTokenBalance] = useState<number>(0);
+  const [nctLoading, setNctLoading] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
     'trailer'
   );
@@ -86,6 +90,39 @@ const ProfileView: React.FC = () => {
       // setGeneratedAvatar(user.currentAvatar || null);
     }
   }, [currentLensAccount]);
+
+  // Fetch NCT balance when owner address is available
+  useEffect(() => {
+    const fetchNctBalance = async () => {
+      const ownerAddress = currentLensAccount?.owner;
+      if (!ownerAddress) return;
+
+      setNctLoading(true);
+      try {
+        const publicClient = createPublicClient({
+          chain: defineChain(FLOW_TESTNET_CONFIG),
+          transport: http(),
+        });
+
+        const balance = (await publicClient.readContract({
+          address: CONTRACTS.Nocenite as `0x${string}`,
+          abi: noceniteTokenArtifact,
+          functionName: 'balanceOf',
+          args: [ownerAddress],
+        })) as bigint;
+
+        const balanceInTokens = Number(balance) / Math.pow(10, 18);
+        setTokenBalance(balanceInTokens);
+      } catch (error) {
+        console.error('Error fetching NCT balance:', error);
+        setTokenBalance(0);
+      } finally {
+        setNctLoading(false);
+      }
+    };
+
+    fetchNctBalance();
+  }, [currentLensAccount?.owner]);
 
   const [getCurrentAccountDetails] = useMeLazyQuery({
     fetchPolicy: "no-cache",
@@ -371,10 +408,12 @@ const ProfileView: React.FC = () => {
                   <div className="w-px h-8 bg-white/20"></div>
                   <div className="text-center">
                     <div className="flex items-center space-x-1">
-                      <span className="text-2xl font-bold">{tokenBalance}</span>
+                      <span className="text-2xl font-bold">
+                        {nctLoading ? '...' : tokenBalance.toFixed(1)}
+                      </span>
                       <Image src={nocenix} alt="Nocenix" width={20} height={20} />
                     </div>
-                    <div className="text-sm text-white/60">Nocenix</div>
+                    <div className="text-sm text-white/60">NCT Balance</div>
                   </div>
                 </div>
               </div>
