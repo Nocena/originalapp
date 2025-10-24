@@ -152,7 +152,7 @@ export async function fetchFollowingsCompletions(  userLensAccountAddress: strin
 export async function fetchChallengeCompletionsWithLikesAndReactions(
   challengeId?: string,
   userId?: string
-): Promise<any[]> {
+): Promise<BasicCompletionType[]> {
   try {
     const { data } = await graphqlClient.query({
       query: challengeId ? FETCH_COMPLETIONS_BY_CHALLENGE : FETCH_ALL_COMPLETIONS,

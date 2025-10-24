@@ -1,6 +1,8 @@
 // pages/browsing/components/InteractionSidebar.tsx - ENHANCED VERSION
 import React, { useState } from 'react';
 import RealMojiCapture from './RealMojiCapture';
+import { AccountFragment } from '@nocena/indexer';
+import getAvatar from 'src/helpers/getAvatar';
 
 interface RealMoji {
   id: string;
@@ -16,11 +18,7 @@ interface RealMoji {
 }
 
 interface InteractionSidebarProps {
-  user: {
-    id: string;
-    username: string;
-    profilePicture: string;
-  };
+  account: AccountFragment | undefined;
   challenge?: {
     reward: number;
   };
@@ -38,20 +36,20 @@ interface InteractionSidebarProps {
 }
 
 const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
-  user,
-  challenge,
-  completionId,
-  onProfileClick,
-  onReactionClick,
-  onInstantReactionClick,
-  onLikeClick,
-  onRealMojiCapture,
-  onRealMojiStart,
-  reactions = [],
-  totalReactions,
-  totalLikes,
-  isLiked = false,
-}) => {
+                                                                 account,
+                                                                 challenge,
+                                                                 completionId,
+                                                                 onProfileClick,
+                                                                 onReactionClick,
+                                                                 onInstantReactionClick,
+                                                                 onLikeClick,
+                                                                 onRealMojiCapture,
+                                                                 onRealMojiStart,
+                                                                 reactions = [],
+                                                                 totalReactions,
+                                                                 totalLikes,
+                                                                 isLiked = false,
+                                                               }) => {
   const [showReactionMenu, setShowReactionMenu] = useState(false);
   const [showRealMojiCapture, setShowRealMojiCapture] = useState(false);
   const [isCreatingRealMoji, setIsCreatingRealMoji] = useState(false);
@@ -151,8 +149,8 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
         {/* Profile picture */}
         <div className="relative cursor-pointer" onClick={onProfileClick}>
           <img
-            src={user.profilePicture || '/images/profile.png'}
-            alt={user.username}
+            src={getAvatar(account) || '/images/profile.png'}
+            alt={account?.username?.localName}
             className="w-12 h-12 rounded-full border-2 border-white object-cover"
           />
         </div>
@@ -163,7 +161,8 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
             className="w-12 h-12 flex items-center justify-center cursor-pointer"
             onClick={onLikeClick}
           >
-            <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm border border-white/30 flex items-center justify-center">
+            <div
+              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm border border-white/30 flex items-center justify-center">
               <svg
                 className={`w-6 h-6 drop-shadow-lg transition-colors duration-200 ${
                   isLiked ? 'text-red-500 fill-current' : 'text-white'
@@ -173,7 +172,8 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
                 strokeWidth={2}
                 viewBox="0 0 24 24"
               >
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </div>
           </div>
@@ -193,7 +193,8 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
             }`}
             onClick={handleReactionMenuToggle}
           >
-            <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm border border-white/30 flex items-center justify-center">
+            <div
+              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm border border-white/30 flex items-center justify-center">
               {isCreatingRealMoji ? (
                 // Loading spinner when creating RealMoji
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -223,7 +224,8 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
         {/* Nocenix token display */}
         {challenge?.reward && (
           <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full border-2 border-pink-500 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+            <div
+              className="w-10 h-10 rounded-full border-2 border-pink-500 bg-black/30 backdrop-blur-sm flex items-center justify-center">
               <img src="/nocenix.ico" alt="Nocenix" className="w-6 h-6" />
             </div>
             <span className="text-pink-500 text-xs font-bold drop-shadow-lg mt-1">
@@ -294,7 +296,8 @@ const InteractionSidebar: React.FC<InteractionSidebarProps> = ({
       {isCreatingRealMoji && (
         <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-white rounded-2xl p-8 mx-4 max-w-sm w-full text-center">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div
+              className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <h3 className="text-lg font-semibold text-black mb-2">Creating your RealMoji</h3>
             <p className="text-sm text-gray-600">Uploading to IPFS and saving to database...</p>
           </div>
