@@ -7,6 +7,7 @@ import getAccount from '../../helpers/getAccount';
 import getAvatar from '../../helpers/getAvatar';
 import { fetchChallengeCompletionsWithLikesAndReactions } from '../../lib/graphql';
 import { ChallengeCompletion } from '../../lib/graphql/features/challenge-completion/types';
+import sanitizeDStorageUrl from 'src/helpers/sanitizeDStorageUrl';
 
 
 const BrowsingPage: React.FC = () => {
@@ -81,10 +82,10 @@ const BrowsingPage: React.FC = () => {
             }
 
             if (videoCID) {
-              videoUrl = `https://gateway.pinata.cloud/ipfs/${videoCID}`;
+              videoUrl = sanitizeDStorageUrl(videoCID);
             }
             if (selfieCID) {
-              selfieUrl = `https://gateway.pinata.cloud/ipfs/${selfieCID}`;
+              selfieUrl = sanitizeDStorageUrl(selfieCID);
             }
           } catch (parseError) {
             console.error('Error parsing media for completion:', completion.id, parseError);
