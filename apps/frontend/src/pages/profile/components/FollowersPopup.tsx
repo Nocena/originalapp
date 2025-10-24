@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
 import ThematicContainer from '../../../components/ui/ThematicContainer';
 import ThematicImage from '../../../components/ui/ThematicImage';
 import PrimaryButton from '../../../components/ui/PrimaryButton';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
-import { useAuth, User as AuthUser } from '../../../contexts/AuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { AccountFragment, PageSize, useFollowersQuery, useFollowMutation, useUnfollowMutation } from '@nocena/indexer';
 import { useRouter } from 'next/router';
 import getAvatar from '../../../helpers/getAvatar';
@@ -14,42 +14,35 @@ import useTransactionLifecycle from '../../../hooks/useTransactionLifecycle';
 
 const nocenixIcon = '/nocenix.ico';
 
-// Local interface that matches the component's needs
-export interface FollowerUser {
-  id: string;
-  username: string;
-  profilePicture: string;
-  earnedTokens: number;
-  followers: string[]; // Array of IDs
-  bio?: string;
-}
-
 interface FollowersPopupProps {
   isOpen: boolean;
   onClose: () => void;
   isFollowers?: boolean; // true for followers, false for following
+  accountAddress: string | undefined;
 }
 
 const FollowersPopup: React.FC<FollowersPopupProps> = ({
-  isOpen,
-  onClose,
-  isFollowers = true,
-}) => {
+                                                         isOpen,
+                                                         onClose,
+                                                         isFollowers = true,
+                                                         accountAddress,
+                                                       }) => {
   const [pendingFollowActions, setPendingFollowActions] = useState<Set<string>>(new Set());
   const { currentLensAccount } = useAuth();
-  const router = useRouter()
+  const router = useRouter();
 
   const contentRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number | null>(null);
   const touchMoveY = useRef<number | null>(null);
 
   const { data, error, fetchMore, loading: isLoading } = useFollowersQuery({
-    skip: !currentLensAccount,
-    variables: { request: {
+    skip: !accountAddress,
+    variables: {
+      request: {
         pageSize: PageSize.Fifty,
-        account: currentLensAccount?.address
-      }
-    }
+        account: accountAddress,
+      },
+    },
   });
   const followers = data?.followers?.items;
   const pageInfo = data?.followers?.pageInfo;
@@ -131,51 +124,51 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
 
   const [follow] = useFollowMutation({
     onCompleted: async ({ follow }) => {
-      if (follow.__typename === "FollowResponse") {
+      if (follow.__typename === 'FollowResponse') {
         return onCompleted();
       }
 
-      if (follow.__typename === "AccountFollowOperationValidationFailed") {
+      if (follow.__typename === 'AccountFollowOperationValidationFailed') {
         return onError({ message: follow.reason });
       }
 
       return await handleTransactionLifecycle({
         transactionData: follow,
         onCompleted,
-        onError
+        onError,
       });
     },
-    onError
+    onError,
   });
 
   const [unfollow] = useUnfollowMutation({
     onCompleted: async ({ unfollow }) => {
-      if (unfollow.__typename === "UnfollowResponse") {
+      if (unfollow.__typename === 'UnfollowResponse') {
         return onCompleted();
       }
 
-      if (unfollow.__typename === "AccountFollowOperationValidationFailed") {
+      if (unfollow.__typename === 'AccountFollowOperationValidationFailed') {
         return onError({ message: unfollow.reason });
       }
 
       return await handleTransactionLifecycle({
         transactionData: unfollow,
         onCompleted,
-        onError
+        onError,
       });
     },
-    onError
+    onError,
   });
 
   const handleFollow = async (targetAccountAddress: string) => {
     return await follow({
-      variables: { request: { account: targetAccountAddress } }
+      variables: { request: { account: targetAccountAddress } },
     });
   };
 
   const handleUnfollow = async (targetAccountAddress: string) => {
     return await unfollow({
-      variables: { request: { account: targetAccountAddress } }
+      variables: { request: { account: targetAccountAddress } },
     });
   };
 
@@ -189,12 +182,12 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
   };
 
   // Show empty or partial results while loading
-/*
-  const showPartialResults = useMemo(
-    () => !isLoading || (followerUsers.length > 0 && isLoading),
-    [isLoading, followerUsers.length]
-  );
-*/
+  /*
+    const showPartialResults = useMemo(
+      () => !isLoading || (followerUsers.length > 0 && isLoading),
+      [isLoading, followerUsers.length]
+    );
+  */
 
   if (!isOpen) return null;
 
@@ -249,9 +242,9 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              {followers.map(({follower}) => {
+              {followers.map(({ follower }) => {
                 // Use our getIsFollowing helper to check follow status
-                const isFollowing =  follower.operations?.isFollowedByMe || false
+                const isFollowing = follower.operations?.isFollowedByMe || false;
                 const isCurrentUser = follower.address === currentLensAccount?.address;
                 const isPending = pendingFollowActions.has(follower.address);
 

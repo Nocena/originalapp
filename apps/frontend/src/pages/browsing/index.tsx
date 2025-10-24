@@ -6,64 +6,8 @@ import InteractionSidebar from './components/InteractionSidebar';
 import getAccount from '../../helpers/getAccount';
 import getAvatar from '../../helpers/getAvatar';
 import { fetchChallengeCompletionsWithLikesAndReactions } from '../../lib/graphql';
+import { ChallengeCompletion } from '../../lib/graphql/features/challenge-completion/types';
 
-interface ChallengeCompletion {
-  id: string;
-  user: {
-    id: string;
-    username: string;
-    profilePicture: string;
-  };
-  completionDate: string;
-  media: string; // JSON string containing videoCID and selfieCID
-  challengeType: string;
-  description?: string; // User's completion description (removed from query)
-  publicChallenge?: {
-    id: string;
-    title: string;
-    description: string;
-    reward: number;
-  };
-  privateChallenge?: {
-    id: string;
-    title: string;
-    description: string;
-    reward: number;
-  };
-  aiChallenge?: {
-    id: string;
-    title: string;
-    description: string;
-    reward: number;
-  };
-  videoUrl?: string;
-  selfieUrl?: string;
-  // Local state for likes (will be replaced with DB data later)
-  localLikes?: number;
-  localIsLiked?: boolean;
-  // Database fields for likes
-  totalLikes?: number;
-  isLiked?: boolean;
-  recentLikes?: Array<{
-    id: string;
-    username: string;
-    profilePicture: string;
-  }>;
-  // Database fields for reactions
-  totalReactions?: number;
-  recentReactions?: Array<{
-    id: string;
-    reactionType: string;
-    emoji: string;
-    selfieUrl?: string;
-    user: {
-      id: string;
-      username: string;
-      profilePicture: string;
-    };
-    createdAt: string;
-  }>;
-}
 
 const BrowsingPage: React.FC = () => {
   const router = useRouter();
@@ -85,7 +29,7 @@ const BrowsingPage: React.FC = () => {
   useEffect(() => {
     // Find the initial completion to show based on userId
     if (completions.length > 0 && userId) {
-      const initialIndex = completions.findIndex((comp) => comp.user.id === userId);
+      const initialIndex = completions.findIndex((comp) => comp?.userAccount?.address === userId);
       if (initialIndex !== -1) {
         setCurrentIndex(initialIndex);
         scrollToIndex(initialIndex, false);
@@ -328,7 +272,7 @@ const BrowsingPage: React.FC = () => {
 
   // Interaction handlers for the BeReal-style sidebar
   const handleProfileClick = (completion: ChallengeCompletion) => {
-    router.push(`/profile/${completion.user.id}`);
+    router.push(`/profile/${completion.userAccount?.username?.localName}`);
   };
 
   const handleLikeClick = async (completion: ChallengeCompletion) => {
@@ -658,7 +602,7 @@ const BrowsingPage: React.FC = () => {
 
               {/* BeReal-Style Interaction Sidebar Component */}
               <InteractionSidebar
-                user={completion.user}
+                account={completion.userAccount}
                 challenge={challenge}
                 completionId={completion.id}
                 onProfileClick={() => handleProfileClick(completion)}
@@ -730,7 +674,7 @@ const BrowsingPage: React.FC = () => {
                 <div className="mb-3">
                   <div className="flex items-center space-x-2 mb-2">
                     <p className="text-white font-bold text-lg drop-shadow-lg">
-                      @{completion.user.username}
+                      @{completion.userAccount?.username?.localName}
                     </p>
                     <span className="text-white/80 text-sm drop-shadow-lg">
                       {new Date(completion.completionDate).toLocaleDateString()}

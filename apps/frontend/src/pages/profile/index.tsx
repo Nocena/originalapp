@@ -475,6 +475,7 @@ const ProfileView: React.FC = () => {
         isOpen={showFollowersPopup}
         onClose={() => setShowFollowersPopup(false)}
         isFollowers={true}
+        accountAddress={currentLensAccount?.address}
       />
     </div>
   );
