@@ -31,9 +31,6 @@ const ProfileView: React.FC = () => {
   const { currentLensAccount, setCurrentLensAccount } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-
-  console.log("currentLensAccount", currentLensAccount)
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCoverSaving, setIsCoverSaving] = useState(false);
   const [isAvatarSaving, setIsAvatarSaving] = useState(false);
@@ -186,7 +183,6 @@ const ProfileView: React.FC = () => {
       coverPicture: coverUrl || undefined,
       picture: pfpUrl || undefined
     };
-    console.log("preparedAccountMetadata", preparedAccountMetadata)
     preparedAccountMetadata.attributes =
       preparedAccountMetadata.attributes?.filter((m) => {
         return m.key !== "" && Boolean(trimify(m.value));
