@@ -7,6 +7,7 @@ import ThematicContainer from '../../../components/ui/ThematicContainer';
 import type { AccountFragment } from '@nocena/indexer';
 import getAvatar from '../../../helpers/getAvatar';
 import { BasicCompletionType } from '../../../lib/graphql/features/challenge-completion/types';
+import sanitizeDStorageUrl from '../../../helpers/sanitizeDStorageUrl';
 
 interface MediaMetadata {
   // New format (individual CIDs) - this is what you're using now
@@ -61,8 +62,8 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ account, completion, is
   const completionDate = new Date(completion.completionDate);
 
   // Get media URLs using the centralized functions
-  const videoUrl = media ? getVideoUrl(media) : null;
-  const selfieUrl = media ? getSelfieUrl(media) : null;
+  const videoUrl = media ? sanitizeDStorageUrl(media.videoCID) : null;
+  const selfieUrl = media ? sanitizeDStorageUrl(media.selfieCID) : null;
   const profilePicUrl = getAvatar(account)
 
   // Debug logging
