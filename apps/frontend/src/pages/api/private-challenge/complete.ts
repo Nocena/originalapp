@@ -1,12 +1,11 @@
 /**
  * Complete Private Challenge API
  *
- * Mark a challenge as completed.
- * Currently uses mock database.
+ * Mark a challenge as completed using real database.
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { privateChallengeDb } from '../../../lib/api/mockPrivateChallengeDb';
+import { updatePrivateChallengeStatus } from '../../../lib/api/dgraph';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -20,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Challenge ID is required' });
     }
 
-    const success = await privateChallengeDb.updateChallengeStatus(challengeId, 'completed');
+    const success = await updatePrivateChallengeStatus(challengeId, false, true);
 
     if (!success) {
       return res.status(404).json({ error: 'Challenge not found' });

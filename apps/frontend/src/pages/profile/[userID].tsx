@@ -707,7 +707,7 @@ const OtherProfileView: React.FC = () => {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     ...challenge,
-                    creatorId: currentLensAccount?.address,
+                    creatorId: currentLensAccount?.lensAccountId || currentLensAccount?.address,
                     creatorWalletAddress: activeAccount?.address,
                     creatorUsername: currentLensAccount?.username?.localName || 'Unknown',
                     creatorProfilePicture:

@@ -3,6 +3,39 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import { fetchNotifications } from '../../lib/api/dgraph';
+
+// Simplified notification fetcher for inbox
+const fetchSimpleNotifications = async (userId: string) => {
+  const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || 'http://localhost:8080/graphql';
+  
+  const query = `
+    query getNotifications($userId: String!) {
+      queryNotification(filter: { userId: { eq: $userId } }) {
+        id
+        content
+        notificationType
+        isRead
+        createdAt
+        userId
+        triggeredById
+      }
+    }
+  `;
+
+  const response = await fetch(DGRAPH_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, variables: { userId } }),
+  });
+
+  const data = await response.json();
+  if (data.errors) {
+    console.error('Error fetching notifications:', data.errors);
+    return [];
+  }
+
+  return data.data?.queryNotification || [];
+};
 import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';
@@ -233,7 +266,7 @@ const InboxView = () => {
       try {
         console.time('network-request');
         console.log('[PERF] Starting API request to fetch notifications');
-        const fetchedNotifications = await fetchNotifications(currentLensAccount.address);
+        const fetchedNotifications = await fetchSimpleNotifications(currentLensAccount.address);
         console.timeEnd('network-request');
         console.log(`[PERF] API returned ${fetchedNotifications.length} notifications`);
 
@@ -474,14 +507,12 @@ const InboxView = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // Show pending and completed challenges (exclude rejected/expired/failed/cleared)
+        // Show pending and completed challenges
         const activeChallenges = result.challenges.filter(
           (challenge: PrivateChallengeInvite) =>
-            challenge.status === 'pending' || challenge.status === 'completed' /* &&
-            challenge.status !== 'cleared'*/
+            challenge.status === 'pending' || challenge.status === 'completed'
         );
         setPrivateChallenges(activeChallenges);
-        console.log('Private challenges fetched:', activeChallenges);
       } else {
         console.error('Failed to fetch private challenges:', result.error);
       }
@@ -557,12 +588,11 @@ const InboxView = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // Filter out cleared challenges from display
+        // Filter out cleared challenges
         const activeChallenges = result.challenges.filter(
           (challenge: PrivateChallengeInvite) => challenge.status !== 'cleared'
         );
         setSentChallenges(activeChallenges);
-        console.log('Sent challenges fetched:', activeChallenges);
       } else {
         console.error('Failed to fetch sent challenges:', result.error);
       }

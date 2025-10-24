@@ -1,13 +1,12 @@
 /**
  * Private Challenge Creation API
  *
- * Creates a new private challenge between users.
- * Currently uses mock database - will migrate to Dgraph when schema is deployed.
+ * Creates a new private challenge between users using real database.
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { CreatePrivateChallengeRequest } from '../../../types/notifications';
-import { privateChallengeDb } from '../../../lib/api/mockPrivateChallengeDb';
+import { createPrivateChallenge, getUserFromDgraph } from '../../../lib/api/dgraph';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -19,44 +18,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const {
       recipientId,
-      recipientWalletAddress,
       name,
       description,
       rewardAmount,
       creatorId,
-      creatorWalletAddress,
       creatorUsername,
-      creatorProfilePicture,
-      recipientUsername,
     }: CreatePrivateChallengeRequest & {
       creatorId: string;
-      creatorWalletAddress: string;
       creatorUsername: string;
-      creatorProfilePicture?: string;
-      recipientUsername: string;
     } = req.body;
 
     // Basic validation
-    if (
-      !recipientId ||
-      !recipientWalletAddress ||
-      !name ||
-      !description ||
-      !rewardAmount ||
-      !creatorId ||
-      !creatorWalletAddress ||
-      !creatorUsername
-    ) {
-      console.error('❌ Missing required fields:', {
-        recipientId: !!recipientId,
-        recipientWalletAddress: !!recipientWalletAddress,
-        name: !!name,
-        description: !!description,
-        rewardAmount: !!rewardAmount,
-        creatorId: !!creatorId,
-        creatorWalletAddress: !!creatorWalletAddress,
-        creatorUsername: !!creatorUsername,
-      });
+    if (!recipientId || !name || !description || !rewardAmount || !creatorId || !creatorUsername) {
+      console.error('❌ Missing required fields');
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -69,29 +43,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Cannot send challenge to yourself' });
     }
 
-    // Create challenge in mock DB with 24-hour expiration
-    const challenge = await privateChallengeDb.createChallenge({
+    // Look up actual user IDs from wallet addresses
+    const creatorUser = await getUserFromDgraph(creatorId);
+    const recipientUser = await getUserFromDgraph(recipientId);
+
+    if (!creatorUser || !recipientUser) {
+      return res.status(400).json({ error: 'Invalid user addresses' });
+    }
+
+    // Create challenge in real database with actual user IDs
+    const challengeId = await createPrivateChallenge(
+      creatorUser.id,
+      recipientUser.id,
       name,
       description,
       rewardAmount,
-      creatorId,
-      creatorWalletAddress,
-      creatorUsername,
-      creatorProfilePicture: creatorProfilePicture || '/images/profile.png',
-      recipientId,
-      recipientWalletAddress,
-      recipientUsername,
-      status: 'pending',
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
-    });
+      1 // 1 day expiration
+    );
 
-    console.log('✅ Private challenge created:', challenge.id);
-
-    // TODO: Create notification when Dgraph is properly set up
+    console.log('✅ Private challenge created:', challengeId);
 
     res.status(201).json({
       success: true,
-      challengeId: challenge.id,
+      challengeId,
       message: 'Private challenge created successfully',
     });
   } catch (error) {
