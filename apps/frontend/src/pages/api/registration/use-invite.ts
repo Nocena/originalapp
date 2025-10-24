@@ -1,8 +1,8 @@
 // /api/registration/use-invite.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import {
-  validateInviteCode,
-  markInviteAsUsed,
+  // validateInviteCode,
+  // markInviteAsUsed,
   updateUserTokens,
   createNotification,
 } from '../../../lib/graphql';
@@ -18,6 +18,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Invite code and user ID are required' });
   }
 
+  return res.status(405).json({ error: 'Method not allowed' });
+
+/*
   try {
     // First validate the invite is still available
     const validation = await validateInviteCode(inviteCode);
@@ -39,12 +42,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await updateUserTokens(validation.ownerId, 50);
 
         // Create notification for invite owner
-        await createNotification(
-          validation.ownerId,
-          newUserId,
-          `Someone joined Nocena using your invite code ${inviteCode}! You earned 50 Nocenix tokens.`,
-          'invite_used'
-        );
+        await createNotification({
+          userLensAccountId: validation.ownerId,
+          triggeredByLensAccountId: newUserId,
+          content: `Someone joined Nocena using your invite code ${inviteCode}! You earned 50 Nocenix tokens.`,
+          notificationType: 'invite_used'
+        });
       } catch (tokenError) {
         console.error('Error awarding tokens:', tokenError);
         // Don't fail the whole process if token update fails
@@ -64,4 +67,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Error using invite code:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+*/
 }

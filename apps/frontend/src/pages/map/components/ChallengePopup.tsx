@@ -1,6 +1,8 @@
 // src/lib/map/components/ChallengePopup.tsx
 import React from 'react';
-import { ChallengeData } from '../../../lib/map/types';
+import { ChallengeData } from '../../../lib/graphql/features/challenge/types';
+import { useAccountQuery } from '@nocena/indexer';
+import getAvatar from '../../../helpers/getAvatar';
 
 interface ChallengePopupProps {
   challenge: ChallengeData;
@@ -39,6 +41,16 @@ const ChallengePopup = ({
     maxWidth: '320px',
   };
 
+/*
+  const {
+    data: lensData,
+    loading: lensLoading,
+    error: lensError,
+  } = useAccountQuery({
+    variables: { request: { address: challenge.creatorLensAccountId } },
+    skip: !challenge?.creatorLensAccountId,
+  });
+*/
   // Create a unique ID for the button based on the challenge ID
   const buttonId = `challenge-complete-btn-${challenge.id}`;
 
@@ -50,7 +62,7 @@ const ChallengePopup = ({
 
   // Check if current user has completed this challenge
   const hasUserCompleted =
-    currentUserId && recentCompletions.some((completion) => completion.userId === currentUserId);
+    currentUserId && recentCompletions.some((completion) => completion.userLensAccountId === currentUserId);
 
   // Generate floating profile bubbles HTML
   const generateProfileBubbles = () => {
@@ -75,18 +87,18 @@ const ChallengePopup = ({
           .join('; ');
 
         // Create unique ID for click handling
-        const bubbleId = `profile-bubble-${challenge.id}-${completion.userId}`;
+        const bubbleId = `profile-bubble-${challenge.id}-${completion.userLensAccountId}`;
 
         return `
         <div class="profile-bubble" 
              id="${bubbleId}"
-             data-user-id="${completion.userId}"
+             data-user-id="${completion.userLensAccountId}"
              data-challenge-id="${challenge.id}"
              style="position: absolute; ${positionStyles}; z-index: 1000; cursor: pointer;
                     animation: float-in 0.6s ease-out ${index * 0.1}s both;">
           <div class="profile-bubble-inner">
-            <img src="${completion.profilePicture || '/images/profile.png'}" 
-                 alt="${completion.username}" 
+            <img src="${/*getAvatar(lensData?.account) ||*/ '/images/profile.png'}" 
+                 alt="${/*lensData?.account?.username?.localName*/ ''}" 
                  class="profile-bubble-image" />
             <div class="profile-bubble-ring"></div>
           </div>

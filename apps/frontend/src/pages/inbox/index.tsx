@@ -39,7 +39,7 @@ const fetchSimpleNotifications = async (userId: string) => {
 import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';
-import { getPageState, updatePageState } from '../../components/PageManager';
+import { getPageState, updatePageState } from '@components/PageManager';
 import {
   CreatePrivateChallengeRequest,
   NotificationBase,

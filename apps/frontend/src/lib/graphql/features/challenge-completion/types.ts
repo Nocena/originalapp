@@ -24,3 +24,40 @@ export interface BasicCompletionType {
   publicChallenge: any;
   userAccount?: AccountFragment;
 }
+
+export interface ChallengeCompletion extends BasicCompletionType {
+  videoUrl?: string;
+  selfieUrl?: string;
+  // Local state for likes (will be replaced with DB data later)
+  localLikes?: number;
+  localIsLiked?: boolean;
+  // Database fields for likes
+  totalLikes?: number;
+  isLiked?: boolean;
+  recentLikes?: Array<{
+    id: string;
+    username: string;
+    profilePicture: string;
+  }>;
+  // Database fields for reactions
+  totalReactions?: number;
+  recentReactions?: Array<{
+    id: string;
+    reactionType: string;
+    emoji: string;
+    selfieUrl?: string;
+    user: {
+      id: string;
+      username: string;
+      profilePicture: string;
+    };
+    createdAt: string;
+  }>;
+}
+
+export interface MediaMetadata {
+  directoryCID: string;
+  hasVideo: boolean;
+  hasSelfie: boolean;
+  timestamp?: number;
+}

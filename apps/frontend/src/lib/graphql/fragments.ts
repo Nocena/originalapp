@@ -222,30 +222,40 @@ export const CHALLENGE_COMPLETION_WITH_CHALLENGE = gql`
 // ============================================================================
 
 export const NOTIFICATION_FIELDS = gql`
-  fragment NotificationFields on Notification {
-    id
-    userId
-    triggeredById
-    content
-    notificationType
-    isRead
-    createdAt
-    triggeredBy {
-      id
-      username
-      profilePicture
+    fragment NotificationFields on Notification {
+        id
+        userLensAccountId
+        triggeredByLensAccountId
+        content
+        notificationType
+        isRead
+        createdAt
+
+        triggeredBy {
+            id
+            username
+            profilePicture
+            wallet
+        }
+
+        privateChallenge {
+            id
+            title
+            description
+            reward
+        }
+        publicChallenge {
+            id
+            title
+            description
+            reward
+        }
+        aiChallenge {
+            id
+            title
+            description
+            reward
+            frequency
+        }
     }
-    privateChallenge {
-      id
-      title
-    }
-    publicChallenge {
-      id
-      title
-    }
-    aiChallenge {
-      id
-      title
-    }
-  }
 `;

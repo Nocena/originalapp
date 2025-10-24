@@ -457,7 +457,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
 
       const targetRoute =
         index === 6 && currentLensAccount?.address
-          ? `/profile/${currentLensAccount?.address}`
+          ? `/profile/${currentLensAccount.username?.localName}`
           : routeMapping[index] || '/home';
       const isGoingToCameraPage = cameraPages.some((page) => targetRoute.startsWith(page));
 

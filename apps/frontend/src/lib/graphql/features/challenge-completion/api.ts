@@ -5,10 +5,12 @@ import {
   FETCH_LATEST_USER_COMPLETION,
   FETCH_USER_COMPLETIONS,
 } from './queries';
-import { BasicCompletionType, FetchUserCompletionsParams } from './types';
+import { BasicCompletionType, FetchUserCompletionsParams, MediaMetadata } from './types';
 import { getDateRange } from '../follow/utils';
 import { fetchFollowingData } from '../../../lens/api';
-import { getEmojiForReactionType } from './utils';
+import { getDateParts, getEmojiForReactionType, serializeMedia } from './utils';
+import { CREATE_CHALLENGE_COMPLETION } from './mutations';
+import { v4 as uuidv4 } from 'uuid';
 // ============================================================================
 // QUERY FUNCTIONS
 // ============================================================================
@@ -64,7 +66,7 @@ export async function fetchUserCompletions({
 
 export async function fetchLatestUserCompletion(
   userLensAccountId: string,
-  challengeType: 'ai' | 'private' | 'public' = 'ai'
+  challengeType: 'ai' | 'private' | 'public' = 'ai',
 ): Promise<any | null> {
   try {
     const { data } = await graphqlClient.query({
@@ -104,13 +106,13 @@ export async function fetchLatestUserCompletion(
 }
 
 
-export async function fetchFollowingsCompletions(  userLensAccountAddress: string,
-                                                   date: string,
-                                                   frequency: 'daily' | 'weekly' | 'monthly'
+export async function fetchFollowingsCompletions(userLensAccountAddress: string,
+                                                 date: string,
+                                                 frequency: 'daily' | 'weekly' | 'monthly',
 ): Promise<BasicCompletionType[]> {
   try {
     const { startDate, endDate } = getDateRange(date, frequency);
-    const followings = await fetchFollowingData(userLensAccountAddress)
+    const followings = await fetchFollowingData(userLensAccountAddress);
     const followingAccountAddresses = followings?.items.map(item => item.following.address) || [];
 
     const { data } = await graphqlClient.query({
@@ -151,13 +153,13 @@ export async function fetchFollowingsCompletions(  userLensAccountAddress: strin
 
 export async function fetchChallengeCompletionsWithLikesAndReactions(
   challengeId?: string,
-  userId?: string
-): Promise<any[]> {
+  userId?: string,
+): Promise<BasicCompletionType[]> {
   try {
     const { data } = await graphqlClient.query({
       query: challengeId ? FETCH_COMPLETIONS_BY_CHALLENGE : FETCH_ALL_COMPLETIONS,
       variables: challengeId ? { challengeId } : undefined,
-      fetchPolicy: "no-cache",
+      fetchPolicy: 'no-cache',
     });
 
     const completions = data?.queryChallengeCompletion || [];
@@ -179,7 +181,66 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
       })),
     }));
   } catch (error) {
-    console.error("❌ Error fetching completions with likes and reactions:", error);
+    console.error('❌ Error fetching completions with likes and reactions:', error);
+    throw error;
+  }
+}
+
+
+export async function createChallengeCompletion(
+  userLensAccountId: string,
+  challengeType: 'private' | 'public' | 'ai',
+  mediaData: string | MediaMetadata,
+  challengeId: string,
+): Promise<string> {
+  console.log('📘 Creating challenge completion', { userLensAccountId, challengeId, challengeType });
+
+  const id = uuidv4();
+  const now = new Date();
+  const media = serializeMedia(mediaData);
+  const { completionDate, completionDay, completionWeek, completionMonth, completionYear } = getDateParts(now);
+
+  // Define challenge linkage based on type
+  const privateChallenge = challengeType === 'private' ? { id: challengeId } : undefined;
+  const publicChallenge = challengeType === 'public' ? { id: challengeId } : undefined;
+  const aiChallenge = challengeType === 'ai' ? { id: challengeId } : undefined;
+
+  try {
+    const { data } = await graphqlClient.mutate({
+      mutation: CREATE_CHALLENGE_COMPLETION,
+      variables: {
+        id,
+        userLensAccountId,
+        challengeId,
+        media,
+        completionDate,
+        completionDay,
+        completionWeek,
+        completionMonth,
+        completionYear,
+        challengeType,
+        privateChallenge,
+        publicChallenge,
+        aiChallenge,
+      },
+    });
+
+    console.log('✅ Challenge completion created:', data?.addChallengeCompletion?.challengeCompletion?.[0]?.id);
+
+    // Extra logic for AI challenges
+    /*
+        if (challengeType === 'ai') {
+          try {
+            await updateUserChallengeStrings(userLensAccountId);
+          } catch (e) {
+            console.warn('⚠️ Error updating user challenge strings:', e);
+          }
+        }
+    */
+
+    return id;
+  } catch (error) {
+    console.error('❌ Error creating challenge completion:', error);
     throw error;
   }
 }

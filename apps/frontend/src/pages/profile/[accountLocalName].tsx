@@ -1,13 +1,9 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useActiveAccount } from 'thirdweb/react';
-import { createPublicClient, defineChain, http } from 'viem';
-
-import { toggleFollowUser } from '../../lib/graphql';
 import { useAuth } from '../../contexts/AuthContext';
-import { useAccountQuery } from '@nocena/indexer';
-import { getPageState, updatePageState } from '../../components/PageManager';
+import { useAccountQuery, useAccountStatsQuery } from '@nocena/indexer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import ThematicContainer from '../../components/ui/ThematicContainer';
 import FollowersPopup from './components/FollowersPopup';
@@ -15,9 +11,8 @@ import TrailerSection from './components/AvatarSection';
 import StatsSection from './components/StatsSection';
 import CalendarSection from './components/CalendarSection';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
-import type { AccountFragment } from '@nocena/indexer';
-import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../lib/constants';
-import noceniteTokenArtifact from '../../lib/contracts/nocenite.json';
+import getAvatar from '../../helpers/getAvatar';
+import { useLensFollowActions } from '../../hooks/useLensFollowActions';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -42,23 +37,20 @@ type FollowerData = string | { id: string; [key: string]: any };
 
 const OtherProfileView: React.FC = () => {
   const router = useRouter();
-  const { userID } = router.query;
+  const { accountLocalName } = router.query;
   const { currentLensAccount } = useAuth();
   const activeAccount = useActiveAccount();
 
-  const [user, setUser] = useState<ProfileUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [isPendingFollow, setIsPendingFollow] = useState(false);
   const [showFollowersPopup, setShowFollowersPopup] = useState(false);
   const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
-    'trailer'
+    'trailer',
   );
-  const [nctBalance, setNctBalance] = useState<number | null>(null);
-  const [nctLoading, setNctLoading] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch Lens account for the user
   const {
@@ -66,80 +58,23 @@ const OtherProfileView: React.FC = () => {
     loading: lensLoading,
     error: lensError,
   } = useAccountQuery({
-    variables: {
-      request: { address: userID as string },
-    },
-    skip: !userID,
+    variables: { request: { username: { localName: (accountLocalName as string || '') } } },
+    skip: !accountLocalName,
   });
+  const selectedUserAccount = lensData?.account
 
-  // Log Lens query status
-  useEffect(() => {
-    if (userID) {
-      console.log('Lens query status:', {
-        userID,
-        lensLoading,
-        lensError: lensError?.message,
-        hasData: !!lensData,
-        hasAccount: !!lensData?.account,
-      });
-    }
-  }, [userID, lensLoading, lensError, lensData]);
+  const { data: accountStatsData, loading: accountStatsLoading } = useAccountStatsQuery({
+    variables: { request: { account: selectedUserAccount?.address } }
+  });
+  const stats = accountStatsData?.accountStats.graphFollowStats;
 
-  // Fetch NCT balance when owner address is available
-  useEffect(() => {
-    const fetchNctBalance = async () => {
-      const ownerAddress = lensData?.account?.owner;
-      if (!ownerAddress) return;
-
-      setNctLoading(true);
-      try {
-        const publicClient = createPublicClient({
-          chain: defineChain(FLOW_TESTNET_CONFIG),
-          transport: http(),
-        });
-
-        const balance = (await publicClient.readContract({
-          address: CONTRACTS.Nocenite as `0x${string}`,
-          abi: noceniteTokenArtifact,
-          functionName: 'balanceOf',
-          args: [ownerAddress],
-        })) as bigint;
-
-        const balanceInTokens = Number(balance) / Math.pow(10, 18);
-        setNctBalance(balanceInTokens);
-      } catch (error) {
-        console.error('Error fetching NCT balance:', error);
-        setNctBalance(0);
-      } finally {
-        setNctLoading(false);
-      }
-    };
-
-    fetchNctBalance();
-  }, [lensData?.account?.owner]);
-
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
+  const { followeringAccount, handleFollow, handleUnfollow } = useLensFollowActions();
 
   // Check if this page is visible in the PageManager
   useEffect(() => {
-    if (!userID) return;
+    if (!accountLocalName) return;
 
-    const profilePath = `/profile/${userID}`;
+    const profilePath = `/profile/${accountLocalName}`;
 
     const handleVisibilityChange = (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -169,125 +104,10 @@ const OtherProfileView: React.FC = () => {
       window.removeEventListener('pageVisibilityChange', handleVisibilityChange);
       window.removeEventListener('routeChange', handleRouteChange);
     };
-  }, [userID]);
-
-  // Function to fetch user data with caching
-  const fetchUserData = useCallback(async (userId: string, showLoading = true) => {
-    if (showLoading) setIsLoading(true);
-
-    try {
-      // Try to get from PageManager first
-      const pageState = getPageState();
-      const profileCacheKey = `other_profile_${userId}`;
-
-      // Check if we have fresh data in PageManager
-      if (
-        pageState &&
-        pageState[profileCacheKey] &&
-        Date.now() - pageState[profileCacheKey].lastFetched < 300000
-      ) {
-        const cachedUser = pageState[profileCacheKey].data;
-        if (cachedUser && cachedUser.id) {
-          setUser(cachedUser as ProfileUser);
-          setError(null);
-          if (!showLoading) return; // Skip API call if silent refresh
-        }
-      } else {
-        // Try localStorage if PageManager doesn't have data
-        const cachedData = localStorage.getItem(`nocena_${profileCacheKey}`);
-        if (cachedData) {
-          const { data, timestamp } = JSON.parse(cachedData);
-          if (data && data.id && Date.now() - timestamp < 300000) {
-            setUser(data as ProfileUser);
-            setError(null);
-            if (!showLoading) return; // Skip API call if silent refresh
-          }
-        }
-      }
-
-      // Use Lens account data if available
-      console.log('Lens query result:', { lensData, userId, hasAccount: !!lensData?.account });
-
-      if (lensData?.account) {
-        const lensAccount = lensData.account;
-        const profileUser: ProfileUser = {
-          id: lensAccount.address,
-          username: lensAccount.username?.localName || 'Anonymous',
-          profilePicture: lensAccount.metadata?.picture || defaultProfilePic,
-          coverPhoto: lensAccount.metadata?.coverPicture || '/images/cover.jpg',
-          trailerVideo: '/trailer.mp4',
-          bio: lensAccount.metadata?.bio || '',
-          earnedTokens: 0, // TODO: Requires wallet address in Dgraph to fetch NCT balance
-          dailyChallenge: '0'.repeat(365),
-          weeklyChallenge: '0'.repeat(52),
-          monthlyChallenge: '0'.repeat(12),
-          followers: [],
-        };
-
-        setUser(profileUser);
-        updatePageState('profile', { user: profileUser, timestamp: Date.now() });
-        return;
-      }
-
-      // Fallback if no Lens data
-      console.error('No Lens account found for:', userId);
-      setError(new Error('User not found'));
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error fetching full user data:', error);
-      setError(error instanceof Error ? error : new Error('An unknown error occurred'));
-    } finally {
-      if (showLoading) setIsLoading(false);
-      setInitialDataLoaded(true);
-    }
-  }, []);
-
-  // Initial data fetch and setup background refresh
-  useEffect(() => {
-    if (!userID) return;
-
-    // Try to load from cache first (this will show UI immediately)
-    const userId = userID as string;
-    const profileCacheKey = `other_profile_${userId}`;
-
-    try {
-      // First try PageManager state
-      const pageState = getPageState();
-      if (pageState && pageState[profileCacheKey]) {
-        const cachedUser = pageState[profileCacheKey].data;
-        setUser(cachedUser as ProfileUser);
-      } else {
-        // Try localStorage as fallback
-        const cachedData = localStorage.getItem(`nocena_${profileCacheKey}`);
-        if (cachedData) {
-          const { data } = JSON.parse(cachedData);
-          setUser(data as ProfileUser);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading cached profile data', error);
-    }
-
-    // Fetch fresh data
-    fetchUserData(userId, true);
-
-    // Set up background refresh when page is visible
-    const refreshInterval = setInterval(() => {
-      if (isPageVisible) {
-        fetchUserData(userId, false); // Silent refresh
-      }
-    }, 300000); // Every 5 minutes
-
-    // Add to tracking for memory optimization
-    if (typeof window !== 'undefined' && window.nocena_app_timers) {
-      window.nocena_app_timers.push(refreshInterval as unknown as number);
-    }
-
-    return () => clearInterval(refreshInterval);
-  }, [userID, isPageVisible, fetchUserData]);
+  }, [accountLocalName]);
 
   useEffect(() => {
-    if (scrollContainerRef.current && user) {
+    if (scrollContainerRef.current && selectedUserAccount) {
       const currentMonthIndex = new Date().getMonth();
       const elementWidth = scrollContainerRef.current.scrollWidth / 12;
       scrollContainerRef.current.scrollLeft =
@@ -295,148 +115,18 @@ const OtherProfileView: React.FC = () => {
         scrollContainerRef.current.clientWidth / 2 +
         elementWidth / 2;
     }
-  }, [user]);
-
-  // React to app foreground events
-  useEffect(() => {
-    const handleAppForeground = () => {
-      if (isPageVisible && userID) {
-        fetchUserData(userID as string, false); // Silent refresh when app comes to foreground
-      }
-    };
-
-    window.addEventListener('nocena_app_foreground', handleAppForeground);
-
-    return () => {
-      window.removeEventListener('nocena_app_foreground', handleAppForeground);
-    };
-  }, [isPageVisible, userID, fetchUserData]);
+  }, [selectedUserAccount]);
 
   const handleFollowToggle = async () => {
-    if (!currentLensAccount || !user || isPendingFollow) return;
-
-    // Set pending state
-    setIsPendingFollow(true);
-
-    // Optimistically update UI
-    /*
-    setUser((prevUser) => {
-      if (!prevUser) return null;
-
-      const isCurrentlyFollowing = prevUser.followers.includes(currentUser.id);
-      const updatedFollowers = isCurrentlyFollowing
-        ? prevUser.followers.filter((id) => id !== currentUser.id)
-        : [...prevUser.followers, currentUser.id];
-
-      return {
-        ...prevUser,
-        followers: updatedFollowers,
-      };
-    });
-*/
-
-    // Also update the cached state
-    /*
-    if (user) {
-      const profileCacheKey = `other_profile_${user.id}`;
-      const isCurrentlyFollowing = user.followers.includes(currentUser.id);
-      const updatedFollowers = isCurrentlyFollowing
-        ? user.followers.filter((id) => id !== currentUser.id)
-        : [...user.followers, currentUser.id];
-
-      const updatedUser = {
-        ...user,
-        followers: updatedFollowers,
-      };
-
-      // Update PageManager state
-      updatePageState(profileCacheKey, updatedUser);
-
-      // Update localStorage
-      localStorage.setItem(
-        `nocena_${profileCacheKey}`,
-        JSON.stringify({
-          data: updatedUser,
-          timestamp: Date.now(),
-        })
-      );
-    }
-*/
-
-    /*
-    try {
-      // Make API call
-      const wasFollowing = user.followers.includes(currentUser.id);
-      const success = await toggleFollowUser(currentUser.id, user.id, wasFollowing);
-
-      // If API call fails, revert the UI change
-      if (!success) {
-        setUser((prevUser) => {
-          if (!prevUser) return null;
-
-          const isCurrentlyFollowing = prevUser.followers.includes(currentUser.id);
-          const updatedFollowers = isCurrentlyFollowing
-            ? prevUser.followers.filter((id) => id !== currentUser.id)
-            : [...prevUser.followers, currentUser.id];
-
-          return {
-            ...prevUser,
-            followers: updatedFollowers,
-          };
-        });
-
-        // Also revert the cached state
-        if (user) {
-          const profileCacheKey = `other_profile_${user.id}`;
-          const isCurrentlyFollowing = user.followers.includes(currentUser.id);
-          const updatedFollowers = isCurrentlyFollowing
-            ? user.followers.filter((id) => id !== currentUser.id)
-            : [...user.followers, currentUser.id];
-
-          const updatedUser = {
-            ...user,
-            followers: updatedFollowers,
-          };
-
-          // Update PageManager state
-          updatePageState(profileCacheKey, updatedUser);
-
-          // Update localStorage
-          localStorage.setItem(
-            `nocena_${profileCacheKey}`,
-            JSON.stringify({
-              data: updatedUser,
-              timestamp: Date.now(),
-            })
-          );
-        }
-      }
-    } catch (error) {
-      console.error('Error toggling follow:', error);
-
-      // Revert UI change on error
-      setUser((prevUser) => {
-        if (!prevUser) return null;
-
-        const isCurrentlyFollowing = prevUser.followers.includes(currentUser.id);
-        const updatedFollowers = isCurrentlyFollowing
-          ? prevUser.followers.filter((id) => id !== currentUser.id)
-          : [...prevUser.followers, currentUser.id];
-
-        return {
-          ...prevUser,
-          followers: updatedFollowers,
-        };
-      });
-    } finally {
-      setIsPendingFollow(false);
-    }
-*/
+    if (!currentLensAccount || !selectedUserAccount) return;
+    selectedUserAccount.operations?.isFollowedByMe
+      ? handleUnfollow(selectedUserAccount)
+      : handleFollow(selectedUserAccount)
   };
 
   // Handle "Challenge Me" button click
   const handleChallengeClick = () => {
-    if (!user || !currentLensAccount) return;
+    if (!selectedUserAccount) return;
     setShowPrivateChallengeCreator(true);
   };
 
@@ -447,7 +137,9 @@ const OtherProfileView: React.FC = () => {
 
   // Calculate stats for components
   const currentStreak = useMemo(() => {
-    if (!user) return 0;
+    return 0;
+/*
+    if (!selectedUserAccount) return 0;
     const dailyChallenges = user.dailyChallenge.split('').map((char) => char === '1');
     let streak = 0;
     for (let i = dailyChallenges.length - 1; i >= 0; i--) {
@@ -458,8 +150,10 @@ const OtherProfileView: React.FC = () => {
       }
     }
     return streak;
-  }, [user]);
+*/
+  }, [selectedUserAccount]);
 
+/*
   const totalChallenges = useMemo(() => {
     if (!user) return 0;
     const dailyChallenges = user.dailyChallenge.split('').map((char) => char === '1');
@@ -471,7 +165,8 @@ const OtherProfileView: React.FC = () => {
       weeklyChallenges.filter(Boolean).length +
       monthlyChallenges.filter(Boolean).length
     );
-  }, [user]);
+  }, [selectedUserAccount]);
+*/
 
   const getButtonColor = (section: string) => {
     switch (section) {
@@ -487,7 +182,7 @@ const OtherProfileView: React.FC = () => {
   };
 
   // Show loading state only if we don't have any cached data at all
-  if (isLoading && !user) {
+  if (isLoading && !selectedUserAccount) {
     return (
       <div
         className="fixed inset-0 text-white overflow-y-auto"
@@ -531,7 +226,7 @@ const OtherProfileView: React.FC = () => {
     );
   }
 
-  if (!user && initialDataLoaded) {
+  if (!selectedUserAccount && initialDataLoaded) {
     return (
       <div
         className="fixed inset-0 text-white overflow-y-auto"
@@ -552,10 +247,10 @@ const OtherProfileView: React.FC = () => {
   }
 
   // If we have user data (either from cache or API), show the profile
-  if (user) {
+  if (selectedUserAccount) {
     // Check if current user is following this profile
     // const isFollowing = !!(currentLensAccount && user.followers.includes(currentUser.id));
-    const isFollowing = false;
+    const isFollowing = selectedUserAccount.operations?.isFollowedByMe || false;
 
     return (
       <div
@@ -581,11 +276,7 @@ const OtherProfileView: React.FC = () => {
                 mask: 'linear-gradient(to bottom, #101010 0%, #101010 60%, transparent 100%)',
               }}
             >
-              {user.coverPhoto && user.coverPhoto !== '/images/cover.jpg' ? (
-                <Image src={user.coverPhoto} alt="Cover" fill className="object-cover" />
-              ) : (
-                <Image src="/images/cover.jpg" alt="Cover" fill className="object-cover" />
-              )}
+              <Image src={selectedUserAccount?.metadata?.coverPicture || '/images/cover.jpg'} alt="Cover" fill className="object-cover" />
             </div>
           </div>
 
@@ -599,7 +290,7 @@ const OtherProfileView: React.FC = () => {
                   <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 p-1">
                     <div className="w-full h-full bg-slate-900/80 backdrop-blur-sm rounded-full p-1">
                       <Image
-                        src={user.profilePicture || defaultProfilePic}
+                        src={getAvatar(selectedUserAccount) || defaultProfilePic}
                         alt="Profile"
                         width={120}
                         height={120}
@@ -616,18 +307,16 @@ const OtherProfileView: React.FC = () => {
                       className="text-center cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={handleFollowersClick}
                     >
-                      <div className="text-2xl font-bold">{user.followers.length}</div>
+                      <div className="text-2xl font-bold">{stats?.followers}</div>
                       <div className="text-sm text-white/60">Followers</div>
                     </div>
                     <div className="w-px h-8 bg-white/20"></div>
                     <div className="text-center">
                       <div className="flex items-center space-x-1">
-                        <span className="text-2xl font-bold">
-                          {nctLoading ? '...' : (nctBalance ?? 0).toFixed(1)}
-                        </span>
+                        <span className="text-2xl font-bold">{0}</span>
                         <Image src={nocenix} alt="Nocenix" width={20} height={20} />
                       </div>
-                      <div className="text-sm text-white/60">NCT Balance</div>
+                      <div className="text-sm text-white/60">Nocenix</div>
                     </div>
                   </div>
                 </div>
@@ -635,12 +324,12 @@ const OtherProfileView: React.FC = () => {
             </div>
 
             {/* Username */}
-            <h1 className="text-2xl font-bold mb-4">{user.username}</h1>
+            <h1 className="text-2xl font-bold mb-4">{accountLocalName}</h1>
 
             {/* Bio - Read-only */}
             <div className="mb-6">
               <div className="flex-1">
-                {(user.bio || 'This user has no bio.').split('\n').map((line, index) => (
+                {(selectedUserAccount?.metadata?.bio || 'This user has no bio.').split('\n').map((line, index) => (
                   <p key={index} className="text-white/80 leading-relaxed">
                     {line}
                   </p>
@@ -652,21 +341,18 @@ const OtherProfileView: React.FC = () => {
             <div className="mb-6 flex space-x-3">
               <PrimaryButton
                 text={
-                  isPendingFollow
-                    ? isFollowing
-                      ? 'Unfollowing...'
-                      : 'Following...'
-                    : isFollowing
+                isFollowing
                       ? 'Following'
                       : 'Follow'
                 }
                 onClick={handleFollowToggle}
+                loading={!!followeringAccount}
                 className="flex-1"
                 isActive={!isFollowing}
-                disabled={isPendingFollow || !currentLensAccount}
+                disabled={!selectedUserAccount}
               />
               {/* Only show Challenge button if viewing someone else's profile */}
-              {currentLensAccount?.address !== user.id && (
+              {currentLensAccount?.address !== selectedUserAccount?.address && (
                 <PrimaryButton
                   text="Challenge"
                   onClick={handleChallengeClick}
@@ -703,24 +389,24 @@ const OtherProfileView: React.FC = () => {
             {/* Content Based on Active Section - with bottom margin */}
             <div className="space-y-4 mb-8">
               {activeSection === 'trailer' && (
-                <TrailerSection profilePicture="placeholder" generatedAvatar="placeholder" />
+                <TrailerSection profilePicture="placeholder" generatedAvatar={null} />
               )}
 
               {activeSection === 'calendar' && (
                 <CalendarSection
-                  dailyChallenges={user.dailyChallenge.split('').map((char) => char === '1')}
-                  weeklyChallenges={user.weeklyChallenge.split('').map((char) => char === '1')}
-                  monthlyChallenges={user.monthlyChallenge.split('').map((char) => char === '1')}
+                  dailyChallenges={''.split('').map((char) => char === '1')}
+                  weeklyChallenges={''.split('').map((char) => char === '1')}
+                  monthlyChallenges={''.split('').map((char) => char === '1')}
                 />
               )}
 
               {activeSection === 'achievements' && (
                 <StatsSection
                   currentStreak={currentStreak}
-                  tokenBalance={nctBalance ? parseFloat(nctBalance.toFixed(1)) : 0}
-                  dailyChallenges={user.dailyChallenge.split('').map((char) => char === '1')}
-                  weeklyChallenges={user.weeklyChallenge.split('').map((char) => char === '1')}
-                  monthlyChallenges={user.monthlyChallenge.split('').map((char) => char === '1')}
+                  tokenBalance={0}
+                  dailyChallenges={''.split('').map((char) => char === '1')}
+                  weeklyChallenges={''.split('').map((char) => char === '1')}
+                  monthlyChallenges={''.split('').map((char) => char === '1')}
                 />
               )}
             </div>
@@ -731,8 +417,8 @@ const OtherProfileView: React.FC = () => {
         <FollowersPopup
           isOpen={showFollowersPopup}
           onClose={() => setShowFollowersPopup(false)}
-          followers={user.followers}
           isFollowers={true}
+          accountAddress={selectedUserAccount?.address}
         />
 
         {/* Private Challenge Creator Modal */}
@@ -747,12 +433,12 @@ const OtherProfileView: React.FC = () => {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     ...challenge,
-                    creatorId: currentLensAccount?.lensAccountId || currentLensAccount?.address,
+                    creatorId: currentLensAccount?.address,
                     creatorWalletAddress: activeAccount?.address,
                     creatorUsername: currentLensAccount?.username?.localName || 'Unknown',
                     creatorProfilePicture:
                       currentLensAccount?.metadata?.picture || '/images/profile.png',
-                    recipientUsername: user.username || 'User',
+                    recipientUsername: accountLocalName || 'User',
                   }),
                 });
 
@@ -769,11 +455,11 @@ const OtherProfileView: React.FC = () => {
               }
             }}
             prefilledUser={{
-              id: lensData.account.address,
-              username: lensData.account.username?.localName || user.username,
-              profilePicture: lensData.account.metadata?.picture || user.profilePicture,
-              wallet: lensData.account.address,
-              earnedTokens: user.earnedTokens,
+              id: selectedUserAccount?.address,
+              username: selectedUserAccount?.username?.localName || '',
+              profilePicture: selectedUserAccount?.metadata?.picture,
+              wallet: selectedUserAccount?.address,
+              earnedTokens: 0,
             }}
           />
         )}

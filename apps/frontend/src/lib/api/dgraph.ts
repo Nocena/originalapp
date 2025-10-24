@@ -3,6 +3,7 @@ import axios from 'axios';
 import { User } from '../../contexts/AuthContext';
 import { getDayOfYear, getWeekOfYear } from '@utils/dateUtils';
 import { ChallengeFormData } from '../map/types';
+import { createPublicChallenge } from '../graphql/features/public-challenge';
 
 const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
 
@@ -2245,9 +2246,10 @@ export const deletePrivateChallenge = async (challengeId: string): Promise<boole
   }
 };
 
-/**
+/*
+/!**
  * Creates a public challenge visible to all users at a specific location
- */
+ *!/
 export const createPublicChallenge = async (
   creatorId: string,
   title: string,
@@ -2328,6 +2330,7 @@ export const createPublicChallenge = async (
     throw error;
   }
 };
+*/
 
 /**
  * Creates an AI-generated challenge with a specific frequency
@@ -2470,7 +2473,7 @@ export const createChallengeCompletion = async (
   // Define which challenge reference to use based on the challenge type
   let challengeReference: string;
   if (challengeType === 'private') {
-    challengeReference = 'privateChallenge: { id: $challengeId }';
+    challengeReference = 'private-challenge: { id: $challengeId }';
   } else if (challengeType === 'public') {
     challengeReference = 'publicChallenge: { id: $challengeId }';
   } else if (challengeType === 'ai') {

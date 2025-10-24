@@ -76,7 +76,7 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
 
   // Development mode configuration
   const isDevelopmentEnvironment = process.env.NODE_ENV === 'development';
-  const [useMockVerification, setUseMockVerification] = useState(false); // CHANGED: Default to false to test real verification
+  const [useMockVerification, setUseMockVerification] = useState(true); // CHANGED: Default to false to test real verification
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const monitorIntervalRef = useRef<NodeJS.Timeout | null>(null);

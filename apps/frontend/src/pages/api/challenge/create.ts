@@ -1,6 +1,6 @@
 // src/pages/api/challenge/create.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { handleChallengeCreation } from '../../../lib/graphql';
+import { handleChallengeCreation } from '../../../lib/api/dgraph';
 import { ChallengeFormData } from '../../../lib/map/types';
 
 type ResponseData = {
