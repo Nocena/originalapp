@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useActiveAccount } from 'thirdweb/react';
+import { createPublicClient, defineChain, http } from 'viem';
 
 import { toggleFollowUser } from '../../lib/graphql';
 import { useAuth } from '../../contexts/AuthContext';
@@ -15,6 +16,8 @@ import StatsSection from './components/StatsSection';
 import CalendarSection from './components/CalendarSection';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import type { AccountFragment } from '@nocena/indexer';
+import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../lib/constants';
+import noceniteTokenArtifact from '../../lib/contracts/nocenite.json';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -54,6 +57,8 @@ const OtherProfileView: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
     'trailer'
   );
+  const [nctBalance, setNctBalance] = useState<number | null>(null);
+  const [nctLoading, setNctLoading] = useState(false);
 
   // Fetch Lens account for the user
   const {
@@ -79,6 +84,39 @@ const OtherProfileView: React.FC = () => {
       });
     }
   }, [userID, lensLoading, lensError, lensData]);
+
+  // Fetch NCT balance when owner address is available
+  useEffect(() => {
+    const fetchNctBalance = async () => {
+      const ownerAddress = lensData?.account?.owner;
+      if (!ownerAddress) return;
+
+      setNctLoading(true);
+      try {
+        const publicClient = createPublicClient({
+          chain: defineChain(FLOW_TESTNET_CONFIG),
+          transport: http(),
+        });
+
+        const balance = (await publicClient.readContract({
+          address: CONTRACTS.Nocenite as `0x${string}`,
+          abi: noceniteTokenArtifact,
+          functionName: 'balanceOf',
+          args: [ownerAddress],
+        })) as bigint;
+
+        const balanceInTokens = Number(balance) / Math.pow(10, 18);
+        setNctBalance(balanceInTokens);
+      } catch (error) {
+        console.error('Error fetching NCT balance:', error);
+        setNctBalance(0);
+      } finally {
+        setNctLoading(false);
+      }
+    };
+
+    fetchNctBalance();
+  }, [lensData?.account?.owner]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -584,10 +622,12 @@ const OtherProfileView: React.FC = () => {
                     <div className="w-px h-8 bg-white/20"></div>
                     <div className="text-center">
                       <div className="flex items-center space-x-1">
-                        <span className="text-2xl font-bold">{user.earnedTokens}</span>
+                        <span className="text-2xl font-bold">
+                          {nctLoading ? '...' : (nctBalance ?? 0).toFixed(1)}
+                        </span>
                         <Image src={nocenix} alt="Nocenix" width={20} height={20} />
                       </div>
-                      <div className="text-sm text-white/60">Nocenix</div>
+                      <div className="text-sm text-white/60">NCT Balance</div>
                     </div>
                   </div>
                 </div>
@@ -677,7 +717,7 @@ const OtherProfileView: React.FC = () => {
               {activeSection === 'achievements' && (
                 <StatsSection
                   currentStreak={currentStreak}
-                  tokenBalance={user.earnedTokens}
+                  tokenBalance={nctBalance ? parseFloat(nctBalance.toFixed(1)) : 0}
                   dailyChallenges={user.dailyChallenge.split('').map((char) => char === '1')}
                   weeklyChallenges={user.weeklyChallenge.split('').map((char) => char === '1')}
                   monthlyChallenges={user.monthlyChallenge.split('').map((char) => char === '1')}
