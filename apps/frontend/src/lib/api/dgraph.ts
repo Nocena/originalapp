@@ -2053,8 +2053,8 @@ export const createPrivateChallenge = async (
         expiresAt: $expiresAt,
         isActive: true,
         isCompleted: false,
-        creator: { id: $creatorId },
-        targetUser: { id: $targetUserId }
+        creatorLensAccountId: $creatorId,
+        targetLensAccountId: $targetUserId
       }]) {
         privateChallenge {
           id
@@ -2093,6 +2093,155 @@ export const createPrivateChallenge = async (
   } catch (error) {
     console.error('Error creating private challenge:', error);
     throw error;
+  }
+};
+
+/**
+ * Get private challenges received by a user
+ */
+export const getPrivateChallengesByRecipient = async (userId: string): Promise<any[]> => {
+  const query = `
+    query GetPrivateChallengesByRecipient($userId: String!) {
+      queryPrivateChallenge(filter: { targetLensAccountId: { eq: $userId } }) {
+        id
+        title
+        description
+        reward
+        createdAt
+        expiresAt
+        isActive
+        isCompleted
+        creatorLensAccountId
+        targetLensAccountId
+      }
+    }
+  `;
+
+  try {
+    const response = await axios.post(DGRAPH_ENDPOINT, {
+      query,
+      variables: { userId }
+    });
+
+    if (response.data.errors) {
+      console.error('Error fetching private challenges by recipient:', response.data.errors);
+      return [];
+    }
+
+    return response.data.data?.queryPrivateChallenge || [];
+  } catch (error) {
+    console.error('Error fetching private challenges by recipient:', error);
+    return [];
+  }
+};
+
+/**
+ * Get private challenges created by a user
+ */
+export const getPrivateChallengesByCreator = async (userId: string): Promise<any[]> => {
+  const query = `
+    query GetPrivateChallengesByCreator($userId: String!) {
+      queryPrivateChallenge(filter: { creatorLensAccountId: { eq: $userId } }) {
+        id
+        title
+        description
+        reward
+        createdAt
+        expiresAt
+        isActive
+        isCompleted
+        creatorLensAccountId
+        targetLensAccountId
+      }
+    }
+  `;
+
+  try {
+    const response = await axios.post(DGRAPH_ENDPOINT, {
+      query,
+      variables: { userId }
+    });
+
+    if (response.data.errors) {
+      console.error('Error fetching private challenges by creator:', response.data.errors);
+      return [];
+    }
+
+    return response.data.data?.queryPrivateChallenge || [];
+  } catch (error) {
+    console.error('Error fetching private challenges by creator:', error);
+    return [];
+  }
+};
+
+/**
+ * Update private challenge status (accept/reject)
+ */
+export const updatePrivateChallengeStatus = async (
+  challengeId: string, 
+  isActive: boolean, 
+  isCompleted: boolean
+): Promise<boolean> => {
+  const mutation = `
+    mutation UpdatePrivateChallengeStatus($challengeId: String!, $isActive: Boolean!, $isCompleted: Boolean!) {
+      updatePrivateChallenge(
+        input: {
+          filter: { id: { eq: $challengeId } },
+          set: { isActive: $isActive, isCompleted: $isCompleted }
+        }
+      ) {
+        privateChallenge {
+          id
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await axios.post(DGRAPH_ENDPOINT, {
+      query: mutation,
+      variables: { challengeId, isActive, isCompleted }
+    });
+
+    if (response.data.errors) {
+      console.error('Error updating private challenge status:', response.data.errors);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating private challenge status:', error);
+    return false;
+  }
+};
+
+/**
+ * Delete a private challenge
+ */
+export const deletePrivateChallenge = async (challengeId: string): Promise<boolean> => {
+  const mutation = `
+    mutation DeletePrivateChallenge($challengeId: String!) {
+      deletePrivateChallenge(filter: { id: { eq: $challengeId } }) {
+        msg
+      }
+    }
+  `;
+
+  try {
+    const response = await axios.post(DGRAPH_ENDPOINT, {
+      query: mutation,
+      variables: { challengeId }
+    });
+
+    if (response.data.errors) {
+      console.error('Error deleting private challenge:', response.data.errors);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting private challenge:', error);
+    return false;
   }
 };
 

@@ -1,12 +1,11 @@
 /**
  * Clear Completed Challenges API
  *
- * Remove completed/rejected challenges from view.
- * Currently uses mock database.
+ * Remove completed/rejected challenges from view using real database.
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { privateChallengeDb } from '../../../lib/api/mockPrivateChallengeDb';
+import { deletePrivateChallenge, getPrivateChallengesByRecipient, getPrivateChallengesByCreator } from '../../../lib/api/dgraph';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -20,12 +19,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    const clearedCount = await privateChallengeDb.clearCompletedChallenges(userId);
+    // Get all challenges for this user (both received and created)
+    const [receivedChallenges, createdChallenges] = await Promise.all([
+      getPrivateChallengesByRecipient(userId),
+      getPrivateChallengesByCreator(userId)
+    ]);
+
+    const allChallenges = [...receivedChallenges, ...createdChallenges];
+    
+    // Filter completed and expired challenges
+    const challengesToClear = allChallenges.filter(challenge => 
+      challenge.isCompleted || !challenge.isActive
+    );
+
+    // Delete completed and expired challenges
+    let clearedCount = 0;
+    for (const challenge of challengesToClear) {
+      const success = await deletePrivateChallenge(challenge.id);
+      if (success) clearedCount++;
+    }
 
     res.status(200).json({
       success: true,
       clearedCount,
-      message: `Cleared ${clearedCount} completed challenges`,
+      message: `Cleared ${clearedCount} completed and expired challenges`,
     });
   } catch (error) {
     console.error('Error clearing challenges:', error);
