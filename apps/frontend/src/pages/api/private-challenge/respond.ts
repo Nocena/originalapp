@@ -1,12 +1,11 @@
 /**
  * Respond to Private Challenge API
  *
- * Accept or reject a private challenge.
- * Currently uses mock database.
+ * Accept or reject a private challenge using real database.
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { privateChallengeDb } from '../../../lib/api/mockPrivateChallengeDb';
+import { updatePrivateChallengeStatus } from '../../../lib/api/dgraph';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -24,8 +23,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Action must be "accept" or "reject"' });
     }
 
-    const status = action === 'accept' ? 'accepted' : 'rejected';
-    const success = await privateChallengeDb.updateChallengeStatus(challengeId, status);
+    // Update challenge status based on action
+    const isActive = action === 'accept';
+    const isCompleted = false; // Not completed yet, just accepted/rejected
+
+    const success = await updatePrivateChallengeStatus(challengeId, isActive, isCompleted);
 
     if (!success) {
       return res.status(404).json({ error: 'Challenge not found' });

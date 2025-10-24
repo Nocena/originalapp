@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
+import { useActiveAccount } from 'thirdweb/react';
 import { AIChallenge, getChallengeReward, getCurrentChallenge, getFallbackChallenge } from '@utils/challengeUtils';
 
 // Component imports
@@ -11,8 +12,11 @@ import CompletionFeed from './components/CompletionFeed';
 import CompletionItem from './components/CompletionItem';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
+import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
+import ThematicContainer from '../../components/ui/ThematicContainer';
 import { fetchFollowingsCompletions, fetchLatestUserCompletion } from 'src/lib/graphql/features/challenge-completion';
 import { BasicCompletionType } from '../../lib/graphql/features/challenge-completion/types';
+import { CreatePrivateChallengeRequest } from '../../types/notifications';
 
 type ChallengeType = 'daily' | 'weekly' | 'monthly';
 
@@ -131,9 +135,11 @@ const createMockPhotoBlob = (): Blob => {
 const HomeView = () => {
   const router = useRouter();
   const { currentLensAccount, loading } = useAuth();
+  const activeAccount = useActiveAccount();
   const [selectedTab, setSelectedTab] = useState<ChallengeType>('daily');
   const [followerCompletions, setFollowerCompletions] = useState<BasicCompletionType[]>([]);
   const [isFetchingCompletions, setIsFetchingCompletions] = useState(false);
+  const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
 
   // Challenge state
   const [currentChallenge, setCurrentChallenge] = useState<AIChallenge | null>(null);
@@ -257,6 +263,32 @@ const HomeView = () => {
 
     loadFollowerCompletions();
   }, [currentLensAccount, loading, selectedTab, hasCompleted]);
+
+  // Handle private challenge creation
+  const handlePrivateChallengeSubmit = async (challenge: CreatePrivateChallengeRequest) => {
+    try {
+      const response = await fetch('/api/private-challenge/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...challenge,
+          creatorId: currentLensAccount?.lensAccountId || currentLensAccount?.address,
+          creatorUsername: currentLensAccount?.username?.localName || 'Anonymous',
+        }),
+      });
+
+      if (response.ok) {
+        alert('Private challenge sent successfully!');
+        setShowPrivateChallengeCreator(false);
+      } else {
+        const data = await response.json();
+        alert(`Failed to send private challenge: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error sending private challenge:', error);
+      alert('Error sending private challenge');
+    }
+  };
 
   const handleCompleteChallenge = async (type: string, frequency: string) => {
     if (!currentLensAccount) {
@@ -423,6 +455,42 @@ const HomeView = () => {
                 🧪 Test Claiming Screen
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Private Challenge Creator Modal */}
+        {showPrivateChallengeCreator && (
+          <PrivateChallengeCreator
+            onClose={() => setShowPrivateChallengeCreator(false)}
+            onSubmit={handlePrivateChallengeSubmit}
+          />
+        )}
+
+        {/* Private Challenge Creator Button */}
+        {currentLensAccount && (
+          <div className="mb-6">
+            <ThematicContainer
+              asButton={false}
+              glassmorphic={true}
+              color="nocenaPurple"
+              rounded="xl"
+              className="p-4"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">Challenge a Friend</h3>
+                  <p className="text-gray-300 text-sm">
+                    Send custom challenges to your friends and compete for rewards!
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowPrivateChallengeCreator(true)}
+                  className="bg-nocenaPink hover:bg-nocenaPink/80 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Create Challenge
+                </button>
+              </div>
+            </ThematicContainer>
           </div>
         )}
 
