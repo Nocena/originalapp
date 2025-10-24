@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
-import { fetchNotifications } from '../../lib/graphql';
+import { fetchNotifications } from '../../lib/api/dgraph';
 import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';
 import NotificationInviteReward from './notifications/NotificationInviteReward';
