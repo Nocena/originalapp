@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { ChallengeData } from '../../../lib/map/types';
 import ChallengePopup from './ChallengePopup';
 import { useAuth } from '../../../contexts/AuthContext'; // Add this import
+import { ChallengeData } from 'src/lib/graphql/features/challenge/types';
 
 interface ChallengeMarkerProps {
   map: any;
