@@ -168,7 +168,7 @@ function SearchView() {
       if (currentLensAccount?.address === account.address) {
         router.push('/profile');
       } else {
-        router.push(`/profile/${account.address}`);
+        router.push(`/profile/${account?.username?.localName}`);
       }
     },
     [router, currentLensAccount]

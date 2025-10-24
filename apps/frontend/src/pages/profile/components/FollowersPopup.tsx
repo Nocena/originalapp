@@ -6,11 +6,12 @@ import ThematicImage from '../../../components/ui/ThematicImage';
 import PrimaryButton from '../../../components/ui/PrimaryButton';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { useAuth } from '../../../contexts/AuthContext';
-import { AccountFragment, PageSize, useFollowersQuery, useFollowMutation, useUnfollowMutation } from '@nocena/indexer';
+import { AccountFragment, PageSize, useFollowersQuery } from '@nocena/indexer';
 import { useRouter } from 'next/router';
 import getAvatar from '../../../helpers/getAvatar';
 import getAccount from '../../../helpers/getAccount';
-import useTransactionLifecycle from '../../../hooks/useTransactionLifecycle';
+import { useApolloClient } from '@apollo/client';
+import { useLensFollowActions } from '../../../hooks/useLensFollowActions';
 
 const nocenixIcon = '/nocenix.ico';
 
@@ -30,6 +31,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
   const [pendingFollowActions, setPendingFollowActions] = useState<Set<string>>(new Set());
   const { currentLensAccount } = useAuth();
   const router = useRouter();
+  const { cache } = useApolloClient();
 
   const contentRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number | null>(null);
@@ -47,11 +49,6 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
   const followers = data?.followers?.items;
   const pageInfo = data?.followers?.pageInfo;
   const hasMore = pageInfo?.next;
-
-  const onError = (error: any) => {
-    // setIsSubmitting(false);
-    // errorToast(error);
-  };
 
   // Setup touch handlers for swipe down to close
   useEffect(() => {
@@ -114,69 +111,13 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
     };
   }, [onClose]);
 
-  const onCompleted = () => {
-    // updateCache();
-    // setIsSubmitting(false);
-    // onFollow?.();
-  };
-
-  const handleTransactionLifecycle = useTransactionLifecycle();
-
-  const [follow] = useFollowMutation({
-    onCompleted: async ({ follow }) => {
-      if (follow.__typename === 'FollowResponse') {
-        return onCompleted();
-      }
-
-      if (follow.__typename === 'AccountFollowOperationValidationFailed') {
-        return onError({ message: follow.reason });
-      }
-
-      return await handleTransactionLifecycle({
-        transactionData: follow,
-        onCompleted,
-        onError,
-      });
-    },
-    onError,
-  });
-
-  const [unfollow] = useUnfollowMutation({
-    onCompleted: async ({ unfollow }) => {
-      if (unfollow.__typename === 'UnfollowResponse') {
-        return onCompleted();
-      }
-
-      if (unfollow.__typename === 'AccountFollowOperationValidationFailed') {
-        return onError({ message: unfollow.reason });
-      }
-
-      return await handleTransactionLifecycle({
-        transactionData: unfollow,
-        onCompleted,
-        onError,
-      });
-    },
-    onError,
-  });
-
-  const handleFollow = async (targetAccountAddress: string) => {
-    return await follow({
-      variables: { request: { account: targetAccountAddress } },
-    });
-  };
-
-  const handleUnfollow = async (targetAccountAddress: string) => {
-    return await unfollow({
-      variables: { request: { account: targetAccountAddress } },
-    });
-  };
+  const { followeringAccount, handleFollow, handleUnfollow } = useLensFollowActions();
 
   const handleProfileRedirect = (clickedUser: AccountFragment) => {
     if (currentLensAccount?.address === clickedUser.address) {
       router.push(`/profile`);
     } else {
-      router.push(`/profile/${clickedUser.address}`);
+      router.push(`/profile/${clickedUser?.username?.localName}`);
     }
     onClose();
   };
@@ -293,10 +234,14 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
                           }
                           onClick={(e) => {
                             e.stopPropagation(); // Prevent profile navigation when clicking the button
-                            if (!isCurrentUser) isFollowing ? handleUnfollow(follower.address) : handleFollow(follower.address);
+                            if (!isCurrentUser)
+                              isFollowing
+                                ? handleUnfollow(follower)
+                                : handleFollow(follower);
                           }}
                           className="px-4 py-1 text-sm min-w-[5rem] h-8"
                           isActive={isFollowing}
+                          loading={follower.address === followeringAccount?.address}
                           disabled={isCurrentUser || isPending}
                         />
                       </div>
