@@ -20,6 +20,8 @@ import { useAccountStatsQuery, useMeLazyQuery, useSetAccountMetadataMutation } f
 import useTransactionLifecycle from '../../hooks/useTransactionLifecycle';
 import usePollTransactionStatus from '../../hooks/usePollTransactionStatus';
 import { uploadImageFile } from 'src/helpers/accountPictureUtils';
+import LoadingSpinner from '@components/ui/LoadingSpinner';
+import PrimaryButton from '@components/ui/PrimaryButton';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -29,10 +31,10 @@ const ProfileView: React.FC = () => {
   const { currentLensAccount, setCurrentLensAccount } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
-
-  console.log("currentLensAccount", currentLensAccount)
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCoverSaving, setIsCoverSaving] = useState(false);
+  const [isAvatarSaving, setIsAvatarSaving] = useState(false);
+  const [isBioSaving, setIsBioSaving] = useState(false);
   // Basic profile state
   const [profilePic, setProfilePic] = useState<string>(currentLensAccount?.metadata?.picture);
   const [showFollowersPopup, setShowFollowersPopup] = useState<boolean>(false);
@@ -118,13 +120,17 @@ const ProfileView: React.FC = () => {
     pollTransactionStatus(hash, async () => {
       const accountData = await getCurrentAccountDetails();
       setCurrentLensAccount(accountData?.data?.me.loggedInAs.account);
-      setIsSubmitting(false);
+      setIsCoverSaving(false)
+      setIsAvatarSaving(false)
+      setIsBioSaving(false)
       toast.success("Account updated");
     });
   };
 
   const onError = (error: Error) => {
-    setIsSubmitting(false);
+    setIsCoverSaving(false)
+    setIsAvatarSaving(false)
+    setIsBioSaving(false)
     toast.error(error.message);
   };
 
@@ -151,7 +157,6 @@ const ProfileView: React.FC = () => {
       return toast.error("Please sign in your wallet.");
     }
 
-    setIsSubmitting(true);
     const otherAttributes =
       currentLensAccount.metadata?.attributes
         ?.filter(
@@ -178,7 +183,6 @@ const ProfileView: React.FC = () => {
       coverPicture: coverUrl || undefined,
       picture: pfpUrl || undefined
     };
-    console.log("preparedAccountMetadata", preparedAccountMetadata)
     preparedAccountMetadata.attributes =
       preparedAccountMetadata.attributes?.filter((m) => {
         return m.key !== "" && Boolean(trimify(m.value));
@@ -224,6 +228,7 @@ const ProfileView: React.FC = () => {
   const handleProfilePicUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && currentLensAccount) {
+      setIsAvatarSaving(true)
       const decentralizedUrl = await uploadImageFile(file);
       await updateAccount(decentralizedUrl, coverPhoto);
     }
@@ -232,6 +237,7 @@ const ProfileView: React.FC = () => {
   const handleCoverPhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && currentLensAccount) {
+      setIsCoverSaving(true)
       const decentralizedUrl = await uploadImageFile(file);
       await updateAccount(profilePic, decentralizedUrl);
     }
@@ -247,6 +253,7 @@ const ProfileView: React.FC = () => {
     }
 
     try {
+      setIsBioSaving(true)
       await updateAccount(profilePic, coverPhoto);
       setIsEditingBio(false);
     } catch (error) {
@@ -295,7 +302,8 @@ const ProfileView: React.FC = () => {
           <Image src={coverPhoto || '/images/cover.jpg'} alt="Cover" fill className="object-cover" />
 
           {/* Gradient overlay for smooth blending effect */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-transparent via-70% to-black/80" />
+          <div
+            className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-transparent via-70% to-black/80" />
 
           <div
             className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
@@ -305,6 +313,14 @@ const ProfileView: React.FC = () => {
               Change Cover Photo
             </div>
           </div>
+
+          {
+            isCoverSaving && (
+              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                <LoadingSpinner size="lg" />
+              </div>
+            )
+          }
 
           <input
             type="file"
@@ -331,6 +347,13 @@ const ProfileView: React.FC = () => {
                       height={120}
                       className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform"
                     />
+                    {
+                      isAvatarSaving && (
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center rounded-full">
+                          <LoadingSpinner size="md" />
+                        </div>
+                      )
+                    }
                   </div>
                 </div>
               </div>
@@ -387,12 +410,22 @@ const ProfileView: React.FC = () => {
                   >
                     Cancel
                   </button>
+                  <div>
+                    <PrimaryButton
+                      text="Save"
+                      onClick={handleSaveBioClick}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-80 rounded-lg transition-all text-sm font-medium"
+                      loading={isBioSaving}
+                    />
+                  </div>
+{/*
                   <button
                     onClick={handleSaveBioClick}
                     className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-80 rounded-lg transition-all text-sm font-medium"
                   >
                     Save
                   </button>
+*/}
                 </div>
               </div>
             ) : (
