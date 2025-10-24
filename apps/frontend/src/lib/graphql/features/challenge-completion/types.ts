@@ -54,3 +54,10 @@ export interface ChallengeCompletion extends BasicCompletionType {
     createdAt: string;
   }>;
 }
+
+export interface MediaMetadata {
+  directoryCID: string;
+  hasVideo: boolean;
+  hasSelfie: boolean;
+  timestamp?: number;
+}

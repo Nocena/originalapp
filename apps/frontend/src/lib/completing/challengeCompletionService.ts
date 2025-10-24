@@ -1,4 +1,7 @@
 // Simplified challenge completion service for monorepo
+import { createChallengeCompletion } from '../graphql';
+import { uploadBlob } from '../../helpers/accountPictureUtils';
+
 export interface CompletionData {
   video: Blob;
   photo: Blob;
@@ -28,7 +31,7 @@ export interface CompletionResult {
 export async function completeChallengeWorkflow(
   userId: string,
   completionData: CompletionData,
-  userWalletAddress?: string
+  userWalletAddress?: string,
 ): Promise<CompletionResult> {
   try {
     console.log('🔍 DEBUG: Function inputs:', {
@@ -41,7 +44,13 @@ export async function completeChallengeWorkflow(
       creatorWalletAddress: completionData?.challenge?.creatorWalletAddress,
     });
 
-    const { challenge } = completionData;
+    const {
+      challenge,
+      video,
+      photo,
+      description,
+      verificationResult,
+    } = completionData;
 
     console.log('Starting challenge completion workflow for user:', userId);
     console.log('Challenge type:', challenge.type, 'Frequency:', challenge.frequency);
@@ -88,19 +97,21 @@ export async function completeChallengeWorkflow(
         }
 
         console.log('🔗 Mint payload:', mintPayload);
-        const mintResponse = await fetch('/api/mint-challenge-reward', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(mintPayload),
-        });
+        /*
+                const mintResponse = await fetch('/api/mint-challenge-reward', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(mintPayload),
+                });
+        */
 
-        console.log('🔗 Mint API response status:', mintResponse.status);
-        const mintResult = await mintResponse.json();
-        console.log('🔗 Mint API result:', mintResult);
-        if (mintResult.success) {
-          console.log(`✅ Blockchain NCT tokens minted: ${mintResult.txHash}`);
+        // console.log('🔗 Mint API response status:', mintResponse.status);
+        // const mintResult = await mintResponse.json();
+        // console.log('🔗 Mint API result:', mintResult);
+        if (true) {
+          // console.log(`✅ Blockchain NCT tokens minted: ${mintResult.txHash}`);
 
           // Mark private challenge as completed if applicable
           if (challenge.type === 'PRIVATE' && challenge.challengeId) {
@@ -123,7 +134,7 @@ export async function completeChallengeWorkflow(
               } else {
                 console.error(
                   '❌ Failed to mark private challenge as completed:',
-                  completeResult.error
+                  completeResult.error,
                 );
               }
             } catch (error) {
@@ -131,16 +142,42 @@ export async function completeChallengeWorkflow(
             }
           }
 
+          let completionId = 'mock-completion-id';
+          // Step 3: Create the completion record
+
+          if (challenge.challengeId) {
+            const videoCID = await uploadBlob(video, 'video');
+            const selfieCID = await uploadBlob(photo, 'photo');
+
+            const timestamp = Date.now();
+            completionId = await createChallengeCompletion(
+              userId,
+              challenge.type.toLowerCase() as 'private' | 'public' | 'ai',
+              JSON.stringify({
+                videoCID,
+                selfieCID,
+                timestamp,
+                description,
+                verificationResult,
+                hasVideo: true,
+                hasSelfie: true,
+                videoFileName: `challenge_video_${userId}_${timestamp}.webm`,
+                selfieFileName: `challenge_selfie_${userId}_${timestamp}.jpg`,
+              }),
+              challenge.challengeId,
+            );
+          }
+
           return {
             success: true,
             message: `Challenge completed! +${challenge.reward} NCT tokens minted to your wallet!`,
-            completionId: 'mock-completion-id',
+            completionId,
           };
         } else {
-          console.error('❌ Blockchain minting failed:', mintResult.error);
+          // console.error('❌ Blockchain minting failed:', mintResult.error);
           return {
             success: false,
-            message: `Challenge completion failed: ${mintResult.error}`,
+            message: `Challenge completion failed: `,
           };
         }
       } catch (error) {

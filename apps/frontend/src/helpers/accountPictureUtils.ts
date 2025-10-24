@@ -52,3 +52,38 @@ export const uploadImageFile = async (
 
   return decentralizedUrl;
 };
+
+export const uploadBlob = async (
+  blob: Blob,
+  type: 'photo' | 'video'
+): Promise<string> => {
+  if (type === 'photo') {
+    const file = new File([blob as Blob], "upload_image.png", {
+      type: (blob as Blob).type
+    });
+    const cleanedFile = await imageCompression(file, {
+      exifOrientation: 1,
+      maxSizeMB: 6,
+      maxWidthOrHeight: 3000,
+      useWebWorker: true
+    });
+    const attachment = await uploadFileToIPFS(cleanedFile);
+    const decentralizedUrl = attachment.uri;
+    if (!decentralizedUrl) {
+      throw new Error("uploadFileToIPFS failed");
+    }
+
+    return decentralizedUrl;
+  } else {
+    const file = new File([blob as Blob], "upload_video.webm", {
+      type: (blob as Blob).type
+    });
+    const attachment = await uploadFileToIPFS(file);
+    const decentralizedUrl = attachment.uri;
+    if (!decentralizedUrl) {
+      throw new Error("uploadFileToIPFS failed");
+    }
+
+    return decentralizedUrl;
+  }
+};
