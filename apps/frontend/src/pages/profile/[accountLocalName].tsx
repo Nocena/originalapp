@@ -12,6 +12,7 @@ import StatsSection from './components/StatsSection';
 import CalendarSection from './components/CalendarSection';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import getAvatar from '../../helpers/getAvatar';
+import { useLensFollowActions } from '../../hooks/useLensFollowActions';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -42,7 +43,6 @@ const OtherProfileView: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [isPendingFollow, setIsPendingFollow] = useState(false);
   const [showFollowersPopup, setShowFollowersPopup] = useState(false);
   const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
@@ -64,9 +64,11 @@ const OtherProfileView: React.FC = () => {
   const selectedUserAccount = lensData?.account
 
   const { data: accountStatsData, loading: accountStatsLoading } = useAccountStatsQuery({
-    variables: { request: { account: currentLensAccount?.address } }
+    variables: { request: { account: selectedUserAccount?.address } }
   });
   const stats = accountStatsData?.accountStats.graphFollowStats;
+
+  const { followeringAccount, handleFollow, handleUnfollow } = useLensFollowActions();
 
   // Check if this page is visible in the PageManager
   useEffect(() => {
@@ -116,9 +118,10 @@ const OtherProfileView: React.FC = () => {
   }, [selectedUserAccount]);
 
   const handleFollowToggle = async () => {
-    if (!currentLensAccount || !selectedUserAccount || isPendingFollow) return;
-    // Set pending state
-    setIsPendingFollow(true);
+    if (!currentLensAccount || !selectedUserAccount) return;
+    selectedUserAccount.operations?.isFollowedByMe
+      ? handleUnfollow(selectedUserAccount)
+      : handleFollow(selectedUserAccount)
   };
 
   // Handle "Challenge Me" button click
@@ -247,7 +250,7 @@ const OtherProfileView: React.FC = () => {
   if (selectedUserAccount) {
     // Check if current user is following this profile
     // const isFollowing = !!(currentLensAccount && user.followers.includes(currentUser.id));
-    const isFollowing = false;
+    const isFollowing = selectedUserAccount.operations?.isFollowedByMe || false;
 
     return (
       <div
@@ -338,18 +341,15 @@ const OtherProfileView: React.FC = () => {
             <div className="mb-6 flex space-x-3">
               <PrimaryButton
                 text={
-                  isPendingFollow
-                    ? isFollowing
-                      ? 'Unfollowing...'
-                      : 'Following...'
-                    : isFollowing
+                isFollowing
                       ? 'Following'
                       : 'Follow'
                 }
                 onClick={handleFollowToggle}
+                loading={!!followeringAccount}
                 className="flex-1"
                 isActive={!isFollowing}
-                disabled={isPendingFollow || !currentLensAccount}
+                disabled={!selectedUserAccount}
               />
               {/* Only show Challenge button if viewing someone else's profile */}
               {currentLensAccount?.address !== selectedUserAccount?.address && (
@@ -389,7 +389,7 @@ const OtherProfileView: React.FC = () => {
             {/* Content Based on Active Section - with bottom margin */}
             <div className="space-y-4 mb-8">
               {activeSection === 'trailer' && (
-                <TrailerSection profilePicture="placeholder" generatedAvatar="placeholder" />
+                <TrailerSection profilePicture="placeholder" generatedAvatar={null} />
               )}
 
               {activeSection === 'calendar' && (
@@ -456,7 +456,7 @@ const OtherProfileView: React.FC = () => {
             }}
             prefilledUser={{
               id: selectedUserAccount?.address,
-              username: selectedUserAccount?.username?.localName,
+              username: selectedUserAccount?.username?.localName || '',
               profilePicture: selectedUserAccount?.metadata?.picture,
               wallet: selectedUserAccount?.address,
               earnedTokens: 0,
