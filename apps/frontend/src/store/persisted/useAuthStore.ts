@@ -26,12 +26,14 @@ const store = create(
       refreshToken: null,
       signIn: ({ accessToken, refreshToken }) => set({ accessToken, refreshToken }),
       signOut: async () => {
-        // Clear Localstorage
-        const allLocalstorageStores = Object.values(Localstorage).filter(
-          (value) => value !== Localstorage.SearchStore
-        );
-        for (const store of allLocalstorageStores) {
-          localStorage.removeItem(store);
+        // Clear Localstorage only if in browser environment
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const allLocalstorageStores = Object.values(Localstorage).filter(
+            (value) => value !== Localstorage.SearchStore
+          );
+          for (const store of allLocalstorageStores) {
+            localStorage.removeItem(store);
+          }
         }
       },
     }),

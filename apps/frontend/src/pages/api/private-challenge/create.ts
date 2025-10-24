@@ -1,12 +1,14 @@
 /**
  * Private Challenge Creation API
  *
- * Creates a new private challenge between users using real database.
+ * Creates a new private challenge between users using Lens accounts.
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { CreatePrivateChallengeRequest } from '../../../types/notifications';
-import { createPrivateChallenge, getUserFromDgraph } from '../../../lib/api/dgraph';
+import { createPrivateChallenge } from '../../../lib/api/dgraph';
+import { lensApolloClient } from '../../_app';
+import { AccountDocument, AccountQuery, AccountQueryVariables } from '@nocena/indexer';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -43,18 +45,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Cannot send challenge to yourself' });
     }
 
-    // Look up actual user IDs from wallet addresses
-    const creatorUser = await getUserFromDgraph(creatorId);
-    const recipientUser = await getUserFromDgraph(recipientId);
+    // Get owner wallet addresses from Lens accounts
+    const [creatorData, recipientData] = await Promise.all([
+      lensApolloClient.query<AccountQuery, AccountQueryVariables>({
+        query: AccountDocument,
+        variables: { request: { address: creatorId } },
+      }),
+      lensApolloClient.query<AccountQuery, AccountQueryVariables>({
+        query: AccountDocument,
+        variables: { request: { address: recipientId } },
+      }),
+    ]);
 
-    if (!creatorUser || !recipientUser) {
-      return res.status(400).json({ error: 'Invalid user addresses' });
+    const creatorOwnerAddress = creatorData.data?.account?.owner;
+    const recipientOwnerAddress = recipientData.data?.account?.owner;
+
+    if (!creatorOwnerAddress || !recipientOwnerAddress) {
+      return res.status(400).json({ error: 'Could not find wallet addresses for users' });
     }
 
-    // Create challenge in real database with actual user IDs
+    // Create challenge using Lens account IDs but store owner wallet addresses
     const challengeId = await createPrivateChallenge(
-      creatorUser.id,
-      recipientUser.id,
+      creatorId, // Lens account address for identification
+      recipientId, // Lens account address for identification
       name,
       description,
       rewardAmount,
