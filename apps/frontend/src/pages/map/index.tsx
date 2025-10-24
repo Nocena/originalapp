@@ -1,18 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import type { MapOptions } from 'maplibre-gl';
-import { ChallengeData, LocationData } from '../../lib/map/types';
 import UserLocationMarker from './components/UserLocationMarker';
 import ChallengeMarker from './components/ChallengeMarker';
 import MapControls from './components/MapControls';
 import LoadingOverlay from './components/LoadingOverlay';
 import {
-  fetchNearbyChallenge,
   getMapStyleURL,
   getUserLocation,
   loadMapLibreCSS,
 } from '../../lib/map/mapService';
-import { generateRandomChallenges } from '../../lib/map/challengeGenerator'; // NEW: Import generator
+import { generateRandomChallenges } from '../../lib/map/challengeGenerator';
+import { fetchNearbyChallenge } from '../../lib/graphql/features/challenge';
+import { ChallengeData } from '../../lib/graphql/features/challenge/types';
+import { LocationData } from '../../lib/types'; // NEW: Import generator
 
 interface BrowsingNavigationDetail {
   challengeId: string;
@@ -64,6 +65,8 @@ const MapView = () => {
 
     console.log('🎯 Generating AI challenges at:', userLocation);
 
+    // TODO: comment it temporary
+/*
     try {
       // Generate new challenges using the AI generator
       const newChallenges = await generateRandomChallenges(
@@ -88,6 +91,7 @@ const MapView = () => {
       console.error('❌ Error generating challenges:', error);
       throw error;
     }
+*/
   };
 
   useEffect(() => {
