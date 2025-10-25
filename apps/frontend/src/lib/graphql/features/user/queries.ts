@@ -128,20 +128,6 @@ export const CHECK_USERNAME_EXISTS = gql`
   }
 `;
 
-export const GET_LEADERBOARD = gql`
-  query GetLeaderboard($first: Int, $offset: Int) {
-    queryUser(order: { desc: earnedTokens }, first: $first, offset: $offset) {
-      id
-      username
-      profilePicture
-      earnedTokens
-      earnedTokensToday
-      earnedTokensThisWeek
-      earnedTokensThisMonth
-    }
-  }
-`;
-
 export const GET_ALL_PUSH_SUBSCRIPTIONS = gql`
   query GetAllPushSubscriptions {
     queryUser(filter: { pushSubscription: { ne: "" } }) {
