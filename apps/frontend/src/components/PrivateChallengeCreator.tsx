@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { CreatePrivateChallengeRequest } from '../types/notifications';
 import SearchBox, { SearchUser } from '../pages/search/components/SearchBox';
 import { useAuth } from '../contexts/AuthContext';
@@ -41,7 +42,7 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
   const handleUserSelect = (account: AccountFragment) => {
     // Prevent selecting yourself
     if (currentLensAccount?.address === account.address) {
-      alert('You cannot send a challenge to yourself!');
+      toast.error('You cannot send a challenge to yourself!');
       return;
     }
 
