@@ -57,6 +57,7 @@ const RegisterWalletConnectStep: React.FC<RegisterWalletConnectStepProps> = ({
     }
   };
 
+/*
   useEffect(() => {
     if (account?.address) {
       setIsCheckingWallet(true);
@@ -81,6 +82,7 @@ const RegisterWalletConnectStep: React.FC<RegisterWalletConnectStepProps> = ({
         });
     }
   }, [account?.address]);
+*/
 
   const handleContinue = () => {
     if (walletError) {
