@@ -4,8 +4,6 @@ import { useRouter } from 'next/router';
 import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useActiveAccount } from 'thirdweb/react';
-import { generateInviteCode } from '../../lib/api/dgraph';
-import { registerUser } from '../../lib/graphql';
 import AuthenticationLayout from '@components/layout/AuthenticationLayout';
 import RegisterWelcomeStep from '@components/register/components/RegisterWelcomeStep';
 import RegisterInviteCodeStep from '@components/register/components/RegisterInviteCodeStep';
