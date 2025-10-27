@@ -1,4 +1,11 @@
-import { FollowingDocument, FollowingQuery, FollowingQueryVariables, PageSize } from '@nocena/indexer';
+import {
+  AccountDocument,
+  AccountQuery, AccountQueryVariables,
+  FollowingDocument,
+  FollowingQuery,
+  FollowingQueryVariables,
+  PageSize,
+} from '@nocena/indexer';
 import { lensApolloClient } from '@pages/_app';
 
 export async function fetchFollowingData(
@@ -15,4 +22,19 @@ export async function fetchFollowingData(
   });
 
   return data.following;
+}
+
+export async function getLensAccountByAddress(
+  address: string
+): Promise<AccountQuery> {
+  const { data } = await lensApolloClient.query<AccountQuery, AccountQueryVariables>({
+    query: AccountDocument,
+    variables: {
+      request: {
+        address,
+      }
+    },
+  });
+
+  return data;
 }
