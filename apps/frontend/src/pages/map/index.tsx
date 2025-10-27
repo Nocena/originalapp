@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import type { MapOptions } from 'maplibre-gl';
+import { useAuth } from '../../contexts/AuthContext';
 import UserLocationMarker from './components/UserLocationMarker';
 import ChallengeMarker from './components/ChallengeMarker';
 import MapControls from './components/MapControls';
@@ -10,10 +11,32 @@ import {
   getUserLocation,
   loadMapLibreCSS,
 } from '../../lib/map/mapService';
-import { generateRandomChallenges } from '../../lib/map/challengeGenerator';
+import { generateRandomChallenges, generateSingleReplacement } from '../../lib/map/challengeGenerator';
 import { fetchNearbyChallenge } from '../../lib/graphql/features/challenge';
+import { fetchUserCompletions } from '../../lib/graphql/features/challenge-completion';
 import { ChallengeData } from '../../lib/graphql/features/challenge/types';
-import { LocationData } from '../../lib/types'; // NEW: Import generator
+import { LocationData } from '../../lib/types';
+
+// Helper function to get user's completed PUBLIC challenge IDs
+async function getUserCompletedChallengeIds(userAddress?: string): Promise<string[]> {
+  if (!userAddress) return [];
+  
+  try {
+    const completions = await fetchUserCompletions({
+      userLensAccountId: userAddress,
+      challengeType: 'public',
+      startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // Last 30 days
+      endDate: new Date().toISOString(),
+    });
+    
+    return completions
+      .filter(c => c.publicChallenge?.id)
+      .map(c => c.publicChallenge!.id);
+  } catch (error) {
+    console.error('❌ Error fetching user completions:', error);
+    return [];
+  }
+} // NEW: Import generator
 
 interface BrowsingNavigationDetail {
   challengeId: string;
@@ -26,6 +49,7 @@ interface BrowsingNavigationEvent extends CustomEvent {
 
 const MapView = () => {
   const router = useRouter();
+  const { currentLensAccount } = useAuth();
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -57,7 +81,7 @@ const MapView = () => {
     });
   };
 
-  // NEW: Handle challenge generation
+  // Handle AI challenge generation
   const handleGenerateChallenges = async () => {
     if (!userLocation) {
       throw new Error('User location is required');
@@ -65,33 +89,34 @@ const MapView = () => {
 
     console.log('🎯 Generating AI challenges at:', userLocation);
 
-    // TODO: comment it temporary
-/*
     try {
-      // Generate new challenges using the AI generator
       const newChallenges = await generateRandomChallenges(
         userLocation.latitude,
         userLocation.longitude,
-        10 // Generate 10 challenges
+        10
       );
 
       console.log(`✅ Generated ${newChallenges.length} challenges`);
 
-      // Replace existing challenges with new ones
       setChallenges(newChallenges);
 
-      // Clear selected pin
+      // Cache challenges for persistence
+      const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
+      localStorage.setItem(cacheKey, JSON.stringify({
+        challenges: newChallenges,
+        timestamp: Date.now(),
+        location: userLocation
+      }));
+
       setSelectedPin(null);
 
-      // Optional: Show success message
       setTimeout(() => {
-        alert(`Generated ${newChallenges.length} new challenges nearby! 🎉`);
+        alert(`Generated ${newChallenges.length} new AI challenges nearby! 🎉`);
       }, 100);
     } catch (error) {
       console.error('❌ Error generating challenges:', error);
       throw error;
     }
-*/
   };
 
   useEffect(() => {
@@ -191,6 +216,58 @@ const MapView = () => {
           setMapLoaded(true);
 
           try {
+            // Load cached challenges if available and fresh (< 1 hour)
+            const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
+            const cached = localStorage.getItem(cacheKey);
+            
+            if (cached) {
+              const { challenges: cachedChallenges, timestamp } = JSON.parse(cached);
+              if (Date.now() - timestamp < 3600000) {
+                console.log('📦 Using cached challenges');
+                
+                // Filter out user's completed challenges from cache
+                try {
+                  const userCompletedIds = await getUserCompletedChallengeIds(currentLensAccount?.address);
+                  const visibleChallenges = cachedChallenges.filter((c: any) => !userCompletedIds.includes(c.id));
+                  
+                  console.log('🔍 Debug:', {
+                    totalCached: cachedChallenges.length,
+                    userCompletedIds,
+                    visibleAfterFilter: visibleChallenges.length,
+                    needToGenerate: 5 - visibleChallenges.length
+                  });
+                  
+                  if (visibleChallenges.length < 10) {
+                    const needed = 10 - visibleChallenges.length;
+                    console.log(`🎯 User has ${visibleChallenges.length}/10 cached challenges, generating ${needed} replacements...`);
+                    
+                    const replacements: ChallengeData[] = [];
+                    for (let i = 0; i < needed; i++) {
+                      const replacement = await generateSingleReplacement(
+                        userLocation.latitude,
+                        userLocation.longitude,
+                        [...visibleChallenges, ...replacements] // Avoid existing + already generated
+                      );
+                      if (replacement) {
+                        replacements.push(replacement);
+                      }
+                    }
+                    
+                    setChallenges([...visibleChallenges, ...replacements]);
+                  } else {
+                    setChallenges(visibleChallenges);
+                  }
+                } catch (error) {
+                  console.error('❌ Error filtering cached challenges:', error);
+                  setChallenges(cachedChallenges);
+                }
+                
+                setLocatingUser(false);
+                return;
+              }
+            }
+
+            // Fallback to database challenges
             const nearbyChallenge = await fetchNearbyChallenge(userLocation);
             setChallenges(nearbyChallenge);
           } catch (error) {
@@ -245,6 +322,51 @@ const MapView = () => {
     }
   };
 
+  // Auto-generate challenges when none exist
+  useEffect(() => {
+    const autoGenerateIfNeeded = async () => {
+      if (!userLocation || !mapLoaded) return;
+
+      try {
+        // Get user's completed challenge IDs to filter them out
+        const userCompletedIds = await getUserCompletedChallengeIds(currentLensAccount?.address);
+        
+        // Filter out completed challenges from current challenges
+        const visibleChallenges = challenges.filter(c => !userCompletedIds.includes(c.id));
+        
+        if (visibleChallenges.length < 10) {
+          const needed = 10 - visibleChallenges.length;
+          console.log(`🎯 User has ${visibleChallenges.length}/10 challenges, generating ${needed} more...`);
+          
+          const newChallenges = await generateRandomChallenges(
+            userLocation.latitude,
+            userLocation.longitude,
+            needed
+          );
+          
+          // Combine visible existing + new challenges
+          const allChallenges = [...visibleChallenges, ...newChallenges];
+          setChallenges(allChallenges);
+          
+          // Update cache with all challenges (including completed ones for other users)
+          const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
+          localStorage.setItem(cacheKey, JSON.stringify({
+            challenges: [...challenges, ...newChallenges], // Keep all challenges in cache
+            timestamp: Date.now(),
+            location: userLocation
+          }));
+        } else {
+          // User has enough visible challenges, just update display
+          setChallenges(visibleChallenges);
+        }
+      } catch (error) {
+        console.error('❌ Auto-generation failed:', error);
+      }
+    };
+
+    autoGenerateIfNeeded();
+  }, [userLocation, mapLoaded, challenges.length, currentLensAccount?.address]);
+
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -263,6 +385,52 @@ const MapView = () => {
       }
     };
   }, [selectedPin]);
+
+  useEffect(() => {
+    const handleChallengeCompleted = async (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { challengeId, userId } = customEvent.detail;
+      
+      console.log('🎉 Challenge completed, refreshing user challenges...', { challengeId, userId });
+      
+      if (userId === currentLensAccount?.address && userLocation) {
+        // Refresh challenges for this user
+        try {
+          const userCompletedIds = await getUserCompletedChallengeIds(currentLensAccount?.address);
+          const visibleChallenges = challenges.filter(c => !userCompletedIds.includes(c.id));
+          
+          if (visibleChallenges.length < 10) {
+            const needed = 10 - visibleChallenges.length;
+            console.log(`🔄 Generating ${needed} replacement challenges...`);
+            
+            const replacements: ChallengeData[] = [];
+            for (let i = 0; i < needed; i++) {
+              const replacement = await generateSingleReplacement(
+                userLocation.latitude,
+                userLocation.longitude,
+                [...visibleChallenges, ...replacements]
+              );
+              if (replacement) {
+                replacements.push(replacement);
+              }
+            }
+            
+            setChallenges([...visibleChallenges, ...replacements]);
+          } else {
+            setChallenges(visibleChallenges);
+          }
+        } catch (error) {
+          console.error('❌ Error refreshing challenges after completion:', error);
+        }
+      }
+    };
+
+    window.addEventListener('challengeCompleted', handleChallengeCompleted);
+    
+    return () => {
+      window.removeEventListener('challengeCompleted', handleChallengeCompleted);
+    };
+  }, [challenges, currentLensAccount?.address, userLocation]);
 
   useEffect(() => {
     const handleBrowsingNavigation = async (event: Event) => {
@@ -301,9 +469,12 @@ const MapView = () => {
     const handleVisibilityChange = () => {
       if (mapInstanceRef.current) {
         if (document.hidden) {
-          mapInstanceRef.current.stop();
+          // Pause map rendering when tab is hidden
+          mapInstanceRef.current.getCanvas().style.visibility = 'hidden';
         } else {
-          mapInstanceRef.current.start();
+          // Resume map rendering when tab is visible
+          mapInstanceRef.current.getCanvas().style.visibility = 'visible';
+          mapInstanceRef.current.resize(); // Ensure proper sizing
         }
       }
     };
@@ -366,7 +537,7 @@ const MapView = () => {
         onRecenter={handleRecenterMap}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
-        onGenerateChallenges={handleGenerateChallenges} // NEW: Pass the handler
+        onGenerateChallenges={handleGenerateChallenges}
         userLocation={userLocation}
       />
 
