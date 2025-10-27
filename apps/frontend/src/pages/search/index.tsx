@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import { useActiveAccount } from 'thirdweb/react';
+import { useLensFollowActions } from '../../hooks/useLensFollowActions';
 
 import ThematicImage from '../../components/ui/ThematicImage';
 import ThematicContainer from '../../components/ui/ThematicContainer';
@@ -33,6 +34,7 @@ function SearchView() {
   const { currentLensAccount } = useAuth();
   const activeAccount = useActiveAccount(); // Get actual connected wallet
   const router = useRouter();
+  const { followeringAccount } = useLensFollowActions();
 
   // Fetch Top NCT Holders leaderboard
   const fetchLeaderboard = useCallback(async (): Promise<LeaderboardUser[]> => {
@@ -181,7 +183,7 @@ function SearchView() {
         currentLensAccount?.username?.localName === item.userId || // Lens username match
         activeAccount?.address === item.ownerAddress; // Owner address match
       
-      const isPending = pendingFollowActions.has(item.userId);
+      const isPending = followeringAccount?.address === item.userId;
 
       // Podium heights and styles
       const getPodiumStyle = (rank: number) => {

@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useActiveAccount } from 'thirdweb/react';
-import { createPublicClient, defineChain, http } from 'viem';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAccountQuery, useAccountStatsQuery } from '@nocena/indexer';
@@ -15,8 +14,7 @@ import CalendarSection from './components/CalendarSection';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import getAvatar from '../../helpers/getAvatar';
 import { useLensFollowActions } from '../../hooks/useLensFollowActions';
-import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../lib/constants';
-import noceniteTokenArtifact from '../../lib/contracts/nocenite.json';
+import { useNoceniteBalanceFormatted } from '../../hooks/useNoceniteBalance';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -54,8 +52,6 @@ const OtherProfileView: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
     'trailer',
   );
-  const [nctBalance, setNctBalance] = useState<number | null>(null);
-  const [nctLoading, setNctLoading] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch Lens account for the user
@@ -75,6 +71,9 @@ const OtherProfileView: React.FC = () => {
   const stats = accountStatsData?.accountStats.graphFollowStats;
 
   const { followeringAccount, handleFollow, handleUnfollow } = useLensFollowActions();
+
+  // Fetch NCT balance using the global hook
+  const { balance: nctBalance, loading: nctLoading } = useNoceniteBalanceFormatted(selectedUserAccount?.owner);
 
   // Check if this page is visible in the PageManager
   useEffect(() => {
@@ -122,39 +121,6 @@ const OtherProfileView: React.FC = () => {
         elementWidth / 2;
     }
   }, [selectedUserAccount]);
-
-  // Fetch NCT balance when owner address is available
-  useEffect(() => {
-    const fetchNctBalance = async () => {
-      const ownerAddress = selectedUserAccount?.owner;
-      if (!ownerAddress) return;
-
-      setNctLoading(true);
-      try {
-        const publicClient = createPublicClient({
-          chain: defineChain(FLOW_TESTNET_CONFIG),
-          transport: http(),
-        });
-
-        const balance = (await publicClient.readContract({
-          address: CONTRACTS.Nocenite as `0x${string}`,
-          abi: noceniteTokenArtifact.abi,
-          functionName: 'balanceOf',
-          args: [ownerAddress],
-        })) as bigint;
-
-        const balanceInTokens = Number(balance) / Math.pow(10, 18);
-        setNctBalance(balanceInTokens);
-      } catch (error) {
-        console.error('Error fetching NCT balance:', error);
-        setNctBalance(0);
-      } finally {
-        setNctLoading(false);
-      }
-    };
-
-    fetchNctBalance();
-  }, [selectedUserAccount?.owner]);
 
   const handleFollowToggle = async () => {
     if (!currentLensAccount || !selectedUserAccount) return;
