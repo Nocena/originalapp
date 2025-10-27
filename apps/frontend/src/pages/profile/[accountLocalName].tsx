@@ -137,7 +137,7 @@ const OtherProfileView: React.FC = () => {
 
         const balance = (await publicClient.readContract({
           address: CONTRACTS.Nocenite as `0x${string}`,
-          abi: noceniteTokenArtifact,
+          abi: noceniteTokenArtifact.abi,
           functionName: 'balanceOf',
           args: [ownerAddress],
         })) as bigint;
