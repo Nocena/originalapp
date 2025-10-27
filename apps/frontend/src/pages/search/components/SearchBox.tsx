@@ -1,17 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import { sanitizeInput } from '../../../lib/utils/security';
-import { useAuth, User as AuthUser } from '../../../contexts/AuthContext';
+import { sanitizeInput } from '@utils/security';
+import { useAuth } from '../../../contexts/AuthContext';
 
 import ThematicImage from '../../../components/ui/ThematicImage';
 import Image from 'next/image';
-import {
-  AccountFragment,
-  AccountsOrderBy,
-  AccountsRequest,
-  PageSize,
-  useAccountsQuery,
-} from '@nocena/indexer';
+import { AccountFragment, AccountsOrderBy, AccountsRequest, PageSize, useAccountsQuery } from '@nocena/indexer';
 import getAvatar from 'src/helpers/getAvatar';
 
 // Local interface for search results that's compatible with both old and new user structures
