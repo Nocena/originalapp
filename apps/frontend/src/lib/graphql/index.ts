@@ -22,3 +22,7 @@ export * from './features/user';
 export * from './features/challenge-completion';
 export * from './features/follow';
 export * from './features/notification';
+export * from './features/public-challenge';
+export * from './features/private-challenge';
+export * from './features/challenge';
+export * from './features/reaction';

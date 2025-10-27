@@ -1,10 +1,10 @@
 // pages/api/reactions/create.ts - FIXED to use existing dgraph functions
 import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
-import fs from 'fs';
 
 // Import your existing functions from dgraph.ts
-import { createRealMojiReaction, uploadRealMojiToIPFS } from '../../../lib/graphql';
+import { createRealMojiReaction } from '../../../lib/graphql';
+import sanitizeDStorageUrl from '../../../helpers/sanitizeDStorageUrl';
 
 // Disable default body parser to handle multipart/form-data
 export const config = {
@@ -32,24 +32,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Extract form fields
     const userId = Array.isArray(fields.userId) ? fields.userId[0] : fields.userId;
+    const selfieCID = Array.isArray(fields.selfieCID) ? fields.selfieCID[0] : fields.selfieCID;
     const completionId = Array.isArray(fields.completionId)
       ? fields.completionId[0]
       : fields.completionId;
     const reactionType = Array.isArray(fields.reactionType)
       ? fields.reactionType[0]
       : fields.reactionType;
-
-    // Get the uploaded file
-    const imageFile = Array.isArray(files.image) ? files.image[0] : files.image;
-
-    console.log('🎭 [API] Received form data:', {
-      userId,
-      completionId,
-      reactionType,
-      hasImageFile: !!imageFile,
-      imageFileSize: imageFile?.size,
-      imageFileMimeType: imageFile?.mimetype,
-    });
 
     // Validate required fields
     if (!userId || !completionId || !reactionType) {
@@ -60,22 +49,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           userId: !!userId,
           completionId: !!completionId,
           reactionType: !!reactionType,
-          image: !!imageFile,
         },
       });
     }
 
-    if (!imageFile) {
+    if (!selfieCID) {
       return res.status(400).json({
         error: 'No image file uploaded',
-      });
-    }
-
-    // Validate file type
-    if (!imageFile.mimetype?.startsWith('image/')) {
-      return res.status(400).json({
-        error: 'Invalid file type. Only images are allowed.',
-        receivedType: imageFile.mimetype,
       });
     }
 
@@ -91,33 +71,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('🎭 [API] Validation passed, processing image...');
 
-    // Read the file and convert to Blob
-    const fileBuffer = fs.readFileSync(imageFile.filepath);
-    const imageBlob = new Blob([fileBuffer], { type: imageFile.mimetype });
-
-    console.log('🎭 [API] Image blob created:', {
-      size: imageBlob.size,
-      type: imageBlob.type,
-    });
-
     // Step 1: Upload the selfie to IPFS using your existing function
     console.log('🎭 [API] Uploading RealMoji selfie to IPFS...');
-    const selfieCID = await uploadRealMojiToIPFS(imageBlob, reactionType);
-    console.log('🎭 [API] IPFS upload successful:', selfieCID);
 
     // Step 2: Create the reaction in the database using your existing function
     console.log('🎭 [API] Creating reaction in database...');
     const reactionId = await createRealMojiReaction(userId, completionId, reactionType, selfieCID);
     console.log('🎭 [API] Database creation successful:', reactionId);
-
-    // Clean up the temporary file
-    try {
-      fs.unlinkSync(imageFile.filepath);
-      console.log('🎭 [API] Temporary file cleaned up');
-    } catch (cleanupError) {
-      console.error('🎭 [API] Error cleaning up temp file:', cleanupError);
-      // Don't fail the request for cleanup errors
-    }
 
     // Helper function to get emoji for reaction type
     const getEmojiForReactionType = (type: string): string => {
@@ -136,7 +96,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success: true,
       reactionId,
       selfieCID,
-      selfieUrl: `https://gateway.pinata.cloud/ipfs/${selfieCID}`,
+      selfieUrl: sanitizeDStorageUrl(selfieCID),
       reactionType,
       emoji: getEmojiForReactionType(reactionType),
       message: 'RealMoji reaction created successfully',
