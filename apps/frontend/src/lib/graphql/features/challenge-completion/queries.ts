@@ -236,3 +236,32 @@ export const FETCH_COMPLETIONS_BY_CHALLENGE = gql`
         }
     }
 `;
+
+export const GET_COMPLETION_FOR_LIKES = gql`
+    query GetCompletion($completionId: String!) {
+        getChallengeCompletion(id: $completionId) {
+            id
+            likedByLensAccountIds
+            likesCount
+        }
+    }
+`;
+
+/**
+ * Check if completion is already liked by this user
+ */
+export const CHECK_LIKE_STATUS = gql`
+    query CheckLikeStatus($completionId: String!, $userId: String!) {
+        getChallengeCompletion(id: $completionId) {
+            id
+            likesCount
+            likes(filter: { id: { eq: $userId } }) {
+                id
+            }
+            user {
+                id
+                username
+            }
+        }
+    }
+`;
