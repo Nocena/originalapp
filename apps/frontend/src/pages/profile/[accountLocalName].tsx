@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useActiveAccount } from 'thirdweb/react';
 import { createPublicClient, defineChain, http } from 'viem';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAccountQuery, useAccountStatsQuery } from '@nocena/indexer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
@@ -483,15 +484,15 @@ const OtherProfileView: React.FC = () => {
                 });
 
                 if (response.ok) {
-                  alert('Challenge sent successfully!');
+                  toast.success('Challenge sent successfully!');
                   setShowPrivateChallengeCreator(false);
                 } else {
                   const data = await response.json();
-                  alert(`Failed: ${data.error || 'Unknown error'}`);
+                  toast.error(`${data.error || 'Unknown error'}`);
                 }
               } catch (error) {
                 console.error('Error sending challenge:', error);
-                alert('Failed to send challenge');
+                toast.error('Failed to send challenge');
               }
             }}
             prefilledUser={{

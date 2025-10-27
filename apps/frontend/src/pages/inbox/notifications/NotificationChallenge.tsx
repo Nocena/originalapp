@@ -22,6 +22,15 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
   const router = useRouter();
 
   const handleCompleteChallenge = () => {
+    // Check if challenge is expired
+    const isExpired = notification.status === 'expired' || 
+                     (notification.expiresAt && new Date(notification.expiresAt) < new Date());
+    
+    if (isExpired) {
+      alert('This challenge has expired and can no longer be accepted.');
+      return;
+    }
+
     // Determine challenge type and details
     let challengeType = 'AI';
     let challengeId = '';
@@ -66,15 +75,25 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
     const hasCompletableChallenge =
       notification.privateChallenge || notification.publicChallenge || notification.aiChallenge;
 
-    // If there's a completable challenge, navigate to the completion page
-    if (hasCompletableChallenge) {
+    // Check if challenge is expired
+    const isExpired = notification.status === 'expired' || 
+                     (notification.expiresAt && new Date(notification.expiresAt) < new Date());
+
+    // If there's a completable challenge and it's not expired, navigate to the completion page
+    if (hasCompletableChallenge && !isExpired) {
       handleCompleteChallenge();
+    } else if (isExpired) {
+      alert('This challenge has expired and can no longer be accepted.');
     }
   };
 
   // Determine if this notification has a challenge that can be completed
   const hasCompletableChallenge =
     notification.privateChallenge || notification.publicChallenge || notification.aiChallenge;
+
+  // Check if challenge is expired
+  const isExpired = notification.status === 'expired' || 
+                   (notification.expiresAt && new Date(notification.expiresAt) < new Date());
 
   // Display NEW tag if isRead is false
   const shouldShowNew = notification.isRead === false;
@@ -85,11 +104,17 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
       glassmorphic={true}
       color="nocenaPink"
       rounded="xl"
-      className="w-full max-w-lg px-6 py-2 cursor-pointer hover:brightness-110 transition-all relative"
+      className={`w-full max-w-lg px-6 py-2 transition-all relative ${
+        isExpired 
+          ? 'opacity-50 cursor-not-allowed' 
+          : 'cursor-pointer hover:brightness-110'
+      }`}
       onClick={handleCardClick}
     >
       {/* Challenge Text - smaller and less bold */}
-      <div className="text-lg font-light mb-2">{title}</div>
+      <div className={`text-lg font-light mb-2 ${isExpired ? 'line-through text-gray-400' : ''}`}>
+        {title} {isExpired && '(Expired)'}
+      </div>
 
       {/* User and Reward Info Row */}
       <div className="flex items-center justify-between">
