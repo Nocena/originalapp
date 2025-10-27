@@ -4,8 +4,8 @@ import { useRouter } from 'next/router';
 import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useActiveAccount } from 'thirdweb/react';
-import { generateInviteCode, registerUser } from '../../lib/graphql';
-import { CombinedUser, useAuth, User } from '../../contexts/AuthContext';
+import { generateInviteCode } from '../../lib/api/dgraph';
+import { registerUser } from '../../lib/graphql';
 import AuthenticationLayout from '@components/layout/AuthenticationLayout';
 import RegisterWelcomeStep from '@components/register/components/RegisterWelcomeStep';
 import RegisterInviteCodeStep from '@components/register/components/RegisterInviteCodeStep';
@@ -205,55 +205,6 @@ const RegisterPage = () => {
         const accessToken = auth.data?.switchAccount.accessToken;
         const refreshToken = auth.data?.switchAccount.refreshToken;
         signIn({ accessToken, refreshToken });
-
-        // STEP 2: Register the user in Dgraph with mock Lens data
-        console.log('🗄️ Creating user in Dgraph with mock Lens data...');
-        const addedUser = await registerUser({
-          username: registrationData.username,
-          bio: '', // bio (empty for new users)
-          profilePicture: '/images/profile.png', // profilePicture
-          coverPhoto: '/images/cover.jpg', // coverPhoto
-          trailerVideo: '/trailer.mp4', // trailerVideo
-          wallet: registrationData.walletAddress,
-          earnedTokens: 50, // earnedTokens
-          earnedTokensToday: 0, // earnedTokensToday
-          earnedTokensThisWeek: 0, // earnedTokensThisWeek
-          earnedTokensThisMonth: 0, // earnedTokensThisMonth
-          personalField1Type: '', // personalField1Type
-          personalField1Value: '', // personalField1Value
-          personalField1Metadata: '', // personalField1Metadata
-          personalField2Type: '', // personalField2Type
-          personalField2Value: '', // personalField2Value
-          personalField2Metadata: '', // personalField2Metadata
-          personalField3Type: '', // personalField3Type
-          personalField3Value: '', // personalField3Value
-          personalField3Metadata: '', // personalField3Metadata
-          dailyChallenge: '0'.repeat(365), // dailyChallenge
-          weeklyChallenge: '0'.repeat(52), // weeklyChallenge
-          monthlyChallenge: '0'.repeat(12), // monthlyChallenge
-          inviteCode: registrationData.inviteCode || '',
-          // Mock Lens data (these come BEFORE invitedById and pushSubscription according to function signature)
-          lensHandle: '',
-          lensAccountId: lensAccountAddress,
-          lensTransactionHash: transactionHash,
-          lensMetadataUri: '',
-          // These are the optional parameters at the end
-          invitedById: registrationData.invitedById || '',
-          pushSubscription: storedPushSubscription || '', // Convert null to empty string for the API
-        });
-
-        if (!addedUser) {
-          throw new Error('Failed to create user in database');
-        }
-
-        console.log('✅ User created in Dgraph with mock Lens data:', {
-          userId: addedUser.id,
-          username: addedUser.username,
-          lensHandle: addedUser.lensHandle,
-          lensAccountId: addedUser.lensAccountId,
-          notificationsEnabled: !!storedPushSubscription,
-        });
-
         // STEP 3: Mark invite code as used (no recovery mode exception)
         /*
         await fetch('/api/registration/use-invite', {
@@ -267,6 +218,7 @@ const RegisterPage = () => {
 */
 
         // STEP 4: Generate initial invite codes
+/*
         try {
           await generateInviteCode(addedUser.id, 'initial');
           await generateInviteCode(addedUser.id, 'initial');
@@ -275,6 +227,7 @@ const RegisterPage = () => {
           console.error('Error generating initial invite codes:', inviteError);
           // Don't fail registration for this
         }
+*/
 
         // STEP 5: Create user data and commit to AuthContext
         console.log('👤 Creating user data for AuthContext...');

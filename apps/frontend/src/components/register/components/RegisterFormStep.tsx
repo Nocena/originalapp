@@ -27,7 +27,6 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
   const [isCheckingDbUsername, setIsCheckingDbUsername] = useState(false);
   const [dbUsernameError, setDbUsernameError] = useState<string | null>(null);
   const [lensUsernameError, setLensUsernameError] = useState<string | null>(null);
-  const [dbCheckTimeout, setDbCheckTimeout] = useState<NodeJS.Timeout | null>(null);
   // Get form context for setValue
   const { setValue } = useFormContext<FormValues>();
 
@@ -76,39 +75,6 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
     };
   };
 
-  // Function to check username in database
-  const checkUsernameInDatabase = useCallback(async (usernameToCheck: string): Promise<boolean> => {
-    try {
-      console.log('🔍 [FRONTEND] Checking username in database:', usernameToCheck);
-
-      const response = await fetch('/api/registration/checkUsername', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username: usernameToCheck }),
-      });
-
-      console.log('🔍 [FRONTEND] Username check response:', {
-        status: response.status,
-        ok: response.ok,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('🔍 [FRONTEND] Username check failed:', errorText);
-        throw new Error(`Failed to check username: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('🔍 [FRONTEND] Username check result:', data);
-      return data.exists;
-    } catch (error) {
-      console.error('🔍 [FRONTEND] Error checking username:', error);
-      throw error;
-    }
-  }, []);
-
   // Validate username when it changes
   useEffect(() => {
     const trimmedUsername = username?.trim();
@@ -116,11 +82,6 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
     if (!trimmedUsername) {
       setLocalValidation({ isValid: true, errors: [] });
       setDbUsernameError(null);
-      // Clear any pending database check
-      if (dbCheckTimeout) {
-        clearTimeout(dbCheckTimeout);
-        setDbCheckTimeout(null);
-      }
       return;
     }
 
@@ -129,54 +90,11 @@ const RegisterFormStep = ({ control, loading, setStep }: Props) => {
     setLocalValidation(validation);
 
     // If locally valid, check database with debouncing
-    if (validation.isValid) {
-      // Clear previous timeout
-      if (dbCheckTimeout) {
-        clearTimeout(dbCheckTimeout);
-      }
-
-      const newTimeout = setTimeout(async () => {
-        if (trimmedUsername.length >= 3) {
-          setIsCheckingDbUsername(true);
-          setDbUsernameError(null);
-
-          try {
-            const exists = await checkUsernameInDatabase(trimmedUsername);
-            if (exists) {
-              setDbUsernameError(
-                `Username "${trimmedUsername}" is already taken. Please choose a different name.`
-              );
-            } else {
-              setDbUsernameError(null);
-            }
-          } catch (error) {
-            console.error('Error checking username in database:', error);
-            setDbUsernameError('Failed to verify username availability. Please try again.');
-          } finally {
-            setIsCheckingDbUsername(false);
-          }
-        }
-      }, 800);
-
-      setDbCheckTimeout(newTimeout);
-    } else {
+    if (!validation.isValid) {
       // Clear database check if local validation fails
       setDbUsernameError(null);
-      if (dbCheckTimeout) {
-        clearTimeout(dbCheckTimeout);
-        setDbCheckTimeout(null);
-      }
     }
-  }, [username, checkUsernameInDatabase]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (dbCheckTimeout) {
-        clearTimeout(dbCheckTimeout);
-      }
-    };
-  }, [dbCheckTimeout]);
+  }, [username]);
 
   // Check if form is valid
   const isFormValid = Boolean(
