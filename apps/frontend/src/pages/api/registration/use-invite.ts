@@ -1,11 +1,13 @@
 // /api/registration/use-invite.ts
 import { NextApiRequest, NextApiResponse } from 'next';
+/*
 import {
   // validateInviteCode,
   // markInviteAsUsed,
   updateUserTokens,
   createNotification,
 } from '../../../lib/graphql';
+*/
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

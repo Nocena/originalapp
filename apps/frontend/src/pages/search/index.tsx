@@ -1,5 +1,5 @@
 // @refresh reset
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import { useActiveAccount } from 'thirdweb/react';
@@ -7,8 +7,7 @@ import { useActiveAccount } from 'thirdweb/react';
 import ThematicImage from '../../components/ui/ThematicImage';
 import ThematicContainer from '../../components/ui/ThematicContainer';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import { toggleFollowUser } from '../../lib/graphql';
-import SearchBox, { SearchUser } from './components/SearchBox';
+import SearchBox from './components/SearchBox';
 import Image from 'next/image';
 import { AccountFragment } from '@nocena/indexer';
 
@@ -26,21 +25,8 @@ interface LeaderboardUser {
   isPlaceholder?: boolean; // For fake users when not enough real users
 }
 
-// Define interface for auth user data
-interface AuthUserData {
-  id: string;
-  username: string;
-  profilePicture?: string;
-  wallet?: string;
-  earnedTokens?: number;
-  bio?: string;
-  followers?: Array<string | { id: string }>;
-  following?: Array<string | { id: string }>;
-}
-
 function SearchView() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
-  const [pendingFollowActions, setPendingFollowActions] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [lastRefreshTime, setLastRefreshTime] = useState(0);
@@ -174,38 +160,6 @@ function SearchView() {
     [router, currentLensAccount]
   );
 
-  // Handle follow action
-  const handleFollow = useCallback(
-    async (targetUserId: string) => {
-      if (
-        !currentLensAccount ||
-        !currentLensAccount.address ||
-        !targetUserId ||
-        currentLensAccount.address === targetUserId ||
-        pendingFollowActions.has(targetUserId)
-      ) {
-        return;
-      }
-
-      setPendingFollowActions((prev) => new Set(prev).add(targetUserId));
-
-      try {
-        await toggleFollowUser(currentLensAccount.address, targetUserId, false);
-        // Refresh leaderboards to update follow states
-        // You might want to implement a more efficient update here
-      } catch (error) {
-        // Silent fail for follow action
-      } finally {
-        setPendingFollowActions((prev) => {
-          const updated = new Set(prev);
-          updated.delete(targetUserId);
-          return updated;
-        });
-      }
-    },
-    [currentLensAccount, pendingFollowActions]
-  );
-
   // Handle profile navigation
   const handleProfileNavigation = useCallback(
     (leaderboardUser: LeaderboardUser) => {
@@ -326,19 +280,13 @@ function SearchView() {
         </div>
       );
     },
-    [currentLensAccount?.address, currentLensAccount?.username?.localName, activeAccount?.address, pendingFollowActions, handleProfileNavigation, handleFollow]
+    [currentLensAccount?.address, handleProfileNavigation]
   );
 
   // Render remaining items (clean list style)
   const renderRemainingItem = useCallback(
     (item: LeaderboardUser, index: number) => {
-      // Check if this is the current user by comparing both userId and ownerAddress
-      const isCurrentUser = 
-        currentLensAccount?.address === item.userId || // Direct address match
-        currentLensAccount?.username?.localName === item.userId || // Lens username match
-        activeAccount?.address === item.ownerAddress; // Owner address match
-      
-      const isPending = pendingFollowActions.has(item.userId);
+      const isCurrentUser = currentLensAccount?.address === item.userId;
 
       return (
         <ThematicContainer
@@ -404,7 +352,7 @@ function SearchView() {
         </ThematicContainer>
       );
     },
-    [currentLensAccount?.address, currentLensAccount?.username?.localName, activeAccount?.address, pendingFollowActions, handleProfileNavigation, handleFollow]
+    [currentLensAccount?.address, handleProfileNavigation]
   );
 
   return (

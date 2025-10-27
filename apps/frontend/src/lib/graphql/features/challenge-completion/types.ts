@@ -46,11 +46,8 @@ export interface ChallengeCompletion extends BasicCompletionType {
     reactionType: string;
     emoji: string;
     selfieUrl?: string;
-    user: {
-      id: string;
-      username: string;
-      profilePicture: string;
-    };
+    userLensAccountId: string;
+    userAccount?: AccountFragment;
     createdAt: string;
   }>;
 }

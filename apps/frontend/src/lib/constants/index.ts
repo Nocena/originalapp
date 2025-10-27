@@ -1,4 +1,6 @@
 // Dual Token System - Flow EVM Testnet
+import { mainnet, PublicClient } from '@lens-protocol/client';
+
 export const FLOW_EVM_TESTNET_ID = 545;
 
 export const CONTRACTS = {
@@ -37,7 +39,11 @@ export const FLOW_TESTNET_CONFIG = {
 
 // Lens Protocol Configuration (placeholders)
 export const APP_ADDRESS = process.env.NEXT_PUBLIC_LENS_APP_ADDRESS as `0x${string}`;
-export const lensPublicClient = {} as any;
 
+const storage = typeof window !== 'undefined' ? window.localStorage : undefined;
+export const lensPublicClient = PublicClient.create({
+  environment: mainnet,
+  storage: storage,
+});
 // WalletConnect Configuration
 export const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';

@@ -1,16 +1,19 @@
 import graphqlClient from '../../client';
 import {
-  FETCH_ALL_COMPLETIONS, FETCH_COMPLETIONS_BY_CHALLENGE,
+  FETCH_ALL_COMPLETIONS,
+  FETCH_COMPLETIONS_BY_CHALLENGE,
   FETCH_COMPLETIONS_OF_USERS,
   FETCH_LATEST_USER_COMPLETION,
   FETCH_USER_COMPLETIONS,
+  GET_COMPLETION_FOR_LIKES,
 } from './queries';
-import { BasicCompletionType, FetchUserCompletionsParams, MediaMetadata } from './types';
+import { BasicCompletionType, ChallengeCompletion, FetchUserCompletionsParams, MediaMetadata } from './types';
 import { getDateRange } from '../follow/utils';
-import { fetchFollowingData } from '../../../lens/api';
+import { addUserAccountToCompletions, fetchFollowingData, getLensAccountByAddress } from '../../../lens/api';
 import { getDateParts, getEmojiForReactionType, serializeMedia } from './utils';
-import { CREATE_CHALLENGE_COMPLETION } from './mutations';
+import { CREATE_CHALLENGE_COMPLETION, UPDATE_LIKE } from './mutations';
 import { v4 as uuidv4 } from 'uuid';
+import sanitizeDStorageUrl from '../../../../helpers/sanitizeDStorageUrl';
 // ============================================================================
 // QUERY FUNCTIONS
 // ============================================================================
@@ -154,7 +157,7 @@ export async function fetchFollowingsCompletions(userLensAccountAddress: string,
 export async function fetchChallengeCompletionsWithLikesAndReactions(
   challengeId?: string,
   userId?: string,
-): Promise<BasicCompletionType[]> {
+): Promise<ChallengeCompletion[]> {
   try {
     const { data } = await graphqlClient.query({
       query: challengeId ? FETCH_COMPLETIONS_BY_CHALLENGE : FETCH_ALL_COMPLETIONS,
@@ -162,9 +165,8 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
       fetchPolicy: 'no-cache',
     });
 
-    const completions = data?.queryChallengeCompletion || [];
-
-    return completions.map((completion: any) => ({
+    let completions = data?.queryChallengeCompletion || [];
+    const updatedCompletions = completions.map((completion: any) => ({
       ...completion,
       totalLikes: completion.likesCount || 0,
       isLiked: userId
@@ -175,11 +177,11 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
       recentReactions: (completion.reactions || []).map((reaction: any) => ({
         ...reaction,
         emoji: getEmojiForReactionType(reaction.reactionType),
-        selfieUrl: reaction.selfieCID
-          ? `https://gateway.pinata.cloud/ipfs/${reaction.selfieCID}`
-          : null,
+        selfieUrl: sanitizeDStorageUrl(reaction.selfieCID),
       })),
-    }));
+    })) as ChallengeCompletion[];
+
+    return await addUserAccountToCompletions(updatedCompletions)
   } catch (error) {
     console.error('❌ Error fetching completions with likes and reactions:', error);
     throw error;
@@ -244,3 +246,69 @@ export async function createChallengeCompletion(
     throw error;
   }
 }
+
+/**
+ * Toggle like on a challenge completion
+ * @param userLensAccountId - ID of the user liking/unliking
+ * @param completionId - ID of the challenge completion
+ */
+export const toggleCompletionLike = async (
+  userLensAccountId: string,
+  completionId: string,
+): Promise<{ isLiked: boolean; newLikeCount: number }> => {
+  try {
+    // 1️⃣ Validate user exists
+    const userAccount = await getLensAccountByAddress(userLensAccountId);
+    if (!userAccount) throw new Error("User not found");
+
+    // 2️⃣ Fetch current completion data
+    const { data } = await graphqlClient.query({
+      query: GET_COMPLETION_FOR_LIKES,
+      variables: { completionId },
+      fetchPolicy: "network-only",
+    });
+
+    const completion = data?.getChallengeCompletion;
+    if (!completion) throw new Error("Completion not found");
+
+    const likedBy: string[] = completion.likedByLensAccountIds || [];
+    const alreadyLiked = likedBy.includes(userLensAccountId);
+
+    // 3️⃣ Compute updated state
+    const updatedLikedBy = alreadyLiked
+      ? likedBy.filter((id) => id !== userLensAccountId)
+      : [...likedBy, userLensAccountId];
+
+    const newLikeCount = alreadyLiked
+      ? Math.max(0, (completion.likesCount || 0) - 1)
+      : (completion.likesCount || 0) + 1;
+
+    // 🧠 Dgraph sometimes fails to update arrays if we send an empty array directly
+    // So we guard it with explicit empty [] handling
+    const safeLikedBy = updatedLikedBy.length > 0 ? updatedLikedBy : [];
+
+    // 4️⃣ Update mutation
+    const updateResponse = await graphqlClient.mutate({
+      mutation: UPDATE_LIKE,
+      variables: {
+        completionId,
+        likedByLensAccountIds: safeLikedBy,
+        likesCount: newLikeCount,
+      },
+      fetchPolicy: "no-cache",
+    });
+
+    const updated =
+      updateResponse.data?.updateChallengeCompletion?.challengeCompletion?.[0];
+
+    if (!updated) throw new Error("Failed to update like state");
+
+    return {
+      isLiked: !alreadyLiked,
+      newLikeCount: updated.likesCount ?? newLikeCount,
+    };
+  } catch (error) {
+    console.error("Error toggling like:", error);
+    throw error;
+  }
+};

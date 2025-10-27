@@ -40,3 +40,27 @@ export const
         }
     }
 `;
+
+export const UPDATE_LIKE = gql`
+    mutation UpdateLike(
+        $completionId: String!
+        $likedByLensAccountIds: [String!]
+        $likesCount: Int!
+    ) {
+        updateChallengeCompletion(
+            input: {
+                filter: { id: { eq: $completionId } }
+                set: {
+                    likedByLensAccountIds: $likedByLensAccountIds
+                    likesCount: $likesCount
+                }
+            }
+        ) {
+            challengeCompletion {
+                id
+                likesCount
+                likedByLensAccountIds
+            }
+        }
+    }
+`;
