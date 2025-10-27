@@ -9,10 +9,11 @@ import {
 } from './queries';
 import { BasicCompletionType, FetchUserCompletionsParams, MediaMetadata } from './types';
 import { getDateRange } from '../follow/utils';
-import { fetchFollowingData, getLensAccountByAddress } from '../../../lens/api';
+import { addUserAccountToCompletions, fetchFollowingData, getLensAccountByAddress } from '../../../lens/api';
 import { getDateParts, getEmojiForReactionType, serializeMedia } from './utils';
 import { CREATE_CHALLENGE_COMPLETION, UPDATE_LIKE } from './mutations';
 import { v4 as uuidv4 } from 'uuid';
+import sanitizeDStorageUrl from '../../../../helpers/sanitizeDStorageUrl';
 // ============================================================================
 // QUERY FUNCTIONS
 // ============================================================================
@@ -164,7 +165,8 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
       fetchPolicy: 'no-cache',
     });
 
-    const completions = data?.queryChallengeCompletion || [];
+    let completions = data?.queryChallengeCompletion || [];
+    await addUserAccountToCompletions(completions)
 
     return completions.map((completion: any) => ({
       ...completion,
@@ -177,9 +179,7 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
       recentReactions: (completion.reactions || []).map((reaction: any) => ({
         ...reaction,
         emoji: getEmojiForReactionType(reaction.reactionType),
-        selfieUrl: reaction.selfieCID
-          ? `https://gateway.pinata.cloud/ipfs/${reaction.selfieCID}`
-          : null,
+        selfieUrl: sanitizeDStorageUrl(reaction.selfieCID),
       })),
     }));
   } catch (error) {
