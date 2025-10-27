@@ -465,19 +465,6 @@ const BrowsingPage: React.FC = () => {
     }
   };
 
-  // Helper function to get emoji for reaction type
-  const getEmojiForType = (reactionType: string): string => {
-    const emojiMap: { [key: string]: string } = {
-      thumbsUp: '👍',
-      love: '😍',
-      shocked: '🤯',
-      curious: '🤔',
-      fire: '🔥',
-      sad: '😢',
-    };
-    return emojiMap[reactionType] || '😊';
-  };
-
   // Don't render anything if user is not loaded yet
   if (!currentLensAccount) {
     return (
