@@ -5,6 +5,108 @@ import * as mutations from './mutations';
 import { createPublicClient, defineChain, http } from 'viem';
 import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../../constants';
 import noceniteTokenArtifact from '../../../../lib/contracts/nocenite.json';
+import { AccountsBulkDocument, AccountsBulkQuery, AccountsBulkQueryVariables } from '@nocena/indexer';
+import { lensApolloClient } from '../../../../pages/_app';
+// ============================================================================
+// QUERY FUNCTIONS
+// ============================================================================
+
+export async function getUserByWallet(walletAddress: string): Promise<User | null> {
+  const normalizedWallet = normalizeWallet(walletAddress);
+
+  try {
+    const { data } = await graphqlClient.query({
+      query: queries.GET_USER_BY_WALLET,
+      variables: { walletAddress, normalizedWallet },
+    });
+
+    const userData = data.queryUser?.[0];
+    if (!userData) return null;
+
+    // Format the data to match User interface
+    return formatUserData(userData);
+  } catch (error) {
+    console.error('Error getting user by wallet:', error);
+    throw error;
+  }
+}
+
+export async function getUserByLensAccountId(lensAccountAddress: string): Promise<User | null> {
+  try {
+    const { data } = await graphqlClient.query({
+      query: queries.GET_USER_BY_LENS_ACCOUNT_ID,
+      variables: { lensAccountId: lensAccountAddress },
+    });
+
+    const userData = data.queryUser?.[0];
+    if (!userData) return null;
+
+    // Format the data to match User interface
+    return formatUserData(userData);
+  } catch (error) {
+    console.error('Error getting user by wallet:', error);
+    throw error;
+  }
+}
+
+export async function getUserById(userId: string): Promise<User | null> {
+  try {
+    const { data } = await graphqlClient.query({
+      query: queries.GET_USER_BY_ID,
+      variables: { userId },
+    });
+
+    const userData = data.queryUser?.[0];
+    if (!userData) return null;
+
+    return formatUserData(userData);
+  } catch (error) {
+    console.error('Error getting user by ID:', error);
+    throw error;
+  }
+}
+
+export async function fetchAllUsers(): Promise<User[]> {
+  try {
+    const { data } = await graphqlClient.query({
+      query: queries.GET_ALL_USERS,
+    });
+
+    return (data.queryUser || []).map(formatUserData);
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    throw error;
+  }
+}
+
+export async function searchUsers(query: string): Promise<any[]> {
+  try {
+    const { data } = await graphqlClient.query({
+      query: queries.SEARCH_USERS,
+      variables: { searchQuery: `/${query}/i` },
+    });
+
+    return data.queryUser || [];
+  } catch (error) {
+    console.error('Error searching users:', error);
+    throw error;
+  }
+}
+
+export async function fetchUserFollowers(userId: string): Promise<string[]> {
+  try {
+    const { data } = await graphqlClient.query({
+      query: queries.GET_USER_FOLLOWERS,
+      variables: { userId },
+    });
+
+    return data.queryUser?.[0]?.followers?.map((f: any) => f.id) || [];
+  } catch (error) {
+    console.error('Error fetching user followers:', error);
+    throw error;
+  }
+}
+
 export async function checkWalletExists(wallet: string): Promise<boolean> {
   try {
     const normalizedWallet = normalizeWallet(wallet);
@@ -93,90 +195,75 @@ export async function resetTimeBasedEarnings(
 
 export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[]> => {
   try {
-    // Get all users with wallet addresses
-    const { data } = await graphqlClient.query({
-      query: queries.GET_ALL_USERS_WITH_WALLETS,
-      variables: { limit: 1000 }, // Get more users to check balances
-    });
-
-    const users = data.queryUser || [];
-
-    if (users.length === 0) {
-      return [];
-    }
-
-    // Filter users with wallets and get blockchain balances
-    const usersWithWallets = users.filter((user: any) => {
-      if (!user.wallet || user.wallet.trim() === '') return false;
-      // Validate wallet address format (40 hex characters after 0x)
-      const walletRegex = /^0x[a-fA-F0-9]{40}$/;
-      return walletRegex.test(user.wallet);
-    });
-
-    if (usersWithWallets.length === 0) {
-      return [];
-    }
-
-    // Get blockchain balances for all users with wallets
-    const usersWithBalances = await Promise.all(
-      usersWithWallets.map(async (user: any) => {
-        try {
-          // Create public client for reading blockchain data
-          const publicClient = createPublicClient({
-            chain: defineChain(FLOW_TESTNET_CONFIG),
-            transport: http(),
-          });
-
-          // Get NCT token balance with error handling
-          let balance = 0n;
-          try {
-            console.log(`🔍 Checking balance for wallet: ${user.wallet}`);
-            balance = (await publicClient.readContract({
-              address: CONTRACTS.Nocenite as `0x${string}`,
-              abi: noceniteTokenArtifact,
-              functionName: 'balanceOf',
-              args: [user.wallet],
-            })) as bigint;
-            console.log(`💰 Balance for ${user.wallet}: ${balance.toString()}`);
-          } catch (error) {
-            // Silently handle errors and return 0 balance
-            console.error(`❌ Error getting balance for ${user.wallet}:`, error);
-            balance = 0n;
-          }
-
-          // Convert from wei to tokens (18 decimals)
-          const balanceInTokens = Number(balance) / Math.pow(10, 18);
-
-          return {
-            ...user,
-            balance: Math.floor(balanceInTokens),
-          };
-        } catch (error) {
-          console.error(`Error fetching balance for ${user.wallet}:`, error);
-          return { ...user, balance: 0 };
-        }
-      })
+    // Get top NCT holders from Flow testnet Blockscout
+    const response = await fetch(
+      `https://evm-testnet.flowscan.io/api?module=token&action=getTokenHolders&contractaddress=${CONTRACTS.Nocenite}&page=1&offset=${limit}`
     );
-
-    // Filter out users with 0 balance and sort by balance
-    return usersWithBalances
-      .filter((user: any) => user.balance > 0)
-      .sort((a: any, b: any) => b.balance - a.balance)
-      .slice(0, limit)
-      .map((user: any, index: number) => ({
+    
+    if (!response.ok) {
+      throw new Error(`Blockscout API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.status !== '1' || !data.result) {
+      throw new Error('Invalid Blockscout API response');
+    }
+    
+    const holders = data.result;
+    
+    // Extract wallet addresses for bulk Lens account lookup
+    const walletAddresses = holders.map((holder: any) => holder.address);
+    
+    // Query Lens accounts by owner addresses in bulk
+    let lensAccounts: any[] = [];
+    try {
+      const { data: lensData } = await lensApolloClient.query<AccountsBulkQuery, AccountsBulkQueryVariables>({
+        query: AccountsBulkDocument,
+        variables: { 
+          request: { 
+            ownedBy: walletAddresses
+          }
+        },
+      });
+      
+      lensAccounts = lensData?.accountsBulk || [];
+    } catch (error) {
+      console.error('Error fetching Lens accounts:', error);
+    }
+    
+    // Create a map of owner address -> Lens account for quick lookup
+    const lensAccountMap = new Map();
+    lensAccounts.forEach((account: any) => {
+      if (account.owner) {
+        lensAccountMap.set(account.owner.toLowerCase(), account);
+      }
+    });
+    
+    // Process holders and match with Lens accounts
+    const leaderboardEntries = holders.map((holder: any, index: number) => {
+      const balanceInTokens = Number(holder.value) / Math.pow(10, 18);
+      const lensAccount = lensAccountMap.get(holder.address.toLowerCase());
+      
+      return {
         rank: index + 1,
-        userId: user.id,
-        username: user.username,
-        profilePicture: user.profilePicture || '/images/profile.png',
-        currentPeriodTokens: user.balance,
-        allTimeTokens: user.balance,
+        userId: lensAccount?.username?.localName || holder.address, // Use Lens username for routing
+        username: lensAccount?.metadata?.name || lensAccount?.username?.value || `${holder.address.slice(0, 6)}...${holder.address.slice(-4)}`,
+        profilePicture: lensAccount?.metadata?.picture || '/images/profile.png',
+        currentPeriodTokens: parseFloat(balanceInTokens.toFixed(1)),
+        allTimeTokens: parseFloat(balanceInTokens.toFixed(1)),
         todayTokens: 0,
         weekTokens: 0,
         monthTokens: 0,
         lastUpdate: new Date().toISOString(),
-      }));
+        ownerAddress: holder.address,
+      };
+    });
+    
+    return leaderboardEntries;
+    
   } catch (error) {
     console.error('Error in getBlockchainLeaderboard:', error);
-    throw error;
+    return [];
   }
 };

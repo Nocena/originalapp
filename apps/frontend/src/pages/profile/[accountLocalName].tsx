@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useActiveAccount } from 'thirdweb/react';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAccountQuery, useAccountStatsQuery } from '@nocena/indexer';
 import PrimaryButton from '../../components/ui/PrimaryButton';
@@ -13,6 +14,7 @@ import CalendarSection from './components/CalendarSection';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import getAvatar from '../../helpers/getAvatar';
 import { useLensFollowActions } from '../../hooks/useLensFollowActions';
+import { useNoceniteBalanceFormatted } from '../../hooks/useNoceniteBalance';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -69,6 +71,9 @@ const OtherProfileView: React.FC = () => {
   const stats = accountStatsData?.accountStats.graphFollowStats;
 
   const { followeringAccount, handleFollow, handleUnfollow } = useLensFollowActions();
+
+  // Fetch NCT balance using the global hook
+  const { balance: nctBalance, loading: nctLoading } = useNoceniteBalanceFormatted(selectedUserAccount?.owner);
 
   // Check if this page is visible in the PageManager
   useEffect(() => {
@@ -313,10 +318,12 @@ const OtherProfileView: React.FC = () => {
                     <div className="w-px h-8 bg-white/20"></div>
                     <div className="text-center">
                       <div className="flex items-center space-x-1">
-                        <span className="text-2xl font-bold">{0}</span>
+                        <span className="text-2xl font-bold">
+                          {nctLoading ? '...' : (nctBalance ?? 0).toFixed(1)}
+                        </span>
                         <Image src={nocenix} alt="Nocenix" width={20} height={20} />
                       </div>
-                      <div className="text-sm text-white/60">Nocenix</div>
+                      <div className="text-sm text-white/60">NCT Balance</div>
                     </div>
                   </div>
                 </div>
@@ -443,15 +450,15 @@ const OtherProfileView: React.FC = () => {
                 });
 
                 if (response.ok) {
-                  alert('Challenge sent successfully!');
+                  toast.success('Challenge sent successfully!');
                   setShowPrivateChallengeCreator(false);
                 } else {
                   const data = await response.json();
-                  alert(`Failed: ${data.error || 'Unknown error'}`);
+                  toast.error(`${data.error || 'Unknown error'}`);
                 }
               } catch (error) {
                 console.error('Error sending challenge:', error);
-                alert('Failed to send challenge');
+                toast.error('Failed to send challenge');
               }
             }}
             prefilledUser={{

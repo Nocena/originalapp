@@ -685,7 +685,27 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
         </div>
 
         {/* Action Button - Always visible at bottom */}
-        <div className="flex-shrink-0 mt-6">
+        <div className="flex-shrink-0 mt-6 space-y-3">
+          {/* Development Mode Skip Button */}
+          {process.env.NODE_ENV === 'development' && (
+            <button
+              onClick={() => {
+                // Create mock video and photo blobs for testing
+                const mockVideoBlob = new Blob(['mock video data'], { type: 'video/webm' });
+                const mockPhotoBlob = new Blob(['mock photo data'], { type: 'image/jpeg' });
+                const mockVerificationResult = { success: true, confidence: 0.95 };
+                
+                setVideoBlob(mockVideoBlob);
+                setPhotoBlob(mockPhotoBlob);
+                setVerificationResult(mockVerificationResult);
+                setCurrentStep('claiming');
+              }}
+              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors"
+            >
+              🚀 DEV: Skip to Claiming (Test Mode)
+            </button>
+          )}
+          
           <PrimaryButton className="w-full" onClick={handleStartChallenge} text={typeInfo.action} />
         </div>
       </div>

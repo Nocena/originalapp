@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import { useActiveAccount } from 'thirdweb/react';
+import { useLensFollowActions } from '../../hooks/useLensFollowActions';
 
 import ThematicImage from '../../components/ui/ThematicImage';
 import ThematicContainer from '../../components/ui/ThematicContainer';
@@ -33,6 +34,7 @@ function SearchView() {
   const { currentLensAccount } = useAuth();
   const activeAccount = useActiveAccount(); // Get actual connected wallet
   const router = useRouter();
+  const { followeringAccount } = useLensFollowActions();
 
   // Fetch Top NCT Holders leaderboard
   const fetchLeaderboard = useCallback(async (): Promise<LeaderboardUser[]> => {
@@ -175,7 +177,13 @@ function SearchView() {
   // Render top 3 leaderboard items (podium style)
   const renderTopThreeItem = useCallback(
     (item: LeaderboardUser, index: number) => {
-      const isCurrentUser = currentLensAccount?.address === item.userId;
+      // Check if this is the current user by comparing both userId and ownerAddress
+      const isCurrentUser = 
+        currentLensAccount?.address === item.userId || // Direct address match
+        currentLensAccount?.username?.localName === item.userId || // Lens username match
+        activeAccount?.address === item.ownerAddress; // Owner address match
+      
+      const isPending = followeringAccount?.address === item.userId;
 
       // Podium heights and styles
       const getPodiumStyle = (rank: number) => {
@@ -222,7 +230,7 @@ function SearchView() {
         >
           {/* Profile Picture with Crown */}
           <div className="relative mb-2">
-            <ThematicImage className="rounded-full">
+            <ThematicImage className={`rounded-full ${isCurrentUser ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/30' : ''}`}>
               <Image
                 src={item.profilePicture || '/images/profile.png'}
                 alt="Profile"
@@ -289,7 +297,9 @@ function SearchView() {
           glassmorphic={true}
           color={isCurrentUser ? 'nocenaPurple' : 'nocenaBlue'}
           rounded="xl"
-          className="p-4 mb-3 cursor-pointer hover:scale-[1.02] transition-transform"
+          className={`p-4 mb-3 cursor-pointer hover:scale-[1.02] transition-transform ${
+            isCurrentUser ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/20' : ''
+          }`}
           isActive={isCurrentUser}
           onClick={() => handleProfileNavigation(item)}
         >
@@ -407,7 +417,10 @@ function SearchView() {
               {currentLensAccount &&
                 (() => {
                   const userPosition = leaderboard.findIndex(
-                    (item) => item.userId === currentLensAccount.address
+                    (item) => 
+                      item.userId === currentLensAccount.address || // Direct address match
+                      item.userId === currentLensAccount.username?.localName || // Lens username match
+                      item.ownerAddress === activeAccount?.address // Owner address match
                   );
                   if (userPosition >= 10) {
                     const userItem = leaderboard[userPosition];

@@ -10,7 +10,7 @@ interface MapControlsProps {
   onRecenter: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
-  onGenerateChallenges: () => Promise<void>; // NEW: Add this prop
+  onGenerateChallenges: () => Promise<void>;
   userLocation?: LocationData | null;
 }
 
@@ -48,7 +48,7 @@ const MapControls: React.FC<MapControlsProps> = ({
     });
   };
 
-  // NEW: Handle generate challenges button click
+  // Handle AI challenge generation
   const handleGenerateChallenges = async () => {
     if (!userLocation) {
       alert('Location access is required to generate challenges.');
@@ -160,7 +160,7 @@ const MapControls: React.FC<MapControlsProps> = ({
         </svg>
       </button>
 
-      {/* NEW: Generate Challenges Button */}
+      {/* AI Challenge Generation Button */}
       <button
         onClick={handleGenerateChallenges}
         disabled={isGenerating || !userLocation}

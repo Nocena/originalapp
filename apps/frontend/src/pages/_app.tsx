@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { AppProps } from 'next/app';
 import Head from 'next/head';
 import { ThirdwebProvider } from 'thirdweb/react';
+import { Toaster } from 'react-hot-toast';
 import { useAuth, AuthProvider } from '../contexts/AuthContext';
 import '../styles/globals.css';
 import AppLayout from '../components/layout/AppLayout';
@@ -323,6 +324,17 @@ function MyApp(props: AppProps) {
           <AuthProvider>
             <BackgroundTaskProvider>
               <MyAppContent {...props} />
+              <Toaster 
+                position="top-center"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: '#1f2937',
+                    color: '#fff',
+                    border: '1px solid #374151',
+                  },
+                }}
+              />
             </BackgroundTaskProvider>
           </AuthProvider>
         </ThirdwebProvider>

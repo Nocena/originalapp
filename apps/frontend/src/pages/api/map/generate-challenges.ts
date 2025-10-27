@@ -242,7 +242,7 @@ Reward: [number 1-10 based on social courage + absurdity level]`;
     const lines = content.split('\n').filter((line: string) => line.trim());
     let title = '';
     let description = '';
-    let reward = 80;
+    let reward = 8; // Default to mid-range on 1-10 scale
 
     for (const line of lines) {
       if (line.startsWith('Title:')) {
@@ -268,13 +268,16 @@ Reward: [number 1-10 based on social courage + absurdity level]`;
       });
     }
 
+    // Scale AI reward (1-10) to NCT range (60-120)
+    const scaledReward = Math.round(60 + (reward - 1) * (60 / 9)); // Maps 1-10 to 60-120
+
     // Adjust reward based on distance
     const distanceMultiplier = distance > 1000 ? 1.5 : distance > 500 ? 1.2 : 1;
-    reward = Math.round(reward * distanceMultiplier);
+    const finalReward = Math.round(scaledReward * distanceMultiplier);
 
-    console.log(`✅ Generated: ${title}`);
+    console.log(`✅ Generated: ${title} (AI: ${reward}/10, Scaled: ${scaledReward}, Final: ${finalReward})`);
 
-    return res.status(200).json({ title, description, reward, fallback: false });
+    return res.status(200).json({ title, description, reward: finalReward, fallback: false });
   } catch (error) {
     console.error('Error generating AI challenge:', error);
     return res.status(500).json({

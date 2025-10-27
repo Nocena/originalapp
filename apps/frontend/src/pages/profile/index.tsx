@@ -1,15 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useAuth } from '../../contexts/AuthContext';
-import { createPublicClient, defineChain, http } from 'viem';
 
 import ThematicContainer from '../../components/ui/ThematicContainer';
 import FollowersPopup from './components/FollowersPopup';
 import AvatarSection from './components/AvatarSection'; // Changed from TrailerSection
 import StatsSection from './components/StatsSection';
 import CalendarSection from './components/CalendarSection';
-import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../lib/constants';
-import noceniteTokenArtifact from '../../lib/contracts/nocenite.json';
+import { useNoceniteBalanceFormatted } from '../../hooks/useNoceniteBalance';
 
 import PenIcon from '../../components/icons/pen';
 import type { AccountOptions, MetadataAttribute } from '@lens-protocol/metadata';
@@ -45,11 +43,12 @@ const ProfileView: React.FC = () => {
   const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || "");
   const [bio, setBio] = useState<string>(currentLensAccount?.metadata?.bio || "");
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
-  const [tokenBalance, setTokenBalance] = useState<number>(0);
-  const [nctLoading, setNctLoading] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
     'trailer'
   );
+
+  // Fetch NCT balance using the global hook
+  const { balance: tokenBalance, loading: nctLoading } = useNoceniteBalanceFormatted(currentLensAccount?.owner);
 
   // Avatar generation state - NEW
   const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(
@@ -90,39 +89,6 @@ const ProfileView: React.FC = () => {
       // setGeneratedAvatar(user.currentAvatar || null);
     }
   }, [currentLensAccount]);
-
-  // Fetch NCT balance when owner address is available
-  useEffect(() => {
-    const fetchNctBalance = async () => {
-      const ownerAddress = currentLensAccount?.owner;
-      if (!ownerAddress) return;
-
-      setNctLoading(true);
-      try {
-        const publicClient = createPublicClient({
-          chain: defineChain(FLOW_TESTNET_CONFIG),
-          transport: http(),
-        });
-
-        const balance = (await publicClient.readContract({
-          address: CONTRACTS.Nocenite as `0x${string}`,
-          abi: noceniteTokenArtifact,
-          functionName: 'balanceOf',
-          args: [ownerAddress],
-        })) as bigint;
-
-        const balanceInTokens = Number(balance) / Math.pow(10, 18);
-        setTokenBalance(balanceInTokens);
-      } catch (error) {
-        console.error('Error fetching NCT balance:', error);
-        setTokenBalance(0);
-      } finally {
-        setNctLoading(false);
-      }
-    };
-
-    fetchNctBalance();
-  }, [currentLensAccount?.owner]);
 
   const [getCurrentAccountDetails] = useMeLazyQuery({
     fetchPolicy: "no-cache",

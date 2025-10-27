@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useActiveAccount } from 'thirdweb/react';
+import { toast } from 'react-hot-toast';
 import { AIChallenge, getChallengeReward, getCurrentChallenge, getFallbackChallenge } from '@utils/challengeUtils';
 
 // Component imports
@@ -278,15 +279,18 @@ const HomeView = () => {
       });
 
       if (response.ok) {
-        alert('Private challenge sent successfully!');
-        setShowPrivateChallengeCreator(false);
+        toast.success('Private challenge sent successfully!');
+        // Delay closing modal to ensure toast is visible
+        setTimeout(() => {
+          setShowPrivateChallengeCreator(false);
+        }, 5000);
       } else {
         const data = await response.json();
-        alert(`Failed to send private challenge: ${data.error || 'Unknown error'}`);
+        toast.error(`Failed to send private challenge: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error sending private challenge:', error);
-      alert('Error sending private challenge');
+      toast.error('Error sending private challenge');
     }
   };
 

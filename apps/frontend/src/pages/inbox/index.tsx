@@ -18,6 +18,32 @@ const fetchSimpleNotifications = async (userId: string) => {
         createdAt
         userId
         triggeredById
+        status
+        expiresAt
+        privateChallenge {
+          id
+          title
+          description
+          status
+          expiresAt
+        }
+        publicChallenge {
+          id
+          title
+          description
+          status
+        }
+        aiChallenge {
+          id
+          title
+          description
+          frequency
+        }
+        triggeredBy {
+          id
+          username
+          profilePicture
+        }
       }
     }
   `;
