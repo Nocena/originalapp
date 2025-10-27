@@ -62,6 +62,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             'Missing required parameters for private challenge: challengeId, creatorAddress, recipientReward, creatorReward',
         });
       }
+    } else if (challengeType === 'PUBLIC') {
+      if (!recipientReward) {
+        return res.status(400).json({
+          error: 'Missing required parameter for public challenge: recipientReward',
+        });
+      }
     } else if (!challengeFrequency) {
       return res.status(400).json({ error: 'Missing required parameter: challengeFrequency' });
     }
@@ -115,7 +121,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('🔄 Attempting dual private challenge transaction...');
       const txHash = await walletClient.writeContract({
         address: CONTRACTS.ChallengeRewards as `0x${string}`,
-        abi: challengeRewardsArtifact,
+        abi: challengeRewardsArtifact.abi,
         functionName: 'completePrivateChallenge',
         args: [
           userAddress,
@@ -138,6 +144,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         success: true,
         txHash,
         message: `Private challenge completed! +${recipientReward} NCT to recipient, +${Math.floor(recipientReward * 0.1)} NCT to creator`,
+      });
+    } else if (challengeType === 'PUBLIC') {
+      // Public challenge - variable reward amount
+      if (!recipientReward) {
+        return res.status(400).json({
+          error: 'Missing required parameter for public challenge: recipientReward',
+        });
+      }
+
+      // Create message hash for public challenge
+      const messageHash = keccak256(
+        encodeAbiParameters(
+          [
+            { name: 'user', type: 'address' },
+            { name: 'challengeType', type: 'string' },
+            { name: 'ipfsHash', type: 'string' },
+          ],
+          [userAddress as `0x${string}`, 'public', ipfsHash]
+        )
+      );
+
+      const signature = await walletClient.signMessage({
+        message: { raw: messageHash },
+      });
+
+      console.log('🔄 Attempting public challenge transaction...');
+      const txHash = await walletClient.writeContract({
+        address: CONTRACTS.ChallengeRewards as `0x${string}`,
+        abi: challengeRewardsArtifact.abi,
+        functionName: 'completePublicChallenge',
+        args: [
+          userAddress,
+          parseEther(recipientReward.toString()),
+          ipfsHash,
+          signature,
+        ],
+      });
+
+      console.log('✅ Public challenge completed:', txHash);
+      console.log('💰 Reward:', recipientReward, 'NCT');
+
+      return res.status(200).json({
+        success: true,
+        txHash,
+        message: `Public challenge completed! +${recipientReward} NCT earned`,
       });
     } else {
       // AI challenge function (existing logic)
@@ -165,7 +216,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Call the contract function with dynamic arguments
       const txHash = await walletClient.writeContract({
         address: CONTRACTS.ChallengeRewards as `0x${string}`,
-        abi: challengeRewardsArtifact,
+        abi: challengeRewardsArtifact.abi,
         functionName,
         args: [...contractArgs, signature],
       });

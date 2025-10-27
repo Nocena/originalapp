@@ -70,6 +70,14 @@ export async function completeChallengeWorkflow(
             challengeFrequency: challenge.frequency,
             ipfsHash: 'challenge-completion',
           };
+        } else if (challenge.type === 'PUBLIC' && challenge.challengeId) {
+          // PUBLIC challenges - variable reward amount
+          mintPayload = {
+            userAddress: userWalletAddress,
+            challengeType: 'PUBLIC',
+            recipientReward: challenge.reward,
+            ipfsHash: challenge.challengeId,
+          };
         } else if (
           challenge.type === 'PRIVATE' &&
           challenge.challengeId &&
@@ -97,21 +105,21 @@ export async function completeChallengeWorkflow(
         }
 
         console.log('🔗 Mint payload:', mintPayload);
-        /*
-                const mintResponse = await fetch('/api/mint-challenge-reward', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(mintPayload),
-                });
-        */
+        
+        const mintResponse = await fetch('/api/mint-challenge-reward', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(mintPayload),
+        });
 
-        // console.log('🔗 Mint API response status:', mintResponse.status);
-        // const mintResult = await mintResponse.json();
-        // console.log('🔗 Mint API result:', mintResult);
-        if (true) {
-          // console.log(`✅ Blockchain NCT tokens minted: ${mintResult.txHash}`);
+        console.log('🔗 Mint API response status:', mintResponse.status);
+        const mintResult = await mintResponse.json();
+        console.log('🔗 Mint API result:', mintResult);
+        
+        if (mintResult.success) {
+          console.log(`✅ Blockchain NCT tokens minted: ${mintResult.txHash}`);
 
           // Mark private challenge as completed if applicable
           if (challenge.type === 'PRIVATE' && challenge.challengeId) {
@@ -142,30 +150,59 @@ export async function completeChallengeWorkflow(
             }
           }
 
+          // Trigger challenge replacement for PUBLIC challenges
+          if (challenge.type === 'PUBLIC' && challenge.challengeId) {
+            try {
+              console.log('🔄 Triggering PUBLIC challenge replacement...');
+              // Dispatch custom event to notify map to refresh challenges
+              window.dispatchEvent(new CustomEvent('challengeCompleted', {
+                detail: { challengeId: challenge.challengeId, userId }
+              }));
+            } catch (error) {
+              console.error('❌ Error triggering challenge replacement:', error);
+            }
+          }
+
           let completionId = 'mock-completion-id';
-          // Step 3: Create the completion record
-
+          
           if (challenge.challengeId) {
-            const videoCID = await uploadBlob(video, 'video');
-            const selfieCID = await uploadBlob(photo, 'photo');
+            // Check if this is dev mode (mock blobs)
+            const isDevMode = video.size <= 20 && photo.size <= 20; // Mock blobs are tiny
+            
+            if (isDevMode) {
+              console.log('🧪 Dev mode detected - skipping database record');
+              completionId = `dev-${Date.now()}`;
+            } else {
+              try {
+                console.log('📁 Uploading blobs to IPFS...');
+                const videoCID = await uploadBlob(video, 'video');
+                const selfieCID = await uploadBlob(photo, 'photo');
 
-            const timestamp = Date.now();
-            completionId = await createChallengeCompletion(
-              userId,
-              challenge.type.toLowerCase() as 'private' | 'public' | 'ai',
-              JSON.stringify({
-                videoCID,
-                selfieCID,
-                timestamp,
-                description,
-                verificationResult,
-                hasVideo: true,
-                hasSelfie: true,
-                videoFileName: `challenge_video_${userId}_${timestamp}.webm`,
-                selfieFileName: `challenge_selfie_${userId}_${timestamp}.jpg`,
-              }),
-              challenge.challengeId,
-            );
+                const timestamp = Date.now();
+                console.log('💾 Creating completion record...');
+                completionId = await createChallengeCompletion(
+                  userId,
+                  challenge.type.toLowerCase() as 'private' | 'public' | 'ai',
+                  JSON.stringify({
+                    videoCID,
+                    selfieCID,
+                    timestamp,
+                    description,
+                    verificationResult,
+                    hasVideo: true,
+                    hasSelfie: true,
+                    videoFileName: `challenge_video_${userId}_${timestamp}.webm`,
+                    selfieFileName: `challenge_selfie_${userId}_${timestamp}.jpg`,
+                  }),
+                  challenge.challengeId,
+                );
+                console.log('✅ Completion record created');
+              } catch (error) {
+                console.error('❌ Completion record failed:', error);
+                // Don't fail - tokens already minted
+                completionId = `fallback-${Date.now()}`;
+              }
+            }
           }
 
           return {
@@ -174,10 +211,10 @@ export async function completeChallengeWorkflow(
             completionId,
           };
         } else {
-          // console.error('❌ Blockchain minting failed:', mintResult.error);
+          console.error('❌ Blockchain minting failed:', mintResult.error);
           return {
             success: false,
-            message: `Challenge completion failed: `,
+            message: `Challenge completion failed: ${mintResult.error}`,
           };
         }
       } catch (error) {
