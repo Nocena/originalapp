@@ -10,7 +10,7 @@ import {
 import { lensApolloClient } from '@pages/_app';
 import { fetchAccountsBulk } from '@lens-protocol/client/actions';
 import { lensPublicClient } from '../constants';
-import { BasicCompletionType } from '../graphql/features/challenge-completion/types';
+import { BasicCompletionType, ChallengeCompletion } from '../graphql/features/challenge-completion/types';
 
 export async function fetchFollowingData(
   address: string,
@@ -60,17 +60,39 @@ export async function getLensAccountsInAddresses(
   return result.value
 }
 
-export async function addUserAccountToCompletions (
-  completions: BasicCompletionType[]
+export async function addUserAccountToCompletions(
+  completions: ChallengeCompletion[]
 ) {
-  const uniqueAddresses = Array.from(
-    new Set(completions.map(completion => completion.userLensAccountId))
-  );
-  const lensAccounts = await getLensAccountsInAddresses(uniqueAddresses) || []
-  completions.map(completion => {
-    const { userLensAccountId } = completion
-    completion.userAccount = lensAccounts.find(account => account.address === userLensAccountId)
-  })
+  // Step 1: Collect all unique userLensAccountIds
+  const allUserIds = new Set<string>();
 
-  return completions
+  completions.forEach(completion => {
+    if (completion.userLensAccountId) {
+      allUserIds.add(completion.userLensAccountId.toLowerCase());
+    }
+    completion.recentReactions?.forEach(reaction => {
+      if (reaction.userLensAccountId) {
+        allUserIds.add(reaction.userLensAccountId.toLowerCase());
+      }
+    });
+  });
+
+  // Step 2: Fetch all Lens accounts at once
+  const lensAccounts = await getLensAccountsInAddresses(Array.from(allUserIds)) || [];
+
+  // Create a lookup map for faster access
+  const accountMap = new Map(
+    lensAccounts.map(account => [account.address.toLowerCase(), account])
+  );
+
+  // Step 3: Add userAccount to top-level and nested recentReactions
+  completions.forEach(completion => {
+    completion.userAccount = accountMap.get(completion.userLensAccountId?.toLowerCase() || '') || undefined;
+
+    completion.recentReactions?.forEach(reaction => {
+      reaction.userAccount = accountMap.get(reaction.userLensAccountId?.toLowerCase() || '') || undefined;
+    });
+  });
+
+  return completions;
 }

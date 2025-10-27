@@ -8,6 +8,7 @@ import getAvatar from '../../helpers/getAvatar';
 import { fetchChallengeCompletionsWithLikesAndReactions } from '../../lib/graphql';
 import { ChallengeCompletion } from '../../lib/graphql/features/challenge-completion/types';
 import sanitizeDStorageUrl from 'src/helpers/sanitizeDStorageUrl';
+import { uploadBlob } from '../../helpers/accountPictureUtils';
 
 
 const BrowsingPage: React.FC = () => {
@@ -380,7 +381,8 @@ const BrowsingPage: React.FC = () => {
 
       // Create FormData for the API request
       const formData = new FormData();
-      formData.append('image', imageBlob, `realmoji-${reactionType}-${Date.now()}.jpg`);
+      const selfieCID = await uploadBlob(imageBlob, 'photo');
+      formData.append('selfieCID', selfieCID);
       formData.append('userId', currentLensAccount?.address);
       formData.append('completionId', completionId);
       formData.append('reactionType', reactionType);
@@ -421,11 +423,7 @@ const BrowsingPage: React.FC = () => {
               reactionType: data.reactionType,
               emoji: data.emoji || getEmojiForType(data.reactionType),
               selfieUrl: data.selfieUrl,
-              user: {
-                id: currentLensAccount?.address!,
-                username: getAccount(currentLensAccount).username || 'You',
-                profilePicture: getAvatar(currentLensAccount) || '/images/profile.png',
-              },
+              userLensAccountId: currentLensAccount?.address,
               createdAt: new Date().toISOString(),
             };
 
@@ -619,7 +617,7 @@ const BrowsingPage: React.FC = () => {
                             <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-lg">
                               <img
                                 src={reaction.selfieUrl}
-                                alt={`${reaction.user.username}'s ${reaction.reactionType} reaction`}
+                                alt={`${reaction.userAccount?.username?.localName}'s ${reaction.reactionType} reaction`}
                                 className="w-full h-full object-cover"
                                 style={{
                                   objectPosition: 'center 25%', // Focus even more on face area
@@ -641,7 +639,7 @@ const BrowsingPage: React.FC = () => {
 
                           {/* User indicator on hover/tap */}
                           <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                            {reaction.user.username}
+                            {reaction.userAccount?.username?.localName}
                           </div>
                         </div>
                       ))}

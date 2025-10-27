@@ -7,7 +7,7 @@ import {
   FETCH_USER_COMPLETIONS,
   GET_COMPLETION_FOR_LIKES,
 } from './queries';
-import { BasicCompletionType, FetchUserCompletionsParams, MediaMetadata } from './types';
+import { BasicCompletionType, ChallengeCompletion, FetchUserCompletionsParams, MediaMetadata } from './types';
 import { getDateRange } from '../follow/utils';
 import { addUserAccountToCompletions, fetchFollowingData, getLensAccountByAddress } from '../../../lens/api';
 import { getDateParts, getEmojiForReactionType, serializeMedia } from './utils';
@@ -157,7 +157,7 @@ export async function fetchFollowingsCompletions(userLensAccountAddress: string,
 export async function fetchChallengeCompletionsWithLikesAndReactions(
   challengeId?: string,
   userId?: string,
-): Promise<BasicCompletionType[]> {
+): Promise<ChallengeCompletion[]> {
   try {
     const { data } = await graphqlClient.query({
       query: challengeId ? FETCH_COMPLETIONS_BY_CHALLENGE : FETCH_ALL_COMPLETIONS,
@@ -166,9 +166,7 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
     });
 
     let completions = data?.queryChallengeCompletion || [];
-    await addUserAccountToCompletions(completions)
-
-    return completions.map((completion: any) => ({
+    const updatedCompletions = completions.map((completion: any) => ({
       ...completion,
       totalLikes: completion.likesCount || 0,
       isLiked: userId
@@ -181,7 +179,9 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
         emoji: getEmojiForReactionType(reaction.reactionType),
         selfieUrl: sanitizeDStorageUrl(reaction.selfieCID),
       })),
-    }));
+    })) as ChallengeCompletion[];
+
+    return await addUserAccountToCompletions(updatedCompletions)
   } catch (error) {
     console.error('❌ Error fetching completions with likes and reactions:', error);
     throw error;
