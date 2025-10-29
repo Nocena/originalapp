@@ -23,11 +23,11 @@ interface FollowersPopupProps {
 }
 
 const FollowersPopup: React.FC<FollowersPopupProps> = ({
-                                                         isOpen,
-                                                         onClose,
-                                                         isFollowers = true,
-                                                         accountAddress,
-                                                       }) => {
+  isOpen,
+  onClose,
+  isFollowers = true,
+  accountAddress,
+}) => {
   const [pendingFollowActions, setPendingFollowActions] = useState<Set<string>>(new Set());
   const { currentLensAccount } = useAuth();
   const router = useRouter();
@@ -37,7 +37,12 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
   const touchStartY = useRef<number | null>(null);
   const touchMoveY = useRef<number | null>(null);
 
-  const { data, error, fetchMore, loading: isLoading } = useFollowersQuery({
+  const {
+    data,
+    error,
+    fetchMore,
+    loading: isLoading,
+  } = useFollowersQuery({
     skip: !accountAddress,
     variables: {
       request: {
@@ -177,7 +182,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
             <div className="flex justify-center py-8">
               <LoadingSpinner />
             </div>
-          ) : /*showPartialResults &&*/ (!followers || followers?.length === 0) ? (
+          ) : /*showPartialResults &&*/ !followers || followers?.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               {isFollowers ? 'No followers yet' : 'Not following anyone yet'}
             </div>
@@ -208,12 +213,12 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
                         </ThematicImage>
 
                         <div className="flex-1 min-w-0 mr-2">
-                          <div className="text-lg font-bold truncate">{getAccount(follower).name}</div>
+                          <div className="text-lg font-bold truncate">
+                            {getAccount(follower).name}
+                          </div>
                           <div className="flex items-center mt-0.5">
                             <Image src={nocenixIcon} alt="Nocenix" width={16} height={16} />
-                            <span className="text-sm ml-1 text-gray-400">
-                              0 NOCENIX
-                            </span>
+                            <span className="text-sm ml-1 text-gray-400">0 NOCENIX</span>
                           </div>
                         </div>
                       </div>
@@ -235,9 +240,7 @@ const FollowersPopup: React.FC<FollowersPopupProps> = ({
                           onClick={(e) => {
                             e.stopPropagation(); // Prevent profile navigation when clicking the button
                             if (!isCurrentUser)
-                              isFollowing
-                                ? handleUnfollow(follower)
-                                : handleFollow(follower);
+                              isFollowing ? handleUnfollow(follower) : handleFollow(follower);
                           }}
                           className="px-4 py-1 text-sm min-w-[5rem] h-8"
                           isActive={isFollowing}

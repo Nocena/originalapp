@@ -10,7 +10,6 @@ import { ChallengeCompletion } from '../../lib/graphql/features/challenge-comple
 import sanitizeDStorageUrl from 'src/helpers/sanitizeDStorageUrl';
 import { uploadBlob } from '../../helpers/accountPictureUtils';
 
-
 const BrowsingPage: React.FC = () => {
   const router = useRouter();
   const { currentLensAccount } = useAuth(); // Get current user from auth context
@@ -52,8 +51,8 @@ const BrowsingPage: React.FC = () => {
       );
 
       if (allCompletions.length === 0) {
-        return
-/*
+        return;
+        /*
         throw new Error(
           challengeId ? 'No completions found for this challenge' : 'No completions found'
         );

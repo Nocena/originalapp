@@ -1,7 +1,12 @@
 import { calculateDistance } from '../../../map/mapService';
 import { ChallengeData } from './types';
 
-export function filterNearbyChallenges(allChallenges: any[], userLat: number, userLng: number, radiusKm: number = 1000) {
+export function filterNearbyChallenges(
+  allChallenges: any[],
+  userLat: number,
+  userLng: number,
+  radiusKm: number = 1000
+) {
   return allChallenges.filter((challenge) => {
     const distance = calculateDistance(
       userLat,

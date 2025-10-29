@@ -1,5 +1,13 @@
 import type { AccountFragment } from '@nocena/indexer';
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useActiveAccount, useActiveWallet, useDisconnect } from 'thirdweb/react';
 import { signOut } from '../store/persisted/useAuthStore';
 

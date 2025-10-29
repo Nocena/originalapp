@@ -275,7 +275,9 @@ Reward: [number 1-10 based on social courage + absurdity level]`;
     const distanceMultiplier = distance > 1000 ? 1.5 : distance > 500 ? 1.2 : 1;
     const finalReward = Math.round(scaledReward * distanceMultiplier);
 
-    console.log(`✅ Generated: ${title} (AI: ${reward}/10, Scaled: ${scaledReward}, Final: ${finalReward})`);
+    console.log(
+      `✅ Generated: ${title} (AI: ${reward}/10, Scaled: ${scaledReward}, Final: ${finalReward})`
+    );
 
     return res.status(200).json({ title, description, reward: finalReward, fallback: false });
   } catch (error) {

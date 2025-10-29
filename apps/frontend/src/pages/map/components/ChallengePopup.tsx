@@ -41,7 +41,7 @@ const ChallengePopup = ({
     maxWidth: '320px',
   };
 
-/*
+  /*
   const {
     data: lensData,
     loading: lensLoading,
@@ -62,7 +62,8 @@ const ChallengePopup = ({
 
   // Check if current user has completed this challenge
   const hasUserCompleted =
-    currentUserId && recentCompletions.some((completion) => completion.userLensAccountId === currentUserId);
+    currentUserId &&
+    recentCompletions.some((completion) => completion.userLensAccountId === currentUserId);
 
   // Generate floating profile bubbles HTML
   const generateProfileBubbles = () => {

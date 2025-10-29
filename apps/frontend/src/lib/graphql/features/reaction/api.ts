@@ -43,38 +43,35 @@ export const createRealMojiReaction = async (
     });
 
     const newReaction = reactionData?.addReaction?.reaction?.[0];
-    if (!newReaction) throw new Error("Failed to create reaction");
+    if (!newReaction) throw new Error('Failed to create reaction');
 
     // Step 2️⃣ Fetch completion owner (to notify)
     const { data: completionData } = await graphqlClient.query({
       query: GET_COMPLETION_OWNER,
       variables: { completionId },
-      fetchPolicy: "network-only",
+      fetchPolicy: 'network-only',
     });
 
-    const completionOwnerId =
-      completionData?.getChallengeCompletion?.userLensAccountId;
+    const completionOwnerId = completionData?.getChallengeCompletion?.userLensAccountId;
 
     // Step 3️⃣ Send notification (skip if reacting to own post)
     if (completionOwnerId && completionOwnerId !== userLensAccountId) {
       try {
-        await createNotification(
-          {
-            userLensAccountId: completionOwnerId,
-            triggeredByLensAccountId: userLensAccountId,
-            content: `reacted with a ${reactionType} RealMoji to your challenge`,
-            notificationType: "reaction"
-          }
-        );
+        await createNotification({
+          userLensAccountId: completionOwnerId,
+          triggeredByLensAccountId: userLensAccountId,
+          content: `reacted with a ${reactionType} RealMoji to your challenge`,
+          notificationType: 'reaction',
+        });
       } catch (err) {
-        console.error("Failed to send reaction notification:", err);
+        console.error('Failed to send reaction notification:', err);
       }
     }
 
     console.log(`✅ RealMoji reaction created: ${reactionId}`);
     return reactionId;
   } catch (error) {
-    console.error("❌ Error creating RealMoji reaction:", error);
+    console.error('❌ Error creating RealMoji reaction:', error);
     throw error;
   }
 };

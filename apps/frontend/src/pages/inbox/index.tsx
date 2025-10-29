@@ -6,8 +6,9 @@ import { fetchNotifications } from '../../lib/api/dgraph';
 
 // Simplified notification fetcher for inbox
 const fetchSimpleNotifications = async (userId: string) => {
-  const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || 'http://localhost:8080/graphql';
-  
+  const DGRAPH_ENDPOINT =
+    process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || 'http://localhost:8080/graphql';
+
   const query = `
     query getNotifications($userId: String!) {
       queryNotification(filter: { userId: { eq: $userId } }) {
@@ -48,19 +49,29 @@ const fetchSimpleNotifications = async (userId: string) => {
     }
   `;
 
-  const response = await fetch(DGRAPH_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query, variables: { userId } }),
-  });
+  try {
+    const response = await fetch(DGRAPH_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { userId } }),
+    });
 
-  const data = await response.json();
-  if (data.errors) {
-    console.error('Error fetching notifications:', data.errors);
+    if (!response.ok) {
+      console.error('Network error:', response.status, response.statusText);
+      return [];
+    }
+
+    const data = await response.json();
+    if (data.errors) {
+      console.error('GraphQL errors:', data.errors);
+      return [];
+    }
+
+    return data.data?.queryNotification || [];
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
     return [];
   }
-
-  return data.data?.queryNotification || [];
 };
 import NotificationFollower from './notifications/NotificationFollower';
 import NotificationChallenge from './notifications/NotificationChallenge';

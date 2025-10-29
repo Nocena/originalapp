@@ -174,12 +174,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         address: CONTRACTS.ChallengeRewards as `0x${string}`,
         abi: challengeRewardsArtifact.abi,
         functionName: 'completePublicChallenge',
-        args: [
-          userAddress,
-          parseEther(recipientReward.toString()),
-          ipfsHash,
-          signature,
-        ],
+        args: [userAddress, parseEther(recipientReward.toString()), ipfsHash, signature],
       });
 
       console.log('✅ Public challenge completed:', txHash);

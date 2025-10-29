@@ -9,7 +9,9 @@ export function getDateRange(date: string, frequency: string): { startDate: Date
       targetDate.getFullYear(),
       targetDate.getMonth(),
       targetDate.getDate(),
-      23, 59, 59
+      23,
+      59,
+      59
     );
   } else if (frequency === 'weekly') {
     const dayOfWeek = targetDate.getDay();

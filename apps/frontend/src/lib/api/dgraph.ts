@@ -668,7 +668,7 @@ export const getPrivateChallengesByRecipient = async (userId: string): Promise<a
   try {
     const response = await axios.post(DGRAPH_ENDPOINT, {
       query,
-      variables: { userId }
+      variables: { userId },
     });
 
     if (response.data.errors) {
@@ -707,7 +707,7 @@ export const getPrivateChallengesByCreator = async (userId: string): Promise<any
   try {
     const response = await axios.post(DGRAPH_ENDPOINT, {
       query,
-      variables: { userId }
+      variables: { userId },
     });
 
     if (response.data.errors) {
@@ -726,8 +726,8 @@ export const getPrivateChallengesByCreator = async (userId: string): Promise<any
  * Update private challenge status (accept/reject)
  */
 export const updatePrivateChallengeStatus = async (
-  challengeId: string, 
-  isActive: boolean, 
+  challengeId: string,
+  isActive: boolean,
   isCompleted: boolean
 ): Promise<boolean> => {
   const mutation = `
@@ -748,7 +748,7 @@ export const updatePrivateChallengeStatus = async (
   try {
     const response = await axios.post(DGRAPH_ENDPOINT, {
       query: mutation,
-      variables: { challengeId, isActive, isCompleted }
+      variables: { challengeId, isActive, isCompleted },
     });
 
     if (response.data.errors) {
@@ -778,7 +778,7 @@ export const deletePrivateChallenge = async (challengeId: string): Promise<boole
   try {
     const response = await axios.post(DGRAPH_ENDPOINT, {
       query: mutation,
-      variables: { challengeId }
+      variables: { challengeId },
     });
 
     if (response.data.errors) {
@@ -4427,4 +4427,3 @@ export const getUserStorageStats = async (
     };
   }
 };
-

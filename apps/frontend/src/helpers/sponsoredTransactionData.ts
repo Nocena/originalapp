@@ -1,4 +1,4 @@
-import type { Eip712TransactionRequest } from "@nocena/indexer";
+import type { Eip712TransactionRequest } from '@nocena/indexer';
 
 const sponsoredTransactionData = (raw: Eip712TransactionRequest) => {
   return {
@@ -10,7 +10,7 @@ const sponsoredTransactionData = (raw: Eip712TransactionRequest) => {
     paymaster: raw.customData.paymasterParams?.paymaster,
     paymasterInput: raw.customData.paymasterParams?.paymasterInput,
     to: raw.to,
-    value: BigInt(raw.value)
+    value: BigInt(raw.value),
   };
 };
 

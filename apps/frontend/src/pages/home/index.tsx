@@ -4,7 +4,12 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useActiveAccount } from 'thirdweb/react';
 import { toast } from 'react-hot-toast';
-import { AIChallenge, getChallengeReward, getCurrentChallenge, getFallbackChallenge } from '@utils/challengeUtils';
+import {
+  AIChallenge,
+  getChallengeReward,
+  getCurrentChallenge,
+  getFallbackChallenge,
+} from '@utils/challengeUtils';
 
 // Component imports
 import ChallengeHeader from './components/ChallengeHeader';
@@ -15,7 +20,10 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import ThematicContainer from '../../components/ui/ThematicContainer';
-import { fetchFollowingsCompletions, fetchLatestUserCompletion } from 'src/lib/graphql/features/challenge-completion';
+import {
+  fetchFollowingsCompletions,
+  fetchLatestUserCompletion,
+} from 'src/lib/graphql/features/challenge-completion';
 import { BasicCompletionType } from '../../lib/graphql/features/challenge-completion/types';
 import { CreatePrivateChallengeRequest } from '../../types/notifications';
 
@@ -154,7 +162,7 @@ const HomeView = () => {
   const isDevelopmentMode = process.env.NODE_ENV === 'development';
 
   // Debug user completion strings
-/*
+  /*
   useEffect(() => {
     if (user) {
       console.log('User completion data:', {
@@ -251,7 +259,11 @@ const HomeView = () => {
       try {
         console.log(`User has completed ${selectedTab} challenge, fetching friend completions...`);
         const today = new Date().toISOString().split('T')[0];
-        const completions = await fetchFollowingsCompletions(currentLensAccount.address, today, selectedTab);
+        const completions = await fetchFollowingsCompletions(
+          currentLensAccount.address,
+          today,
+          selectedTab
+        );
         setFollowerCompletions(completions);
         console.log('Loaded follower completions:', completions.length);
       } catch (error) {
@@ -524,15 +536,18 @@ const HomeView = () => {
             />
 
             {/* Show latest completion using CompletionItem if user has completed and it matches current tab */}
-            {hasCompleted && latestCompletionMatchesTab && latestCompletion && currentLensAccount && (
-              <div className="mt-8">
-                <CompletionItem
-                  account={currentLensAccount}
-                  completion={latestCompletion}
-                  isSelf={true}
-                />
-              </div>
-            )}
+            {hasCompleted &&
+              latestCompletionMatchesTab &&
+              latestCompletion &&
+              currentLensAccount && (
+                <div className="mt-8">
+                  <CompletionItem
+                    account={currentLensAccount}
+                    completion={latestCompletion}
+                    isSelf={true}
+                  />
+                </div>
+              )}
 
             {/* Show completion feed if user has completed the challenge */}
             {hasCompleted && (

@@ -1,12 +1,12 @@
-import { useTransactionStatusLazyQuery } from "@nocena/indexer";
-import { useCallback } from "react";
+import { useTransactionStatusLazyQuery } from '@nocena/indexer';
+import { useCallback } from 'react';
 
 const POLL_INTERVAL = 1000;
 const MAX_CHECK_COUNT = 5;
 
 const usePollTransactionStatus = () => {
   const [getTransactionStatus] = useTransactionStatusLazyQuery({
-    fetchPolicy: "no-cache"
+    fetchPolicy: 'no-cache',
   });
 
   const pollTransactionStatus = useCallback(
@@ -16,16 +16,13 @@ const usePollTransactionStatus = () => {
       }
 
       const { data } = await getTransactionStatus({
-        variables: { request: { txHash: hash } }
+        variables: { request: { txHash: hash } },
       });
 
-      if (data?.transactionStatus?.__typename === "FinishedTransactionStatus") {
+      if (data?.transactionStatus?.__typename === 'FinishedTransactionStatus') {
         onFinished();
       } else {
-        setTimeout(
-          () => pollTransactionStatus(hash, onFinished, checkCount + 1),
-          POLL_INTERVAL
-        );
+        setTimeout(() => pollTransactionStatus(hash, onFinished, checkCount + 1), POLL_INTERVAL);
       }
     },
     [getTransactionStatus]

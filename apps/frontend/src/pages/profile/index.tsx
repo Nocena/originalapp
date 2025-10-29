@@ -17,7 +17,11 @@ import { account as accountMetadata, MetadataAttributeType } from '@lens-protoco
 import { toast } from 'react-hot-toast';
 import trimify from '../../helpers/trimify';
 import uploadMetadata from 'src/helpers/uploadMetadata';
-import { useAccountStatsQuery, useMeLazyQuery, useSetAccountMetadataMutation } from '@nocena/indexer';
+import {
+  useAccountStatsQuery,
+  useMeLazyQuery,
+  useSetAccountMetadataMutation,
+} from '@nocena/indexer';
 import useTransactionLifecycle from '../../hooks/useTransactionLifecycle';
 import usePollTransactionStatus from '../../hooks/usePollTransactionStatus';
 import { uploadImageFile } from 'src/helpers/accountPictureUtils';
@@ -40,15 +44,17 @@ const ProfileView: React.FC = () => {
   const [profilePic, setProfilePic] = useState<string>(currentLensAccount?.metadata?.picture);
   const [showFollowersPopup, setShowFollowersPopup] = useState<boolean>(false);
   const [coverPhoto, setCoverPhoto] = useState<string>(currentLensAccount?.metadata?.coverPicture);
-  const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || "");
-  const [bio, setBio] = useState<string>(currentLensAccount?.metadata?.bio || "");
+  const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || '');
+  const [bio, setBio] = useState<string>(currentLensAccount?.metadata?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
     'trailer'
   );
 
   // Fetch NCT balance using the global hook
-  const { balance: tokenBalance, loading: nctLoading } = useNoceniteBalanceFormatted(currentLensAccount?.owner);
+  const { balance: tokenBalance, loading: nctLoading } = useNoceniteBalanceFormatted(
+    currentLensAccount?.owner
+  );
 
   // Avatar generation state - NEW
   const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(
@@ -57,17 +63,17 @@ const ProfileView: React.FC = () => {
 
   // Challenge data
   const [dailyChallenges, setDailyChallenges] = useState<boolean[]>(
-    /*user?.dailyChallenge.split('').map((char) => char === '1') || */[]
+    /*user?.dailyChallenge.split('').map((char) => char === '1') || */ []
   );
   const [weeklyChallenges, setWeeklyChallenges] = useState<boolean[]>(
-    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */[]
+    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */ []
   );
   const [monthlyChallenges, setMonthlyChallenges] = useState<boolean[]>(
-    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */[]
+    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */ []
   );
 
   const { data: accountStatsData, loading: accountStatsLoading } = useAccountStatsQuery({
-    variables: { request: { account: currentLensAccount?.address } }
+    variables: { request: { account: currentLensAccount?.address } },
   });
   const stats = accountStatsData?.accountStats.graphFollowStats;
 
@@ -82,7 +88,8 @@ const ProfileView: React.FC = () => {
       setCoverPhoto(currentLensAccount?.metadata?.coverPicture);
       setUsername(currentLensAccount?.metadata?.name || '');
       setBio(
-        currentLensAccount?.metadata?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!'
+        currentLensAccount?.metadata?.bio ||
+          'Creator building the future of social challenges 🚀\nJoin me on this journey!'
       );
 
       // NEW: Avatar data loading
@@ -91,7 +98,7 @@ const ProfileView: React.FC = () => {
   }, [currentLensAccount]);
 
   const [getCurrentAccountDetails] = useMeLazyQuery({
-    fetchPolicy: "no-cache",
+    fetchPolicy: 'no-cache',
     variables: { request: { post: '' } },
   });
 
@@ -123,53 +130,47 @@ const ProfileView: React.FC = () => {
     pollTransactionStatus(hash, async () => {
       const accountData = await getCurrentAccountDetails();
       setCurrentLensAccount(accountData?.data?.me.loggedInAs.account);
-      setIsCoverSaving(false)
-      setIsAvatarSaving(false)
-      setIsBioSaving(false)
-      toast.success("Account updated");
+      setIsCoverSaving(false);
+      setIsAvatarSaving(false);
+      setIsBioSaving(false);
+      toast.success('Account updated');
     });
   };
 
   const onError = (error: Error) => {
-    setIsCoverSaving(false)
-    setIsAvatarSaving(false)
-    setIsBioSaving(false)
+    setIsCoverSaving(false);
+    setIsAvatarSaving(false);
+    setIsBioSaving(false);
     toast.error(error.message);
   };
 
   const [setAccountMetadata] = useSetAccountMetadataMutation({
     onCompleted: async ({ setAccountMetadata }) => {
-      if (setAccountMetadata.__typename === "SetAccountMetadataResponse") {
+      if (setAccountMetadata.__typename === 'SetAccountMetadataResponse') {
         return onCompleted(setAccountMetadata.hash);
       }
 
       return await handleTransactionLifecycle({
         transactionData: setAccountMetadata,
         onCompleted,
-        onError
+        onError,
       });
     },
-    onError
+    onError,
   });
 
-  const updateAccount = async (
-    pfpUrl: string | undefined,
-    coverUrl: string | undefined
-  ) => {
+  const updateAccount = async (pfpUrl: string | undefined, coverUrl: string | undefined) => {
     if (!currentLensAccount) {
-      return toast.error("Please sign in your wallet.");
+      return toast.error('Please sign in your wallet.');
     }
 
     const otherAttributes =
       currentLensAccount.metadata?.attributes
-        ?.filter(
-          (attr) =>
-            !["app", "location", "timestamp", "website", "x"].includes(attr.key)
-        )
+        ?.filter((attr) => !['app', 'location', 'timestamp', 'website', 'x'].includes(attr.key))
         .map(({ key, type, value }) => ({
           key,
           type: MetadataAttributeType[type] as any,
-          value
+          value,
         })) || [];
 
     const preparedAccountMetadata: AccountOptions = {
@@ -178,33 +179,29 @@ const ProfileView: React.FC = () => {
       attributes: [
         ...(otherAttributes as MetadataAttribute[]),
         {
-          key: "timestamp",
+          key: 'timestamp',
           type: MetadataAttributeType.STRING,
-          value: new Date().toISOString()
-        }
+          value: new Date().toISOString(),
+        },
       ],
       coverPicture: coverUrl || undefined,
-      picture: pfpUrl || undefined
+      picture: pfpUrl || undefined,
     };
-    preparedAccountMetadata.attributes =
-      preparedAccountMetadata.attributes?.filter((m) => {
-        return m.key !== "" && Boolean(trimify(m.value));
-      });
-    const metadataUri = await uploadMetadata(
-      accountMetadata(preparedAccountMetadata)
-    );
+    preparedAccountMetadata.attributes = preparedAccountMetadata.attributes?.filter((m) => {
+      return m.key !== '' && Boolean(trimify(m.value));
+    });
+    const metadataUri = await uploadMetadata(accountMetadata(preparedAccountMetadata));
 
     return await setAccountMetadata({
-      variables: { request: { metadataUri } }
+      variables: { request: { metadataUri } },
     });
   };
-
 
   // NEW: Updated avatar handler
   const handleAvatarUpdated = (newAvatarUrl: string) => {
     console.log('🎉 Avatar updated in ProfileView:', newAvatarUrl);
     setGeneratedAvatar(newAvatarUrl);
-/*
+    /*
 
     // Update user context
     if (user) {
@@ -231,7 +228,7 @@ const ProfileView: React.FC = () => {
   const handleProfilePicUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && currentLensAccount) {
-      setIsAvatarSaving(true)
+      setIsAvatarSaving(true);
       const decentralizedUrl = await uploadImageFile(file);
       await updateAccount(decentralizedUrl, coverPhoto);
     }
@@ -240,7 +237,7 @@ const ProfileView: React.FC = () => {
   const handleCoverPhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && currentLensAccount) {
-      setIsCoverSaving(true)
+      setIsCoverSaving(true);
       const decentralizedUrl = await uploadImageFile(file);
       await updateAccount(profilePic, decentralizedUrl);
     }
@@ -256,7 +253,7 @@ const ProfileView: React.FC = () => {
     }
 
     try {
-      setIsBioSaving(true)
+      setIsBioSaving(true);
       await updateAccount(profilePic, coverPhoto);
       setIsEditingBio(false);
     } catch (error) {
@@ -267,7 +264,8 @@ const ProfileView: React.FC = () => {
 
   const handleCancelEdit = () => {
     setBio(
-      currentLensAccount?.metadata?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!'
+      currentLensAccount?.metadata?.bio ||
+        'Creator building the future of social challenges 🚀\nJoin me on this journey!'
     );
     setIsEditingBio(false);
   };
@@ -302,11 +300,15 @@ const ProfileView: React.FC = () => {
       <div className="min-h-screen mb-20">
         {/* Cover Photo Section */}
         <div className="relative h-80 overflow-hidden">
-          <Image src={coverPhoto || '/images/cover.jpg'} alt="Cover" fill className="object-cover" />
+          <Image
+            src={coverPhoto || '/images/cover.jpg'}
+            alt="Cover"
+            fill
+            className="object-cover"
+          />
 
           {/* Gradient overlay for smooth blending effect */}
-          <div
-            className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-transparent via-70% to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-transparent via-70% to-black/80" />
 
           <div
             className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
@@ -317,13 +319,11 @@ const ProfileView: React.FC = () => {
             </div>
           </div>
 
-          {
-            isCoverSaving && (
-              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                <LoadingSpinner size="lg" />
-              </div>
-            )
-          }
+          {isCoverSaving && (
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+              <LoadingSpinner size="lg" />
+            </div>
+          )}
 
           <input
             type="file"
@@ -350,13 +350,11 @@ const ProfileView: React.FC = () => {
                       height={120}
                       className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform"
                     />
-                    {
-                      isAvatarSaving && (
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center rounded-full">
-                          <LoadingSpinner size="md" />
-                        </div>
-                      )
-                    }
+                    {isAvatarSaving && (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center rounded-full">
+                        <LoadingSpinner size="md" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -423,7 +421,7 @@ const ProfileView: React.FC = () => {
                       loading={isBioSaving}
                     />
                   </div>
-{/*
+                  {/*
                   <button
                     onClick={handleSaveBioClick}
                     className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-80 rounded-lg transition-all text-sm font-medium"

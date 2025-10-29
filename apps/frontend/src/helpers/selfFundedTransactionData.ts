@@ -1,4 +1,4 @@
-import type { Eip1559TransactionRequest } from "@nocena/indexer";
+import type { Eip1559TransactionRequest } from '@nocena/indexer';
 
 const selfFundedTransactionData = (raw: Eip1559TransactionRequest) => {
   return {
@@ -8,7 +8,7 @@ const selfFundedTransactionData = (raw: Eip1559TransactionRequest) => {
     maxPriorityFeePerGas: BigInt(raw.maxPriorityFeePerGas),
     nonce: raw.nonce,
     to: raw.to,
-    value: BigInt(raw.value)
+    value: BigInt(raw.value),
   };
 };
 

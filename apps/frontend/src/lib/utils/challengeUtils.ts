@@ -79,23 +79,30 @@ export const getCurrentChallenge = async (
 
     if (frequency === 'daily') {
       const dayOfYear = getDayOfYear(now);
-      const dailyChallenges = challenges.filter(c => c.year === year && c.day === dayOfYear);
-      
-      filteredChallenge = getNewestChallenge(dailyChallenges) || 
-                         getNewestChallenge(challenges.filter(c => c.year === year));
+      const dailyChallenges = challenges.filter((c: any) => c.year === year && c.day === dayOfYear);
+
+      filteredChallenge =
+        getNewestChallenge(dailyChallenges) ||
+        getNewestChallenge(challenges.filter((c: any) => c.year === year));
     } else if (frequency === 'weekly') {
       const weekOfYear = getWeekOfYear(now);
-      const weeklyChallenges = challenges.filter(c => c.year === year && c.week === weekOfYear);
-      
-      filteredChallenge = getNewestChallenge(weeklyChallenges) || 
-                         getNewestChallenge(challenges.filter(c => c.year === year && c.week === weekOfYear + 1)) ||
-                         getNewestChallenge(challenges.filter(c => c.year === year));
+      const weeklyChallenges = challenges.filter(
+        (c: any) => c.year === year && c.week === weekOfYear
+      );
+
+      filteredChallenge =
+        getNewestChallenge(weeklyChallenges) ||
+        getNewestChallenge(
+          challenges.filter((c: any) => c.year === year && c.week === weekOfYear + 1)
+        ) ||
+        getNewestChallenge(challenges.filter((c: any) => c.year === year));
     } else if (frequency === 'monthly') {
       const month = now.getMonth() + 1;
-      const monthlyChallenges = challenges.filter(c => c.year === year && c.month === month);
-      
-      filteredChallenge = getNewestChallenge(monthlyChallenges) || 
-                         getNewestChallenge(challenges.filter(c => c.year === year));
+      const monthlyChallenges = challenges.filter((c: any) => c.year === year && c.month === month);
+
+      filteredChallenge =
+        getNewestChallenge(monthlyChallenges) ||
+        getNewestChallenge(challenges.filter((c: any) => c.year === year));
     }
 
     if (filteredChallenge) {

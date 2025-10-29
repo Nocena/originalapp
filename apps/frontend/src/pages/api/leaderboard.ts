@@ -45,7 +45,7 @@ export default async function handler(req: any, res: any) {
         username
       );
       try {
-        leaderboard = await getBlockchainLeaderboard(limitNum, userAddress, username);
+        leaderboard = await getBlockchainLeaderboard(limitNum);
         console.log('🔥 getBlockchainLeaderboard returned:', leaderboard?.length || 0, 'items');
       } catch (error) {
         console.error('🔥 Error in getBlockchainLeaderboard:', error);

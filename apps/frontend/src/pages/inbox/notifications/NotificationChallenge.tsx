@@ -23,9 +23,10 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
 
   const handleCompleteChallenge = () => {
     // Check if challenge is expired
-    const isExpired = notification.status === 'expired' || 
-                     (notification.expiresAt && new Date(notification.expiresAt) < new Date());
-    
+    const isExpired =
+      notification.status === 'expired' ||
+      (notification.expiresAt && new Date(notification.expiresAt) < new Date());
+
     if (isExpired) {
       alert('This challenge has expired and can no longer be accepted.');
       return;
@@ -76,8 +77,9 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
       notification.privateChallenge || notification.publicChallenge || notification.aiChallenge;
 
     // Check if challenge is expired
-    const isExpired = notification.status === 'expired' || 
-                     (notification.expiresAt && new Date(notification.expiresAt) < new Date());
+    const isExpired =
+      notification.status === 'expired' ||
+      (notification.expiresAt && new Date(notification.expiresAt) < new Date());
 
     // If there's a completable challenge and it's not expired, navigate to the completion page
     if (hasCompletableChallenge && !isExpired) {
@@ -92,8 +94,9 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
     notification.privateChallenge || notification.publicChallenge || notification.aiChallenge;
 
   // Check if challenge is expired
-  const isExpired = notification.status === 'expired' || 
-                   (notification.expiresAt && new Date(notification.expiresAt) < new Date());
+  const isExpired =
+    notification.status === 'expired' ||
+    (notification.expiresAt && new Date(notification.expiresAt) < new Date());
 
   // Display NEW tag if isRead is false
   const shouldShowNew = notification.isRead === false;
@@ -105,9 +108,7 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
       color="nocenaPink"
       rounded="xl"
       className={`w-full max-w-lg px-6 py-2 transition-all relative ${
-        isExpired 
-          ? 'opacity-50 cursor-not-allowed' 
-          : 'cursor-pointer hover:brightness-110'
+        isExpired ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:brightness-110'
       }`}
       onClick={handleCardClick}
     >

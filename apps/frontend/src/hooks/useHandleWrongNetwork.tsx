@@ -2,8 +2,8 @@ import { CHAIN } from '@nocena/data/constants';
 import { useConnections, useSwitchChain } from 'wagmi';
 
 const useHandleWrongNetwork = () => {
-  return async () => {}
-/*
+  return async () => {};
+  /*
   const activeConnection = useConnections();
   const { switchChainAsync } = useSwitchChain();
 

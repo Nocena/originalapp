@@ -7,7 +7,10 @@ import ChallengeMarker from './components/ChallengeMarker';
 import MapControls from './components/MapControls';
 import LoadingOverlay from './components/LoadingOverlay';
 import { getMapStyleURL, getUserLocation, loadMapLibreCSS } from '../../lib/map/mapService';
-import { generateRandomChallenges, generateSingleReplacement } from '../../lib/map/challengeGenerator';
+import {
+  generateRandomChallenges,
+  generateSingleReplacement,
+} from '../../lib/map/challengeGenerator';
 import { fetchNearbyChallenge } from '../../lib/graphql';
 import { fetchUserCompletionsByFilters } from '../../lib/graphql';
 import { ChallengeData } from '../../lib/graphql/features/challenge/types';
@@ -16,7 +19,7 @@ import { LocationData } from '../../lib/types';
 // Helper function to get user's completed PUBLIC challenge IDs
 async function getUserCompletedChallengeIds(userAddress?: string): Promise<string[]> {
   if (!userAddress) return [];
-  
+
   try {
     const completions = await fetchUserCompletionsByFilters({
       userLensAccountId: userAddress,
@@ -24,10 +27,8 @@ async function getUserCompletedChallengeIds(userAddress?: string): Promise<strin
       startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // Last 30 days
       endDate: new Date().toISOString(),
     });
-    
-    return completions
-      .filter(c => c.publicChallenge?.id)
-      .map(c => c.publicChallenge!.id);
+
+    return completions.filter((c) => c.publicChallenge?.id).map((c) => c.publicChallenge!.id);
   } catch (error) {
     console.error('❌ Error fetching user completions:', error);
     return [];
@@ -98,11 +99,14 @@ const MapView = () => {
 
       // Cache challenges for persistence
       const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
-      localStorage.setItem(cacheKey, JSON.stringify({
-        challenges: newChallenges,
-        timestamp: Date.now(),
-        location: userLocation
-      }));
+      localStorage.setItem(
+        cacheKey,
+        JSON.stringify({
+          challenges: newChallenges,
+          timestamp: Date.now(),
+          location: userLocation,
+        })
+      );
 
       setSelectedPin(null);
 
@@ -215,28 +219,34 @@ const MapView = () => {
             // Load cached challenges if available and fresh (< 1 hour)
             const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
             const cached = localStorage.getItem(cacheKey);
-            
+
             if (cached) {
               const { challenges: cachedChallenges, timestamp } = JSON.parse(cached);
               if (Date.now() - timestamp < 3600000) {
                 console.log('📦 Using cached challenges');
-                
+
                 // Filter out user's completed challenges from cache
                 try {
-                  const userCompletedIds = await getUserCompletedChallengeIds(currentLensAccount?.address);
-                  const visibleChallenges = cachedChallenges.filter((c: any) => !userCompletedIds.includes(c.id));
-                  
+                  const userCompletedIds = await getUserCompletedChallengeIds(
+                    currentLensAccount?.address
+                  );
+                  const visibleChallenges = cachedChallenges.filter(
+                    (c: any) => !userCompletedIds.includes(c.id)
+                  );
+
                   console.log('🔍 Debug:', {
                     totalCached: cachedChallenges.length,
                     userCompletedIds,
                     visibleAfterFilter: visibleChallenges.length,
-                    needToGenerate: 5 - visibleChallenges.length
+                    needToGenerate: 5 - visibleChallenges.length,
                   });
-                  
+
                   if (visibleChallenges.length < 10) {
                     const needed = 10 - visibleChallenges.length;
-                    console.log(`🎯 User has ${visibleChallenges.length}/10 cached challenges, generating ${needed} replacements...`);
-                    
+                    console.log(
+                      `🎯 User has ${visibleChallenges.length}/10 cached challenges, generating ${needed} replacements...`
+                    );
+
                     const replacements: ChallengeData[] = [];
                     for (let i = 0; i < needed; i++) {
                       const replacement = await generateSingleReplacement(
@@ -248,7 +258,7 @@ const MapView = () => {
                         replacements.push(replacement);
                       }
                     }
-                    
+
                     setChallenges([...visibleChallenges, ...replacements]);
                   } else {
                     setChallenges(visibleChallenges);
@@ -257,7 +267,7 @@ const MapView = () => {
                   console.error('❌ Error filtering cached challenges:', error);
                   setChallenges(cachedChallenges);
                 }
-                
+
                 setLocatingUser(false);
                 return;
               }
@@ -326,31 +336,36 @@ const MapView = () => {
       try {
         // Get user's completed challenge IDs to filter them out
         const userCompletedIds = await getUserCompletedChallengeIds(currentLensAccount?.address);
-        
+
         // Filter out completed challenges from current challenges
-        const visibleChallenges = challenges.filter(c => !userCompletedIds.includes(c.id));
-        
+        const visibleChallenges = challenges.filter((c) => !userCompletedIds.includes(c.id));
+
         if (visibleChallenges.length < 10) {
           const needed = 10 - visibleChallenges.length;
-          console.log(`🎯 User has ${visibleChallenges.length}/10 challenges, generating ${needed} more...`);
-          
+          console.log(
+            `🎯 User has ${visibleChallenges.length}/10 challenges, generating ${needed} more...`
+          );
+
           const newChallenges = await generateRandomChallenges(
             userLocation.latitude,
             userLocation.longitude,
             needed
           );
-          
+
           // Combine visible existing + new challenges
           const allChallenges = [...visibleChallenges, ...newChallenges];
           setChallenges(allChallenges);
-          
+
           // Update cache with all challenges (including completed ones for other users)
           const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
-          localStorage.setItem(cacheKey, JSON.stringify({
-            challenges: [...challenges, ...newChallenges], // Keep all challenges in cache
-            timestamp: Date.now(),
-            location: userLocation
-          }));
+          localStorage.setItem(
+            cacheKey,
+            JSON.stringify({
+              challenges: [...challenges, ...newChallenges], // Keep all challenges in cache
+              timestamp: Date.now(),
+              location: userLocation,
+            })
+          );
         } else {
           // User has enough visible challenges, just update display
           setChallenges(visibleChallenges);
@@ -386,19 +401,19 @@ const MapView = () => {
     const handleChallengeCompleted = async (event: Event) => {
       const customEvent = event as CustomEvent;
       const { challengeId, userId } = customEvent.detail;
-      
+
       console.log('🎉 Challenge completed, refreshing user challenges...', { challengeId, userId });
-      
+
       if (userId === currentLensAccount?.address && userLocation) {
         // Refresh challenges for this user
         try {
           const userCompletedIds = await getUserCompletedChallengeIds(currentLensAccount?.address);
-          const visibleChallenges = challenges.filter(c => !userCompletedIds.includes(c.id));
-          
+          const visibleChallenges = challenges.filter((c) => !userCompletedIds.includes(c.id));
+
           if (visibleChallenges.length < 10) {
             const needed = 10 - visibleChallenges.length;
             console.log(`🔄 Generating ${needed} replacement challenges...`);
-            
+
             const replacements: ChallengeData[] = [];
             for (let i = 0; i < needed; i++) {
               const replacement = await generateSingleReplacement(
@@ -410,7 +425,7 @@ const MapView = () => {
                 replacements.push(replacement);
               }
             }
-            
+
             setChallenges([...visibleChallenges, ...replacements]);
           } else {
             setChallenges(visibleChallenges);
@@ -422,7 +437,7 @@ const MapView = () => {
     };
 
     window.addEventListener('challengeCompleted', handleChallengeCompleted);
-    
+
     return () => {
       window.removeEventListener('challengeCompleted', handleChallengeCompleted);
     };

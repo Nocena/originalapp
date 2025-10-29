@@ -16,8 +16,8 @@ import { default as AndroidPWAPrompt } from '../components/PWA/AndroidPWAPrompt'
 import UpdateNotification from '../components/PWA/UpdateNotification';
 import CacheDebugger from '../components/PWA/CacheDebugger';
 import { BackgroundTaskProvider, useBackgroundTasks } from '../contexts/BackgroundTaskContext';
-import { usePermissions } from 'src/hooks/usePermissions';
-import { LoadingIndicator } from '@components/LoadingIndicator';
+import { usePermissions } from '../hooks/usePermissions';
+import { LoadingIndicator } from '../components/LoadingIndicator';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import apolloClient from '@nocena/indexer/apollo/client';
 import authLink from '../helpers/authLink';
@@ -324,7 +324,7 @@ function MyApp(props: AppProps) {
           <AuthProvider>
             <BackgroundTaskProvider>
               <MyAppContent {...props} />
-              <Toaster 
+              <Toaster
                 position="top-center"
                 toastOptions={{
                   duration: 3000,

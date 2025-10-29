@@ -1,23 +1,22 @@
 // src/lib/map/types.ts
 
 export interface ChallengeData {
-  id?: string;
+  id: string;
   position: [number, number];
   color: string;
   title: string;
   description: string;
   reward: number;
+  creatorLensAccountId: string;
   // Existing additional data for UI
   creatorName?: string;
   creatorAvatar?: string;
-  participantCount?: number;
-  maxParticipants?: number;
+  participantCount: number;
+  maxParticipants: number;
   // Completion data fields
-  completionCount?: number;
-  recentCompletions?: {
-    userId: string;
-    username: string;
-    profilePicture: string;
+  completionCount: number;
+  recentCompletions: {
+    userLensAccountId: string;
     completedAt: string;
   }[];
   // NEW: Fields for generated challenges

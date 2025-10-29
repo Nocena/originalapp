@@ -20,11 +20,12 @@ export const getEmojiForReactionType = (reactionType: string): string => {
 export const getDateParts = (date: Date) => ({
   completionDate: date.toISOString(),
   completionDay: date.getDate(),
-  completionWeek: Math.ceil((date.getDate() + ((new Date(date.getFullYear(), 0, 1).getDay() + 1))) / 7),
+  completionWeek: Math.ceil(
+    (date.getDate() + (new Date(date.getFullYear(), 0, 1).getDay() + 1)) / 7
+  ),
   completionMonth: date.getMonth() + 1,
   completionYear: date.getFullYear(),
 });
-
 
 export const serializeMedia = (mediaData: string | MediaMetadata): string => {
   const now = Date.now();

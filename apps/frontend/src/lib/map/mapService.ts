@@ -211,7 +211,12 @@ export const loadMapLibreCSS = () => {
  * @param lon2 Longitude of second point
  * @returns Distance in kilometers
  */
-export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+export const calculateDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
   const R = 6371; // Radius of the earth in km
   const dLat = deg2rad(lat2 - lat1);
   const dLon = deg2rad(lon2 - lon1);
