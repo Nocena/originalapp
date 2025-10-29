@@ -1723,8 +1723,8 @@ export function parseMediaMetadata(media: string | object): any {
  */
 export function getTodaysCompletion(user: any, challengeType: 'daily' | 'weekly' | 'monthly'): any {
   // This function would need to be updated to actually fetch from the database
-  // For now, it returns null since we're using the new fetchUserCompletions function
-  // You can remove this function and update any references to use fetchUserCompletions instead
+  // For now, it returns null since we're using the new fetchUserCompletionsByFilters function
+  // You can remove this function and update any references to use fetchUserCompletionsByFilters instead
   return null;
 }
 

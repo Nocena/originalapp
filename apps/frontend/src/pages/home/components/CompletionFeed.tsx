@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import CompletionItem from './CompletionItem';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
 import { useAuth } from '../../../contexts/AuthContext';
-import { fetchUserCompletions } from 'src/lib/graphql';
+import { fetchUserCompletionsByFilters } from 'src/lib/graphql';
 import { BasicCompletionType } from '../../../lib/graphql/features/challenge-completion/types';
 
 interface CompletionFeedProps {
@@ -68,7 +68,7 @@ const CompletionFeed: React.FC<CompletionFeedProps> = ({
         });
 
         // Fetch completions for this period
-        const completions = await fetchUserCompletions(
+        const completions = await fetchUserCompletionsByFilters(
           {
             userLensAccountId: currentLensAccount?.address,
             startDate: startDate.toISOString(),

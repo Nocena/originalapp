@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-export const FETCH_USER_COMPLETIONS = gql`
+export const FETCH_USER_COMPLETIONS_BY_FILTERS = gql`
     query FetchUserCompletions(
         $userLensAccountId: String!
         $startDate: DateTime!
@@ -43,6 +43,50 @@ export const FETCH_USER_COMPLETIONS = gql`
                 title
                 description
                 reward
+            }
+        }
+    }
+`;
+
+export const USER_CHALLENGE_COMPLETIONS = gql`
+    query GetUserChallengeCompletions($userLensAccountId: String!, $limit: Int, $offset: Int) {
+        queryChallengeCompletion(
+            filter: { userLensAccountId: { eq: $userLensAccountId } }
+            order: { desc: completionDate }
+            first: $limit
+            offset: $offset
+        ) {
+            id
+            userLensAccountId
+            completionDate
+            likedByLensAccountIds
+            likesCount
+            challengeType
+            status
+            media
+
+            aiChallenge {
+                id
+                title
+                description
+                media
+                difficulty
+            }
+
+            publicChallenge {
+                id
+                title
+                description
+                media
+                category
+            }
+
+            privateChallenge {
+                id
+                title
+                description
+                media
+                inviteCode
             }
         }
     }
