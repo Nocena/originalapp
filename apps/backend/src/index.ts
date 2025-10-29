@@ -1,11 +1,13 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { FlowEventListener } from './services/flowEventListener';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const flowListener = new FlowEventListener();
 
 // Middleware
 app.use(cors());
@@ -34,8 +36,42 @@ app.get('/api/status', (req: Request, res: Response) => {
   });
 });
 
+app.post('/api/flow/check-events', async (req: Request, res: Response) => {
+  try {
+    await (flowListener as any).checkForChallengeEvents();
+    res.json({ success: true, message: 'Manually checked for events' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to check events' });
+  }
+});
+
+app.post('/api/flow/start-listener', async (req: Request, res: Response) => {
+  try {
+    await flowListener.startListening();
+    res.json({ success: true, message: 'Flow event listener started' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to start Flow event listener' });
+  }
+});
+
+app.post('/api/flow/stop-listener', async (req: Request, res: Response) => {
+  try {
+    await flowListener.stopListening();
+    res.json({ success: true, message: 'Flow event listener stopped' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to stop Flow event listener' });
+  }
+});
+
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Backend server is running on http://localhost:${PORT}`);
+  
+  // Auto-start Flow event listener
+  try {
+    await flowListener.startListening();
+  } catch (error) {
+    console.error('Failed to start Flow event listener:', error);
+  }
 });
 
