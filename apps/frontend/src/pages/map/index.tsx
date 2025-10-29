@@ -6,14 +6,10 @@ import UserLocationMarker from './components/UserLocationMarker';
 import ChallengeMarker from './components/ChallengeMarker';
 import MapControls from './components/MapControls';
 import LoadingOverlay from './components/LoadingOverlay';
-import {
-  getMapStyleURL,
-  getUserLocation,
-  loadMapLibreCSS,
-} from '../../lib/map/mapService';
+import { getMapStyleURL, getUserLocation, loadMapLibreCSS } from '../../lib/map/mapService';
 import { generateRandomChallenges, generateSingleReplacement } from '../../lib/map/challengeGenerator';
-import { fetchNearbyChallenge } from '../../lib/graphql/features/challenge';
-import { fetchUserCompletions } from '../../lib/graphql/features/challenge-completion';
+import { fetchNearbyChallenge } from '../../lib/graphql';
+import { fetchUserCompletionsByFilters } from '../../lib/graphql';
 import { ChallengeData } from '../../lib/graphql/features/challenge/types';
 import { LocationData } from '../../lib/types';
 
@@ -22,7 +18,7 @@ async function getUserCompletedChallengeIds(userAddress?: string): Promise<strin
   if (!userAddress) return [];
   
   try {
-    const completions = await fetchUserCompletions({
+    const completions = await fetchUserCompletionsByFilters({
       userLensAccountId: userAddress,
       challengeType: 'public',
       startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // Last 30 days

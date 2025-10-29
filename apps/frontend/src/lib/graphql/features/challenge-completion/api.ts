@@ -4,8 +4,9 @@ import {
   FETCH_COMPLETIONS_BY_CHALLENGE,
   FETCH_COMPLETIONS_OF_USERS,
   FETCH_LATEST_USER_COMPLETION,
-  FETCH_USER_COMPLETIONS,
+  FETCH_USER_COMPLETIONS_BY_FILTERS,
   GET_COMPLETION_FOR_LIKES,
+  USER_CHALLENGE_COMPLETIONS,
 } from './queries';
 import { BasicCompletionType, ChallengeCompletion, FetchUserCompletionsParams, MediaMetadata } from './types';
 import { getDateRange } from '../follow/utils';
@@ -18,7 +19,21 @@ import sanitizeDStorageUrl from '../../../../helpers/sanitizeDStorageUrl';
 // QUERY FUNCTIONS
 // ============================================================================
 
-export async function fetchUserCompletions({
+export const fetchAllUserChallengeCompletionsPaginate = async (
+  userLensAccountId: string,
+  limit = 10,
+  offset = 0
+): Promise<BasicCompletionType[]> =>  {
+  const { data } = await graphqlClient.query({
+    query: USER_CHALLENGE_COMPLETIONS,
+    variables: { userLensAccountId, limit, offset },
+    fetchPolicy: "network-only",
+  });
+
+  return data?.queryChallengeCompletion ?? [];
+};
+
+export async function fetchUserCompletionsByFilters({
                                              userLensAccountId,
                                              startDate,
                                              endDate,
@@ -26,7 +41,7 @@ export async function fetchUserCompletions({
                                            }: FetchUserCompletionsParams): Promise<BasicCompletionType[]> {
   try {
     const { data } = await graphqlClient.query({
-      query: FETCH_USER_COMPLETIONS,
+      query: FETCH_USER_COMPLETIONS_BY_FILTERS,
       variables: {
         userLensAccountId,
         startDate,
