@@ -1,0 +1,98 @@
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+import OpenAI from 'openai';
+import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+
+const monthlyChallenges = [
+  "Do 50 burpees",
+  "Hold a handstand for 30 seconds",
+  "Do a 30-second cold shower",
+  "Memorize and recite a poem",
+  "Do 100 sit-ups"
+];
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const DGRAPH_ENDPOINT = process.env.DGRAPH_ENDPOINT || process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
+
+async function generateMonthlyChallenge() {
+  try {
+    console.log('🚀 Generating monthly challenge...');
+    
+    const randomChallenge = monthlyChallenges[Math.floor(Math.random() * monthlyChallenges.length)];
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "Create challenging 30-second challenges. Monthly challenges should be the hardest but still completable in 30 seconds. Respond with JSON format: {\"title\": \"2-3 word catchy title\", \"description\": \"1-2 sentence description\"}."
+        },
+        {
+          role: "user", 
+          content: `Create a monthly challenge based on: ${randomChallenge}. Make it completable in 30 seconds but very challenging.`
+        }
+      ],
+      max_tokens: 100,
+      temperature: 0.7,
+    });
+
+    const challengeText = completion.choices[0]?.message?.content || '{"title": "Monthly Challenge", "description": "' + randomChallenge + '"}';
+    
+    let challengeTitle = "Monthly Challenge";
+    let challengeDescription = randomChallenge;
+    
+    try {
+      const parsed = JSON.parse(challengeText);
+      challengeTitle = parsed.title || "Monthly Challenge";
+      challengeDescription = parsed.description || randomChallenge;
+    } catch (error) {
+      challengeDescription = challengeText;
+    }
+    
+    const challengeData = {
+      id: uuidv4(),
+      title: challengeTitle,
+      description: challengeDescription,
+      frequency: "monthly",
+      reward: 2500,
+      createdAt: new Date().toISOString(),
+      isActive: true,
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear()
+    };
+
+    console.log('✅ Monthly challenge generated');
+    console.log('🏷️ Title:', challengeData.title);
+    console.log('📝 Description:', challengeData.description);
+    
+    if (DGRAPH_ENDPOINT) {
+      const mutation = `
+        mutation AddMonthlyChallenge($challenge: AddAIChallengeInput!) {
+          addAIChallenge(input: [$challenge]) {
+            aIChallenge {
+              id
+              title
+            }
+          }
+        }
+      `;
+      
+      await axios.post(DGRAPH_ENDPOINT, {
+        query: mutation,
+        variables: { challenge: challengeData }
+      });
+      
+      console.log('💾 Challenge saved to database');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error generating monthly challenge:', error);
+    throw error;
+  }
+}
+
+generateMonthlyChallenge().catch(console.error);
