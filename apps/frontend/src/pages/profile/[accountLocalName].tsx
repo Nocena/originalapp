@@ -15,6 +15,7 @@ import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import getAvatar from '../../helpers/getAvatar';
 import { useLensFollowActions } from '../../hooks/useLensFollowActions';
 import { useNoceniteBalanceFormatted } from '../../hooks/useNoceniteBalance';
+import CompletionsSection from '@pages/profile/components/completions/CompletionsSection';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -49,8 +50,8 @@ const OtherProfileView: React.FC = () => {
   const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
-  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
-    'trailer',
+  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements' | 'challenges'>(
+    'challenges',
   );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -373,9 +374,10 @@ const OtherProfileView: React.FC = () => {
             {/* Three Section Menu using ThematicContainer */}
             <div className="mb-6 flex space-x-3 w-full">
               {[
-                { key: 'trailer', label: 'Avatar' },
+                { key: 'challenges', label: 'Challenges' },
+                // { key: 'trailer', label: 'Avatar' },
                 { key: 'calendar', label: 'Calendar' },
-                { key: 'achievements', label: 'Stats' },
+                // { key: 'achievements', label: 'Stats' },
               ].map(({ key, label }) => (
                 <ThematicContainer
                   key={key}
@@ -395,6 +397,12 @@ const OtherProfileView: React.FC = () => {
 
             {/* Content Based on Active Section - with bottom margin */}
             <div className="space-y-4 mb-8">
+              {activeSection === 'challenges' && (
+                <CompletionsSection
+                  userID={selectedUserAccount?.address}
+                />
+              )}
+
               {activeSection === 'trailer' && (
                 <TrailerSection profilePicture="placeholder" generatedAvatar={null} />
               )}

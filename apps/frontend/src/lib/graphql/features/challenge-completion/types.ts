@@ -22,6 +22,9 @@ export interface BasicCompletionType {
   aiChallenge: any;
   privateChallenge: any;
   publicChallenge: any;
+  privateChallengeId?: string;
+  publicChallengeId?: string;
+  aiChallengeId?: string;
   userAccount?: AccountFragment;
 }
 
