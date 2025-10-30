@@ -13,7 +13,7 @@ const CompletionsSection: React.FC<CompletionsSectionProps> = ({
   const { completions, loading } = useUserChallengeCompletions(userID);
   const completedChallengeIds = useMemo(() => {
     return completions.map((completion) => completion.aiChallenge?.id || completion.privateChallenge?.id || completion.publicChallenge?.id)
-  }, [completions])
+  }, [completions, loading])
   return (
     <>
       <CompletedChallengePart
