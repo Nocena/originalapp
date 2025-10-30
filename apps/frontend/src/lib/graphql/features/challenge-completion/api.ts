@@ -23,7 +23,6 @@ import {
 import { getDateParts, getEmojiForReactionType, serializeMedia } from './utils';
 import { CREATE_CHALLENGE_COMPLETION, UPDATE_LIKE } from './mutations';
 import { v4 as uuidv4 } from 'uuid';
-import sanitizeDStorageUrl from '../../../../helpers/sanitizeDStorageUrl';
 // ============================================================================
 // QUERY FUNCTIONS
 // ============================================================================
@@ -32,14 +31,15 @@ export const fetchAllUserChallengeCompletionsPaginate = async (
   userLensAccountId: string,
   limit = 10,
   offset = 0
-): Promise<BasicCompletionType[]> => {
+): Promise<ChallengeCompletion[]> =>  {
   const { data } = await graphqlClient.query({
     query: USER_CHALLENGE_COMPLETIONS,
     variables: { userLensAccountId, limit, offset },
     fetchPolicy: 'network-only',
   });
 
-  return data?.queryChallengeCompletion ?? [];
+  const rawCompletions = data?.queryChallengeCompletion ?? [];
+  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId)
 };
 
 export async function fetchUserCompletionsByFilters({
@@ -192,20 +192,7 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
     });
 
     let completions = data?.queryChallengeCompletion || [];
-    const updatedCompletions = completions.map((completion: any) => ({
-      ...completion,
-      totalLikes: completion.likesCount || 0,
-      isLiked: userId ? completion.likedByLensAccountIds?.includes(userId) : false,
-      recentLikes: completion.likedByLensAccountIds?.slice(0, 5) || [],
-      totalReactions: completion.reactions?.length || 0,
-      recentReactions: (completion.reactions || []).map((reaction: any) => ({
-        ...reaction,
-        emoji: getEmojiForReactionType(reaction.reactionType),
-        selfieUrl: sanitizeDStorageUrl(reaction.selfieCID),
-      })),
-    })) as ChallengeCompletion[];
-
-    return await addUserAccountToCompletions(updatedCompletions);
+    return await getChallengeCompletionObjectFrom(completions, userId)
   } catch (error) {
     console.error('❌ Error fetching completions with likes and reactions:', error);
     throw error;

@@ -27,12 +27,12 @@ import usePollTransactionStatus from '../../hooks/usePollTransactionStatus';
 import { uploadImageFile } from 'src/helpers/accountPictureUtils';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
 import PrimaryButton from '@components/ui/PrimaryButton';
+import CompletionsSection from '@pages/profile/components/completions/CompletionsSection';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
 
 const ProfileView: React.FC = () => {
-  const DEFAULT_PROFILE_PIC = '/images/profile.png';
   const { currentLensAccount, setCurrentLensAccount } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -47,8 +47,8 @@ const ProfileView: React.FC = () => {
   const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || '');
   const [bio, setBio] = useState<string>(currentLensAccount?.metadata?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
-  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements'>(
-    'trailer'
+  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements' | 'challenges'>(
+    'challenges',
   );
 
   // Fetch NCT balance using the global hook
@@ -58,18 +58,18 @@ const ProfileView: React.FC = () => {
 
   // Avatar generation state - NEW
   const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(
-    currentLensAccount?.metadata?.picture || null
+    currentLensAccount?.metadata?.picture || null,
   );
 
   // Challenge data
   const [dailyChallenges, setDailyChallenges] = useState<boolean[]>(
-    /*user?.dailyChallenge.split('').map((char) => char === '1') || */ []
+    /*user?.dailyChallenge.split('').map((char) => char === '1') || */[],
   );
   const [weeklyChallenges, setWeeklyChallenges] = useState<boolean[]>(
-    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */ []
+    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */[],
   );
   const [monthlyChallenges, setMonthlyChallenges] = useState<boolean[]>(
-    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */ []
+    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */[],
   );
 
   const { data: accountStatsData, loading: accountStatsLoading } = useAccountStatsQuery({
@@ -88,8 +88,7 @@ const ProfileView: React.FC = () => {
       setCoverPhoto(currentLensAccount?.metadata?.coverPicture);
       setUsername(currentLensAccount?.metadata?.name || '');
       setBio(
-        currentLensAccount?.metadata?.bio ||
-          'Creator building the future of social challenges 🚀\nJoin me on this journey!'
+        currentLensAccount?.metadata?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!',
       );
 
       // NEW: Avatar data loading
@@ -203,13 +202,13 @@ const ProfileView: React.FC = () => {
     setGeneratedAvatar(newAvatarUrl);
     /*
 
-    // Update user context
-    if (user) {
-      const updatedUser = { ...user, currentAvatar: newAvatarUrl };
-      login(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-    }
-*/
+        // Update user context
+        if (user) {
+          const updatedUser = { ...user, currentAvatar: newAvatarUrl };
+          login(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+    */
   };
 
   // Image upload handlers
@@ -273,6 +272,7 @@ const ProfileView: React.FC = () => {
   const getButtonColor = (section: string) => {
     switch (section) {
       case 'trailer':
+      case 'completions':
         return 'nocenaPink';
       case 'calendar':
         return 'nocenaPurple';
@@ -453,9 +453,10 @@ const ProfileView: React.FC = () => {
           {/* Three Section Menu using ThematicContainer */}
           <div className="flex justify-center mb-6 space-x-4">
             {[
-              { key: 'trailer', label: 'Avatar' }, // Changed label
+              // { key: 'trailer', label: 'Avatar' }, // Changed label
+              { key: 'challenges', label: 'Challenges' }, // Changed label
               { key: 'calendar', label: 'Calendar' },
-              { key: 'achievements', label: 'Stats' },
+              // { key: 'achievements', label: 'Stats' },
             ].map(({ key, label }) => (
               <ThematicContainer
                 key={key}
@@ -483,6 +484,12 @@ const ProfileView: React.FC = () => {
                   enableAvatarFeature={true}
                 />
               </div>
+            )}
+
+            {activeSection === 'challenges' && (
+              <CompletionsSection
+                userID={currentLensAccount?.address}
+              />
             )}
 
             {activeSection === 'calendar' && (

@@ -28,6 +28,7 @@ export interface BasicCompletionType {
 export interface ChallengeCompletion extends BasicCompletionType {
   videoUrl?: string;
   selfieUrl?: string;
+  previewUrl?: string;
   // Local state for likes (will be replaced with DB data later)
   localLikes?: number;
   localIsLiked?: boolean;
