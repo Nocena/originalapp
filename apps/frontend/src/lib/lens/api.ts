@@ -46,6 +46,9 @@ export async function getLensAccountByAddress(
 export async function getLensAccountsInAddresses(
   addresses: string[],
 ) {
+  if (addresses.length <= 0)
+    return []
+
   const result = await fetchAccountsBulk(
     lensPublicClient,
     {

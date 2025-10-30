@@ -6,7 +6,7 @@ import {
   FETCH_LATEST_USER_COMPLETION,
   FETCH_USER_COMPLETIONS_BY_FILTERS,
   GET_COMPLETION_FOR_LIKES,
-  USER_CHALLENGE_COMPLETIONS,
+  USER_CHALLENGE_COMPLETIONS, USER_SIMILAR_CHALLENGE_COMPLETIONS,
 } from './queries';
 import { BasicCompletionType, ChallengeCompletion, FetchUserCompletionsParams, MediaMetadata } from './types';
 import { getDateRange } from '../follow/utils';
@@ -26,6 +26,22 @@ export const fetchAllUserChallengeCompletionsPaginate = async (
   const { data } = await graphqlClient.query({
     query: USER_CHALLENGE_COMPLETIONS,
     variables: { userLensAccountId, limit, offset },
+    fetchPolicy: "network-only",
+  });
+
+  const rawCompletions = data?.queryChallengeCompletion ?? [];
+  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId)
+};
+
+export const fetchUserSimilarChallengeCompletionsPaginate = async (
+  userLensAccountId: string,
+  challengeIds: string[],
+  limit = 10,
+  offset = 0
+): Promise<ChallengeCompletion[]> =>  {
+  const { data } = await graphqlClient.query({
+    query: USER_SIMILAR_CHALLENGE_COMPLETIONS,
+    variables: { userLensAccountId, challengeIds, limit, offset },
     fetchPolicy: "network-only",
   });
 
