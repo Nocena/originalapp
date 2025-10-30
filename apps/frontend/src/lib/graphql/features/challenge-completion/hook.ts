@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
-import { fetchAllUserChallengeCompletionsPaginate } from './api';
-import { BasicCompletionType } from './types';
+import { useEffect, useState, useCallback, useRef } from "react";
+import { fetchAllUserChallengeCompletionsPaginate } from "./api";
+import { BasicCompletionType } from "./types";
 
 export const useUserChallengeCompletions = (
   userLensAccountId: string,
@@ -13,13 +13,16 @@ export const useUserChallengeCompletions = (
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Fetch completions (paginated)
+  const loadingRef = useRef(false);
+
   const fetchCompletions = useCallback(
     async (append = false) => {
-      if (!userLensAccountId || loading) return;
+      if (!userLensAccountId || loadingRef.current) return;
 
       try {
         setLoading(true);
+        loadingRef.current = true;
+
         const data = await fetchAllUserChallengeCompletionsPaginate(
           userLensAccountId,
           limit,
@@ -34,32 +37,28 @@ export const useUserChallengeCompletions = (
         setError(err);
       } finally {
         setLoading(false);
+        loadingRef.current = false;
       }
     },
-    [userLensAccountId, limit, offset, loading]
+    [userLensAccountId, limit, offset]
   );
 
-  // Load more (pagination)
   const loadMore = useCallback(() => {
     if (hasMore && !loading) {
       setOffset((prev) => prev + limit);
     }
   }, [hasMore, loading, limit]);
 
-  // Fetch on mount and pagination change
   useEffect(() => {
     fetchCompletions(offset > 0);
   }, [offset, fetchCompletions]);
 
-  return {
-    completions,
-    loading,
-    error,
-    hasMore,
-    loadMore,
-    refetch: () => {
-      setOffset(0);
-      fetchCompletions(false);
-    },
-  };
+  const refetch = useCallback(() => {
+    setOffset(0);
+    setHasMore(true);
+    setCompletions([]);
+    fetchCompletions(false);
+  }, [fetchCompletions]);
+
+  return { completions, loading, error, hasMore, loadMore, refetch };
 };
