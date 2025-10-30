@@ -53,62 +53,14 @@ const BrowsingPage: React.FC = () => {
 
       if (allCompletions.length === 0) {
         return
-/*
-        throw new Error(
-          challengeId ? 'No completions found for this challenge' : 'No completions found'
-        );
-*/
       }
 
-      // Process media URLs for each completion
-      const processedCompletions = await Promise.all(
-        allCompletions.map(async (completion: any) => {
-          let videoUrl = null;
-          let selfieUrl = null;
-
-          try {
-            const media = JSON.parse(completion.media);
-            let videoCID = media.videoCID;
-            let selfieCID = media.selfieCID;
-
-            // Handle nested CID structure
-            if (!videoCID && !selfieCID && media.directoryCID) {
-              try {
-                const directoryData = JSON.parse(media.directoryCID);
-                videoCID = directoryData.videoCID;
-                selfieCID = directoryData.selfieCID;
-              } catch (dirParseError) {
-                console.error('Error parsing directory CID:', dirParseError);
-              }
-            }
-
-            if (videoCID) {
-              videoUrl = sanitizeDStorageUrl(videoCID);
-            }
-            if (selfieCID) {
-              selfieUrl = sanitizeDStorageUrl(selfieCID);
-            }
-          } catch (parseError) {
-            console.error('Error parsing media for completion:', completion.id, parseError);
-          }
-
-          return {
-            ...completion,
-            videoUrl,
-            selfieUrl,
-            // Use real database values for both likes and reactions
-            localLikes: completion.totalLikes || 0,
-            localIsLiked: completion.isLiked || false,
-          };
-        })
-      );
-
       // Sort by completion date (most recent first)
-      processedCompletions.sort(
+      allCompletions.sort(
         (a, b) => new Date(b.completionDate).getTime() - new Date(a.completionDate).getTime()
       );
 
-      setCompletions(processedCompletions);
+      setCompletions(allCompletions);
     } catch (err) {
       console.error('Error fetching challenge completions:', err);
       setError(err instanceof Error ? err.message : 'Failed to load completions');
