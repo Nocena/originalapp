@@ -11,6 +11,7 @@ import {
 import { useAuth } from '../../../contexts/AuthContext';
 import { useBackgroundTasks } from '../../../contexts/BackgroundTaskContext';
 import { useActiveAccount } from 'thirdweb/react';
+import { useRouter } from 'next/router';
 
 interface Challenge {
   title: string;
@@ -121,6 +122,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
   onCancel,
   backgroundTaskIds,
 }) => {
+  const router = useRouter();
   const { currentLensAccount } = useAuth();
   const account = useActiveAccount();
   const backgroundTasks = useBackgroundTasks();
@@ -426,7 +428,8 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
         });
 
         setTimeout(() => {
-          window.location.href = '/home';
+          router.push({ pathname: '/home' })
+          // window.location.href = '/home';
         }, 5000);
       } else {
         throw new Error(result.message);
