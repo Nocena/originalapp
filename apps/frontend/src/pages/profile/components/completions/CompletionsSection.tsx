@@ -2,10 +2,11 @@ import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import { NavigationButtons } from '@pages/profile/components/completions/NavigationButtons';
-import { ChallengeSlide } from '@pages/profile/components/completions/ChallengeSlide';
+import { ChallengeCompletionSlide } from '@pages/profile/components/completions/ChallengeCompletionSlide';
 import { useUserChallengeCompletions } from '../../../../lib/graphql/features/challenge-completion/hook';
 import { BasicCompletionType } from '../../../../lib/graphql/features/challenge-completion/types';
 import { SkeletonSlide } from './SkeletonSlide';
+import { Trophy } from 'lucide-react';
 
 interface CompletionsSectionProps {
   userID: string;
@@ -18,13 +19,24 @@ const CompletionsSection: React.FC<CompletionsSectionProps> = ({
   const { completions, loading } = useUserChallengeCompletions(userID)
 
   const handleChallengeClick = (challenge: BasicCompletionType) => {
-    // console.log('Navigate to challenge detail:', challenge.title);
-    // TODO: Add navigation to challenge detail page
+    // console.log('Navigate to completion detail:', completion.title);
+    // TODO: Add navigation to completion detail page
   };
 
   return (
     <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
       {/* Swiper Slider */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 rounded-lg bg-nocenaPink bg-opacity-20">
+            <Trophy className="w-6 h-6 text-nocenaPink" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">My Completed Challenges</h2>
+            <p className="text-gray-400 text-sm">Challenges you've successfully completed</p>
+          </div>
+        </div>
+      </div>
       {
         loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -37,7 +49,7 @@ const CompletionsSection: React.FC<CompletionsSectionProps> = ({
             <Swiper
               modules={[Navigation, Pagination]}
               spaceBetween={16}
-              slidesPerView={3}
+              slidesPerView={4}
               navigation={{
                 prevEl: '.swiper-button-prev-custom',
                 nextEl: '.swiper-button-next-custom',
@@ -57,7 +69,7 @@ const CompletionsSection: React.FC<CompletionsSectionProps> = ({
                   spaceBetween: 16,
                 },
                 1024: {
-                  slidesPerView: 3,
+                  slidesPerView: 4,
                   spaceBetween: 16,
                 },
               }}
@@ -65,8 +77,8 @@ const CompletionsSection: React.FC<CompletionsSectionProps> = ({
             >
               {completions.map((completion) => (
                 <SwiperSlide key={completion.id}>
-                  <ChallengeSlide
-                    challenge={completion}
+                  <ChallengeCompletionSlide
+                    completion={completion}
                     onClick={() => handleChallengeClick(completion)}
                   />
                 </SwiperSlide>

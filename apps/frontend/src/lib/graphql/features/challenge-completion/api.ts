@@ -22,7 +22,7 @@ export const fetchAllUserChallengeCompletionsPaginate = async (
   userLensAccountId: string,
   limit = 10,
   offset = 0
-): Promise<BasicCompletionType[]> =>  {
+): Promise<ChallengeCompletion[]> =>  {
   const { data } = await graphqlClient.query({
     query: USER_CHALLENGE_COMPLETIONS,
     variables: { userLensAccountId, limit, offset },

@@ -443,7 +443,8 @@ const MapView = () => {
         console.log('✅ Navigation to browsing successful');
       } catch (error) {
         console.error('❌ Navigation error:', error);
-        window.location.href = `/browsing?challengeId=${challengeId}&userId=${userId}`;
+        router.push({ pathname: '/browsing', query: {challengeId, userId} })
+        // window.location.href = `/browsing?challengeId=${challengeId}&userId=${userId}`;
       }
     };
 

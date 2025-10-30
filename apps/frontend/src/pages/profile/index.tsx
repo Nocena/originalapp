@@ -29,7 +29,6 @@ const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
 
 const ProfileView: React.FC = () => {
-  const DEFAULT_PROFILE_PIC = '/images/profile.png';
   const { currentLensAccount, setCurrentLensAccount } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -44,8 +43,8 @@ const ProfileView: React.FC = () => {
   const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || '');
   const [bio, setBio] = useState<string>(currentLensAccount?.metadata?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
-  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements' | 'completions'>(
-    'completions',
+  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements' | 'challenges'>(
+    'challenges',
   );
 
   // Fetch NCT balance using the global hook
@@ -458,7 +457,7 @@ const ProfileView: React.FC = () => {
           <div className="flex justify-center mb-6 space-x-4">
             {[
               // { key: 'trailer', label: 'Avatar' }, // Changed label
-              { key: 'completions', label: 'Completions' }, // Changed label
+              { key: 'challenges', label: 'Challenges' }, // Changed label
               { key: 'calendar', label: 'Calendar' },
               // { key: 'achievements', label: 'Stats' },
             ].map(({ key, label }) => (
@@ -490,7 +489,7 @@ const ProfileView: React.FC = () => {
               </div>
             )}
 
-            {activeSection === 'completions' && (
+            {activeSection === 'challenges' && (
               <CompletionsSection
                 userID={currentLensAccount?.address}
               />

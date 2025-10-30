@@ -1,15 +1,11 @@
 // pages/browsing/index.tsx - Minimal camera cleanup additions
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext'; // Add this import
 import InteractionSidebar from './components/InteractionSidebar';
-import getAccount from '../../helpers/getAccount';
-import getAvatar from '../../helpers/getAvatar';
 import { fetchChallengeCompletionsWithLikesAndReactions } from '../../lib/graphql';
 import { ChallengeCompletion } from '../../lib/graphql/features/challenge-completion/types';
-import sanitizeDStorageUrl from 'src/helpers/sanitizeDStorageUrl';
 import { uploadBlob } from '../../helpers/accountPictureUtils';
-
 
 const BrowsingPage: React.FC = () => {
   const router = useRouter();
@@ -62,7 +58,7 @@ const BrowsingPage: React.FC = () => {
 
       setCompletions(allCompletions);
     } catch (err) {
-      console.error('Error fetching challenge completions:', err);
+      console.error('Error fetching completion completions:', err);
       setError(err instanceof Error ? err.message : 'Failed to load completions');
     } finally {
       setLoading(false);
