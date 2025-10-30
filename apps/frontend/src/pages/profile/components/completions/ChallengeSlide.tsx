@@ -1,12 +1,13 @@
 import React from 'react';
 import { Star, Play } from 'lucide-react';
-import { CompletedChallenge } from '../../types';
 import { PlayButton } from './PlayButton';
 import { HoverOverlay } from './HoverOverlay';
 import { CreatorAvatar } from './CreatorAvatar';
+import { BasicCompletionType } from '../../../../lib/graphql/features/challenge-completion/types';
+import getAvatar from '../../../../helpers/getAvatar';
 
 interface ChallengeSlideProps {
-  challenge: CompletedChallenge;
+  challenge: BasicCompletionType;
   onClick: () => void;
 }
 
@@ -16,8 +17,8 @@ export const ChallengeSlide: React.FC<ChallengeSlideProps> = ({ challenge, onCli
       {/* Challenge Image - Top Section */}
       <div className="relative aspect-video rounded-t-lg overflow-hidden">
         <img
-          src={challenge.thumbnailUrl}
-          alt={challenge.title}
+          src={''}
+          alt={''}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
 
@@ -31,16 +32,16 @@ export const ChallengeSlide: React.FC<ChallengeSlideProps> = ({ challenge, onCli
           {/* Token Amount - Left */}
           <div className="flex items-center space-x-2">
             <Star className="w-5 h-5 text-nocenaPink" />
-            <span className="text-white font-bold text-lg">{challenge.reward}</span>
+            <span className="text-white font-bold text-lg">{'reward'}</span>
             <span className="text-gray-400 text-sm">NCX</span>
           </div>
 
-          <CreatorAvatar src={challenge.creatorAvatar} alt="Creator" />
+          <CreatorAvatar src={getAvatar(challenge.userAccount)} alt="Creator" />
         </div>
 
         {/* Challenge Title */}
         <h3 className="text-white text-sm font-medium mt-2 line-clamp-1">
-          {challenge.title}
+          {''}
         </h3>
       </div>
     </div>
