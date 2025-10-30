@@ -15,6 +15,9 @@ export const
         $privateChallenge: PrivateChallengeRef
         $publicChallenge: PublicChallengeRef
         $aiChallenge: AIChallengeRef
+        $privateChallengeId: String
+        $publicChallengeId: String
+        $aiChallengeId: String
     ) {
         addChallengeCompletion(
             input: [{
@@ -32,6 +35,9 @@ export const
                 privateChallenge: $privateChallenge
                 publicChallenge: $publicChallenge
                 aiChallenge: $aiChallenge
+                privateChallengeId: $privateChallengeId
+                publicChallengeId: $publicChallengeId
+                aiChallengeId: $aiChallengeId
             }]
         ) {
             challengeCompletion {

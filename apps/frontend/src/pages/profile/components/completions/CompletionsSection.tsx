@@ -4,23 +4,28 @@ import { Navigation, Pagination } from 'swiper/modules';
 import { NavigationButtons } from '@pages/profile/components/completions/NavigationButtons';
 import { ChallengeCompletionSlide } from '@pages/profile/components/completions/ChallengeCompletionSlide';
 import { useUserChallengeCompletions } from '../../../../lib/graphql/features/challenge-completion/hook';
-import { BasicCompletionType } from '../../../../lib/graphql/features/challenge-completion/types';
+import { ChallengeCompletion } from '../../../../lib/graphql/features/challenge-completion/types';
 import { SkeletonSlide } from './SkeletonSlide';
 import { Trophy } from 'lucide-react';
+import { useRouter } from 'next/router';
 
 interface CompletionsSectionProps {
   userID: string;
 }
 
 const CompletionsSection: React.FC<CompletionsSectionProps> = ({
-  userID = 'current-user',
-}) => {
+                                                                 userID = 'current-user',
+                                                               }) => {
+  const router = useRouter();
+  const { completions, loading } = useUserChallengeCompletions(userID);
 
-  const { completions, loading } = useUserChallengeCompletions(userID)
-
-  const handleChallengeClick = (challenge: BasicCompletionType) => {
-    // console.log('Navigate to completion detail:', completion.title);
-    // TODO: Add navigation to completion detail page
+  const handleChallengeClick = (completion: ChallengeCompletion) => {
+    router.push({
+      pathname: '/browsing', query: {
+        completionId: completion.id,
+        userId: userID,
+      },
+    });
   };
 
   return (

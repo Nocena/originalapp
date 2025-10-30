@@ -25,6 +25,9 @@ export const FETCH_USER_COMPLETIONS_BY_FILTERS = gql`
             status
             challengeType
             likesCount
+            privateChallengeId
+            publicChallengeId
+            aiChallengeId
             aiChallenge {
                 id
                 title
@@ -64,7 +67,9 @@ export const USER_CHALLENGE_COMPLETIONS = gql`
             challengeType
             status
             media
-
+            privateChallengeId
+            publicChallengeId
+            aiChallengeId
             aiChallenge {
                 id
                 title
@@ -112,6 +117,9 @@ export const FETCH_LATEST_USER_COMPLETION = gql`
             challengeType
             likesCount
             userLensAccountId
+            privateChallengeId
+            publicChallengeId
+            aiChallengeId
             aiChallenge {
                 id
                 title
@@ -139,7 +147,6 @@ export const FETCH_LATEST_USER_COMPLETION = gql`
     }
 `;
 
-
 export const FETCH_COMPLETIONS_OF_USERS = gql`
     query FetchUserCompletions(
         $userLensAccountIds: [String!]!
@@ -165,6 +172,9 @@ export const FETCH_COMPLETIONS_OF_USERS = gql`
             status
             challengeType
             likesCount
+            privateChallengeId
+            publicChallengeId
+            aiChallengeId
             aiChallenge {
                 id
                 title
@@ -198,6 +208,9 @@ export const FETCH_ALL_COMPLETIONS = gql`
             challengeType
             likesCount
             likedByLensAccountIds
+            privateChallengeId
+            publicChallengeId
+            aiChallengeId
             reactions {
                 id
                 reactionType
@@ -233,9 +246,9 @@ export const FETCH_COMPLETIONS_BY_CHALLENGE = gql`
         queryChallengeCompletion(
             filter: {
                 or: [
-                    { and: [{ has: publicChallenge }, { publicChallenge: { id: { eq: $challengeId } } }] },
-                    { and: [{ has: privateChallenge }, { privateChallenge: { id: { eq: $challengeId } } }] },
-                    { and: [{ has: aiChallenge }, { aiChallenge: { id: { eq: $challengeId } } }] }
+                    { publicChallengeId: { eq: $challengeId } },
+                    { privateChallengeId: { eq: $challengeId } },
+                    { aiChallengeId: { eq: $challengeId } }
                 ]
             }
             order: { desc: completionDate }
@@ -247,6 +260,57 @@ export const FETCH_COMPLETIONS_BY_CHALLENGE = gql`
             challengeType
             likesCount
             likedByLensAccountIds
+            privateChallengeId
+            publicChallengeId
+            aiChallengeId
+            reactions {
+                id
+                reactionType
+                selfieCID
+                createdAt
+                userLensAccountId
+            }
+            publicChallenge {
+                id
+                title
+                description
+                reward
+            }
+            aiChallenge {
+                id
+                title
+                description
+                reward
+                frequency
+            }
+            privateChallenge {
+                id
+                title
+                description
+                reward
+            }
+        }
+    }
+`;
+
+export const FETCH_COMPLETION_BY_COMPLETION_ID = gql`
+    query GetChallengeCompletionsByChallenge($completionId: String!) {
+        queryChallengeCompletion(
+            filter: {
+                id: { eq: $completionId }
+            }
+            order: { desc: completionDate }
+        ) {
+            id
+            userLensAccountId
+            completionDate
+            media
+            challengeType
+            likesCount
+            likedByLensAccountIds
+            privateChallengeId
+            publicChallengeId
+            aiChallengeId
             reactions {
                 id
                 reactionType
