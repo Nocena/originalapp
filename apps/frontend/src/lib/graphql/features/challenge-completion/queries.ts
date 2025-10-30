@@ -69,24 +69,20 @@ export const USER_CHALLENGE_COMPLETIONS = gql`
                 id
                 title
                 description
-                media
-                difficulty
+                frequency
+                reward
             }
-
-            publicChallenge {
-                id
-                title
-                description
-                media
-                category
-            }
-
             privateChallenge {
                 id
                 title
                 description
-                media
-                inviteCode
+                reward
+            }
+            publicChallenge {
+                id
+                title
+                description
+                reward
             }
         }
     }

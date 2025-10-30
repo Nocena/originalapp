@@ -1,7 +1,6 @@
 // components/home/CompletionItem.tsx - FIXED VERSION
 import React from 'react';
 import Image from 'next/image';
-import { getSelfieUrl, getVideoUrl } from '../../../lib/api/pinata';
 import IPFSMediaLoader from '../../../components/IPFSMediaLoader';
 import ThematicContainer from '../../../components/ui/ThematicContainer';
 import type { AccountFragment } from '@nocena/indexer';
