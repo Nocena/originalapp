@@ -48,7 +48,7 @@ const BrowsingPage: React.FC = () => {
       );
 
       if (allCompletions.length === 0) {
-        return
+        return;
       }
 
       // Sort by completion date (most recent first)

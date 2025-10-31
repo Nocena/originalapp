@@ -47,9 +47,9 @@ const ProfileView: React.FC = () => {
   const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || '');
   const [bio, setBio] = useState<string>(currentLensAccount?.metadata?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
-  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements' | 'challenges'>(
-    'challenges',
-  );
+  const [activeSection, setActiveSection] = useState<
+    'trailer' | 'calendar' | 'achievements' | 'challenges'
+  >('challenges');
 
   // Fetch NCT balance using the global hook
   const { balance: tokenBalance, loading: nctLoading } = useNoceniteBalanceFormatted(
@@ -58,18 +58,18 @@ const ProfileView: React.FC = () => {
 
   // Avatar generation state - NEW
   const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(
-    currentLensAccount?.metadata?.picture || null,
+    currentLensAccount?.metadata?.picture || null
   );
 
   // Challenge data
   const [dailyChallenges, setDailyChallenges] = useState<boolean[]>(
-    /*user?.dailyChallenge.split('').map((char) => char === '1') || */[],
+    /*user?.dailyChallenge.split('').map((char) => char === '1') || */ []
   );
   const [weeklyChallenges, setWeeklyChallenges] = useState<boolean[]>(
-    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */[],
+    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */ []
   );
   const [monthlyChallenges, setMonthlyChallenges] = useState<boolean[]>(
-    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */[],
+    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */ []
   );
 
   const { data: accountStatsData, loading: accountStatsLoading } = useAccountStatsQuery({
@@ -88,7 +88,8 @@ const ProfileView: React.FC = () => {
       setCoverPhoto(currentLensAccount?.metadata?.coverPicture);
       setUsername(currentLensAccount?.metadata?.name || '');
       setBio(
-        currentLensAccount?.metadata?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!',
+        currentLensAccount?.metadata?.bio ||
+          'Creator building the future of social challenges 🚀\nJoin me on this journey!'
       );
 
       // NEW: Avatar data loading
@@ -487,9 +488,7 @@ const ProfileView: React.FC = () => {
             )}
 
             {activeSection === 'challenges' && (
-              <CompletionsSection
-                userID={currentLensAccount?.address}
-              />
+              <CompletionsSection userID={currentLensAccount?.address} />
             )}
 
             {activeSection === 'calendar' && (
