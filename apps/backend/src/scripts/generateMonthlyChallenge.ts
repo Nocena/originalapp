@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
-config({ path: '.env.local' });
+import path from 'path';
+config({ path: path.join(__dirname, '../../.env.local') });
 import OpenAI from 'openai';
 import { v4 as uuidv4 } from 'uuid';
 import { createAIChallenge } from '../services/graphql/challengeService';
