@@ -113,9 +113,7 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
       onClick={handleCardClick}
     >
       {/* Challenge Text - smaller and less bold */}
-      <div className="text-lg font-light mb-2">
-        {title}
-      </div>
+      <div className="text-lg font-light mb-2">{title}</div>
 
       {/* User and Reward Info Row */}
       <div className="flex items-center justify-between">
@@ -153,7 +151,11 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
 
           {/* Expired tag for expired notifications */}
           {isExpired ? (
-            <ThematicContainer asButton={false} color="gray" className="px-4 py-1 bg-gray-500">
+            <ThematicContainer
+              asButton={false}
+              color="nocenaPink"
+              className="px-4 py-1 bg-gray-500"
+            >
               <span className="text-sm font-medium text-gray-200">EXPIRED</span>
             </ThematicContainer>
           ) : (

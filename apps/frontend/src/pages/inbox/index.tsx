@@ -865,8 +865,10 @@ const InboxView = () => {
               showReceivedChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
             }`}
           >
-            {privateChallenges.some((c) =>
-              ['completed', 'rejected', 'expired', 'failed'].includes(c.status) || isExpired(c.expiresAt)
+            {privateChallenges.some(
+              (c) =>
+                ['completed', 'rejected', 'expired', 'failed'].includes(c.status) ||
+                isExpired(c.expiresAt)
             ) && (
               <div className="flex justify-end mb-3">
                 <button
@@ -1013,8 +1015,10 @@ const InboxView = () => {
               showSentChallenges ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
             }`}
           >
-            {sentChallenges.some((c) =>
-              ['completed', 'rejected', 'expired', 'failed'].includes(c.status) || isExpired(c.expiresAt)
+            {sentChallenges.some(
+              (c) =>
+                ['completed', 'rejected', 'expired', 'failed'].includes(c.status) ||
+                isExpired(c.expiresAt)
             ) && (
               <div className="flex justify-end mb-3">
                 <button
