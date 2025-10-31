@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { FlowEventListener } from './services/flowEventListener';
+import flowRoutes from './routes/flowRoutes';
 
 dotenv.config();
 
@@ -12,6 +13,9 @@ const flowListener = new FlowEventListener();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Routes
+app.use('/api/flow', flowRoutes);
 
 // Routes
 app.get('/api/health', (req: Request, res: Response) => {
@@ -34,33 +38,6 @@ app.get('/api/status', (req: Request, res: Response) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development',
   });
-});
-
-app.post('/api/flow/check-events', async (req: Request, res: Response) => {
-  try {
-    await (flowListener as any).checkForChallengeEvents();
-    res.json({ success: true, message: 'Manually checked for events' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to check events' });
-  }
-});
-
-app.post('/api/flow/start-listener', async (req: Request, res: Response) => {
-  try {
-    await flowListener.startListening();
-    res.json({ success: true, message: 'Flow event listener started' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to start Flow event listener' });
-  }
-});
-
-app.post('/api/flow/stop-listener', async (req: Request, res: Response) => {
-  try {
-    await flowListener.stopListening();
-    res.json({ success: true, message: 'Flow event listener stopped' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to stop Flow event listener' });
-  }
 });
 
 // Start server

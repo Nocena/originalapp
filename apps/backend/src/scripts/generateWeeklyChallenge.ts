@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 config({ path: '.env.local' });
 import OpenAI from 'openai';
 import { v4 as uuidv4 } from 'uuid';
-import axios from 'axios';
+import { createAIChallenge } from '../services/graphql/challengeService';
 
 const weeklyChallenges = [
   "Do 20 push-ups",
@@ -76,23 +76,13 @@ async function generateWeeklyChallenge() {
     console.log('📝 Description:', challengeData.description);
     
     if (DGRAPH_ENDPOINT) {
-      const mutation = `
-        mutation AddWeeklyChallenge($challenge: AddAIChallengeInput!) {
-          addAIChallenge(input: [$challenge]) {
-            aIChallenge {
-              id
-              title
-            }
-          }
-        }
-      `;
+      const success = await createAIChallenge(challengeData);
       
-      await axios.post(DGRAPH_ENDPOINT, {
-        query: mutation,
-        variables: { challenge: challengeData }
-      });
-      
-      console.log('💾 Challenge saved to database');
+      if (success) {
+        console.log('💾 Challenge saved to database');
+      } else {
+        throw new Error('Failed to save challenge to database');
+      }
     }
     
   } catch (error) {
