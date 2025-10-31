@@ -1,12 +1,14 @@
 import graphqlClient from '../../client';
 import {
-  FETCH_ALL_COMPLETIONS, FETCH_COMPLETION_BY_COMPLETION_ID,
+  FETCH_ALL_COMPLETIONS,
+  FETCH_COMPLETION_BY_COMPLETION_ID,
   FETCH_COMPLETIONS_BY_CHALLENGE,
   FETCH_COMPLETIONS_OF_USERS,
   FETCH_LATEST_USER_COMPLETION,
   FETCH_USER_COMPLETIONS_BY_FILTERS,
   GET_COMPLETION_FOR_LIKES,
-  USER_CHALLENGE_COMPLETIONS, USER_SIMILAR_CHALLENGE_COMPLETIONS,
+  USER_CHALLENGE_COMPLETIONS,
+  USER_SIMILAR_CHALLENGE_COMPLETIONS,
 } from './queries';
 import {
   BasicCompletionType,
@@ -52,15 +54,15 @@ export const fetchUserSimilarChallengeCompletionsPaginate = async (
   challengeIds: string[],
   limit = 10,
   offset = 0
-): Promise<ChallengeCompletion[]> =>  {
+): Promise<ChallengeCompletion[]> => {
   const { data } = await graphqlClient.query({
     query: USER_SIMILAR_CHALLENGE_COMPLETIONS,
     variables: { userLensAccountId, challengeIds, limit, offset },
-    fetchPolicy: "network-only",
+    fetchPolicy: 'network-only',
   });
 
   const rawCompletions = data?.queryChallengeCompletion ?? [];
-  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId)
+  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId);
 };
 
 export async function fetchUserCompletionsByFilters({
@@ -90,7 +92,7 @@ export async function fetchUserCompletionsByFilters({
     const completions = data.queryChallengeCompletion || [];
 
     // Map the results to match CompletedChallenge type
-    return completions as BasicCompletionType[]
+    return completions as BasicCompletionType[];
   } catch (error) {
     console.error('Error fetching user completions:', error);
     throw error;
@@ -146,7 +148,9 @@ export async function fetchFollowingsCompletions(
     // Map the results to match CompletedChallenge type
     return completions.map((c: any) => ({
       ...c,
-      userAccount: followings?.items.find(item => item.following.address === c.userLensAccountId)?.following || null,
+      userAccount:
+        followings?.items.find((item) => item.following.address === c.userLensAccountId)
+          ?.following || null,
     }));
   } catch (error) {
     console.error('Error fetching user completions:', error);
@@ -175,7 +179,7 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
 
 export async function fetchChallengeCompletionById(
   completionId: string,
-  userId?: string,
+  userId?: string
 ): Promise<ChallengeCompletion> {
   try {
     const { data } = await graphqlClient.query({
@@ -185,14 +189,13 @@ export async function fetchChallengeCompletionById(
     });
 
     let completions = data?.queryChallengeCompletion || [];
-    const updatedCompletions = await getChallengeCompletionObjectFrom(completions, userId)
-    return updatedCompletions[0]
+    const updatedCompletions = await getChallengeCompletionObjectFrom(completions, userId);
+    return updatedCompletions[0];
   } catch (error) {
     console.error('❌ Error fetching completions with likes and reactions:', error);
     throw error;
   }
 }
-
 
 export async function createChallengeCompletion(
   userLensAccountId: string,

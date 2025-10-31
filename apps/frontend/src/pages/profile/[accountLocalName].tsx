@@ -50,9 +50,9 @@ const OtherProfileView: React.FC = () => {
   const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
-  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements' | 'challenges'>(
-    'challenges',
-  );
+  const [activeSection, setActiveSection] = useState<
+    'trailer' | 'calendar' | 'achievements' | 'challenges'
+  >('challenges');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch Lens account for the user
@@ -403,9 +403,7 @@ const OtherProfileView: React.FC = () => {
             {/* Content Based on Active Section - with bottom margin */}
             <div className="space-y-4 mb-8">
               {activeSection === 'challenges' && (
-                <CompletionsSection
-                  userID={selectedUserAccount?.address}
-                />
+                <CompletionsSection userID={selectedUserAccount?.address} />
               )}
 
               {activeSection === 'trailer' && (

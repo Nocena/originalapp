@@ -15,16 +15,17 @@ interface CompletedChallengePartProps {
 }
 
 const CompletedChallengePart: React.FC<CompletedChallengePartProps> = ({
-                                                                         userID = 'current-user',
-                                                                         completions,
-                                                                         loading,
-                                                                       }) => {
+  userID = 'current-user',
+  completions,
+  loading,
+}) => {
   const { currentLensAccount } = useAuth();
   const router = useRouter();
 
   const handleChallengeClick = (completion: ChallengeCompletion) => {
     router.push({
-      pathname: '/browsing', query: {
+      pathname: '/browsing',
+      query: {
         completionId: completion.id,
         userId: userID,
       },
@@ -41,31 +42,31 @@ const CompletedChallengePart: React.FC<CompletedChallengePartProps> = ({
             <Trophy className="w-6 h-6 text-nocenaPink" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">{isMine ? 'My Completed Challenges' : 'Completed Challenges'}</h2>
-            <p className="text-gray-400 text-sm">{
-              isMine ? `Challenges you've successfully completed` : `Challenges successfully completed`
-            }</p>
+            <h2 className="text-xl font-bold text-white">
+              {isMine ? 'My Completed Challenges' : 'Completed Challenges'}
+            </h2>
+            <p className="text-gray-400 text-sm">
+              {isMine
+                ? `Challenges you've successfully completed`
+                : `Challenges successfully completed`}
+            </p>
           </div>
         </div>
       </div>
-      {
-        loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <SkeletonSlide key={index} />
-            ))}
-          </div>
-        ) : (
-          completions.length === 0 ? (
-            <ChallengeCompletionEmptyState isMine={isMine} />
-          ) : (
-            <CompletedChallengesSwiper
-              completions={completions}
-              onCompletionClick={handleChallengeClick}
-            />
-          )
-        )
-      }
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonSlide key={index} />
+          ))}
+        </div>
+      ) : completions.length === 0 ? (
+        <ChallengeCompletionEmptyState isMine={isMine} />
+      ) : (
+        <CompletedChallengesSwiper
+          completions={completions}
+          onCompletionClick={handleChallengeClick}
+        />
+      )}
     </div>
   );
 };

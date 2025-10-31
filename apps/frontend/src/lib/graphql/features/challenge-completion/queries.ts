@@ -15,148 +15,138 @@ export const FETCH_USER_COMPLETIONS_BY_FILTERS = gql`
       }
       order: { desc: completionDate }
     ) {
-        queryChallengeCompletion(
-            filter: {
-                userLensAccountId: { eq: $userLensAccountId }
-                completionDate: { between: { min: $startDate, max: $endDate } }
-                challengeType: { eq: $challengeType }
-            }
-            order: { desc: completionDate }
-        ) {
-            id
-            media
-            completionDate
-            completionDay
-            completionWeek
-            completionMonth
-            completionYear
-            status
-            challengeType
-            likesCount
-            privateChallengeId
-            publicChallengeId
-            aiChallengeId
-            aiChallenge {
-                id
-                title
-                description
-                frequency
-                reward
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+      id
+      media
+      completionDate
+      completionDay
+      completionWeek
+      completionMonth
+      completionYear
+      status
+      challengeType
+      likesCount
+      privateChallengeId
+      publicChallengeId
+      aiChallengeId
+      aiChallenge {
+        id
+        title
+        description
+        frequency
+        reward
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
   }
 `;
 
 export const USER_CHALLENGE_COMPLETIONS = gql`
-    query GetUserChallengeCompletions($userLensAccountId: String!, $limit: Int, $offset: Int) {
-        queryChallengeCompletion(
-            filter: { userLensAccountId: { eq: $userLensAccountId } }
-            order: { desc: completionDate }
-            first: $limit
-            offset: $offset
-        ) {
-            id
-            userLensAccountId
-            completionDate
-            likedByLensAccountIds
-            likesCount
-            challengeType
-            status
-            media
-            privateChallengeId
-            publicChallengeId
-            aiChallengeId
-            aiChallenge {
-                id
-                title
-                description
-                frequency
-                reward
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+  query GetUserChallengeCompletions($userLensAccountId: String!, $limit: Int, $offset: Int) {
+    queryChallengeCompletion(
+      filter: { userLensAccountId: { eq: $userLensAccountId } }
+      order: { desc: completionDate }
+      first: $limit
+      offset: $offset
+    ) {
+      id
+      userLensAccountId
+      completionDate
+      likedByLensAccountIds
+      likesCount
+      challengeType
+      status
+      media
+      privateChallengeId
+      publicChallengeId
+      aiChallengeId
+      aiChallenge {
+        id
+        title
+        description
+        frequency
+        reward
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
+  }
 `;
 
 export const USER_SIMILAR_CHALLENGE_COMPLETIONS = gql`
-    query GetUserChallengeCompletions(
-        $userLensAccountId: String!
-        $challengeIds: [String!]!
-        $limit: Int
-        $offset: Int
+  query GetUserChallengeCompletions(
+    $userLensAccountId: String!
+    $challengeIds: [String!]!
+    $limit: Int
+    $offset: Int
+  ) {
+    queryChallengeCompletion(
+      filter: {
+        and: [
+          { userLensAccountId: { eq: $userLensAccountId } }
+          {
+            or: [
+              { privateChallengeId: { in: $challengeIds } }
+              { publicChallengeId: { in: $challengeIds } }
+              { aiChallengeId: { in: $challengeIds } }
+            ]
+          }
+        ]
+      }
+      order: { desc: completionDate }
+      first: $limit
+      offset: $offset
     ) {
-        queryChallengeCompletion(
-            filter: {
-                and: [
-                    { userLensAccountId: { eq: $userLensAccountId } }
-                    {
-                        or: [
-                            { privateChallengeId: { in: $challengeIds } }
-                            { publicChallengeId: { in: $challengeIds } }
-                            { aiChallengeId: { in: $challengeIds } }
-                        ]
-                    }
-                ]
-            }
-            order: { desc: completionDate }
-            first: $limit
-            offset: $offset
-        ) {
-            id
-            userLensAccountId
-            completionDate
-            likedByLensAccountIds
-            likesCount
-            challengeType
-            status
-            media
-            privateChallengeId
-            publicChallengeId
-            aiChallengeId
-            aiChallenge {
-                id
-                title
-                description
-                frequency
-                reward
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+      id
+      userLensAccountId
+      completionDate
+      likedByLensAccountIds
+      likesCount
+      challengeType
+      status
+      media
+      privateChallengeId
+      publicChallengeId
+      aiChallengeId
+      aiChallenge {
+        id
+        title
+        description
+        frequency
+        reward
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
   }
 `;
@@ -171,52 +161,43 @@ export const FETCH_LATEST_USER_COMPLETION = gql`
       order: { desc: completionDate }
       first: 1
     ) {
-        queryChallengeCompletion(
-            filter: {
-                userLensAccountId: { eq: $userLensAccountId }
-                challengeType: { eq: $challengeType }
-            }
-            order: { desc: completionDate }
-            first: 1
-        ) {
-            id
-            media
-            completionDate
-            completionDay
-            completionWeek
-            completionMonth
-            completionYear
-            status
-            challengeType
-            likesCount
-            userLensAccountId
-            privateChallengeId
-            publicChallengeId
-            aiChallengeId
-            aiChallenge {
-                id
-                title
-                description
-                frequency
-                reward
-                day
-                week
-                month
-                year
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+      id
+      media
+      completionDate
+      completionDay
+      completionWeek
+      completionMonth
+      completionYear
+      status
+      challengeType
+      likesCount
+      userLensAccountId
+      privateChallengeId
+      publicChallengeId
+      aiChallengeId
+      aiChallenge {
+        id
+        title
+        description
+        frequency
+        reward
+        day
+        week
+        month
+        year
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
   }
 `;
@@ -236,192 +217,179 @@ export const FETCH_COMPLETIONS_OF_USERS = gql`
       }
       order: { desc: completionDate }
     ) {
-        queryChallengeCompletion(
-            filter: {
-                userLensAccountId: { in: $userLensAccountIds }
-                completionDate: { between: { min: $startDate, max: $endDate } }
-                challengeType: { eq: $challengeType }
-            }
-            order: { desc: completionDate }
-        ) {
-            id
-            media
-            completionDate
-            completionDay
-            completionWeek
-            completionMonth
-            completionYear
-            status
-            challengeType
-            likesCount
-            privateChallengeId
-            publicChallengeId
-            aiChallengeId
-            aiChallenge {
-                id
-                title
-                description
-                frequency
-                reward
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+      id
+      media
+      completionDate
+      completionDay
+      completionWeek
+      completionMonth
+      completionYear
+      status
+      challengeType
+      likesCount
+      privateChallengeId
+      publicChallengeId
+      aiChallengeId
+      aiChallenge {
+        id
+        title
+        description
+        frequency
+        reward
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
   }
 `;
 
 export const FETCH_ALL_COMPLETIONS = gql`
-    query GetAllChallengeCompletions {
-        queryChallengeCompletion(order: { desc: completionDate }) {
-            id
-            userLensAccountId
-            completionDate
-            media
-            challengeType
-            likesCount
-            likedByLensAccountIds
-            privateChallengeId
-            publicChallengeId
-            aiChallengeId
-            reactions {
-                id
-                reactionType
-                selfieCID
-                createdAt
-                userLensAccountId
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-            aiChallenge {
-                id
-                title
-                description
-                reward
-                frequency
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+  query GetAllChallengeCompletions {
+    queryChallengeCompletion(order: { desc: completionDate }) {
+      id
+      userLensAccountId
+      completionDate
+      media
+      challengeType
+      likesCount
+      likedByLensAccountIds
+      privateChallengeId
+      publicChallengeId
+      aiChallengeId
+      reactions {
+        id
+        reactionType
+        selfieCID
+        createdAt
+        userLensAccountId
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
+      aiChallenge {
+        id
+        title
+        description
+        reward
+        frequency
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
   }
 `;
 
 export const FETCH_COMPLETIONS_BY_CHALLENGE = gql`
-    query GetChallengeCompletionsByChallenge($challengeId: String!) {
-        queryChallengeCompletion(
-            filter: {
-                or: [
-                    { publicChallengeId: { eq: $challengeId } },
-                    { privateChallengeId: { eq: $challengeId } },
-                    { aiChallengeId: { eq: $challengeId } }
-                ]
-            }
-            order: { desc: completionDate }
-        ) {
-            id
-            userLensAccountId
-            completionDate
-            media
-            challengeType
-            likesCount
-            likedByLensAccountIds
-            privateChallengeId
-            publicChallengeId
-            aiChallengeId
-            reactions {
-                id
-                reactionType
-                selfieCID
-                createdAt
-                userLensAccountId
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-            aiChallenge {
-                id
-                title
-                description
-                reward
-                frequency
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+  query GetChallengeCompletionsByChallenge($challengeId: String!) {
+    queryChallengeCompletion(
+      filter: {
+        or: [
+          { publicChallengeId: { eq: $challengeId } }
+          { privateChallengeId: { eq: $challengeId } }
+          { aiChallengeId: { eq: $challengeId } }
+        ]
+      }
+      order: { desc: completionDate }
+    ) {
+      id
+      userLensAccountId
+      completionDate
+      media
+      challengeType
+      likesCount
+      likedByLensAccountIds
+      privateChallengeId
+      publicChallengeId
+      aiChallengeId
+      reactions {
+        id
+        reactionType
+        selfieCID
+        createdAt
+        userLensAccountId
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
+      aiChallenge {
+        id
+        title
+        description
+        reward
+        frequency
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
+  }
 `;
 
 export const FETCH_COMPLETION_BY_COMPLETION_ID = gql`
-    query GetChallengeCompletionsByChallenge($completionId: String!) {
-        queryChallengeCompletion(
-            filter: {
-                id: { eq: $completionId }
-            }
-            order: { desc: completionDate }
-        ) {
-            id
-            userLensAccountId
-            completionDate
-            media
-            challengeType
-            likesCount
-            likedByLensAccountIds
-            privateChallengeId
-            publicChallengeId
-            aiChallengeId
-            reactions {
-                id
-                reactionType
-                selfieCID
-                createdAt
-                userLensAccountId
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-            aiChallenge {
-                id
-                title
-                description
-                reward
-                frequency
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+  query GetChallengeCompletionsByChallenge($completionId: String!) {
+    queryChallengeCompletion(
+      filter: { id: { eq: $completionId } }
+      order: { desc: completionDate }
+    ) {
+      id
+      userLensAccountId
+      completionDate
+      media
+      challengeType
+      likesCount
+      likedByLensAccountIds
+      privateChallengeId
+      publicChallengeId
+      aiChallengeId
+      reactions {
+        id
+        reactionType
+        selfieCID
+        createdAt
+        userLensAccountId
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
+      aiChallenge {
+        id
+        title
+        description
+        reward
+        frequency
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
   }
 `;

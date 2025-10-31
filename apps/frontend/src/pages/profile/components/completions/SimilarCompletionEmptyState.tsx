@@ -12,11 +12,16 @@ export const SimilarCompletionEmptyState: React.FC = () => {
 
         {/* Floating Icons */}
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2">
-          <Target className="w-6 h-6 text-nocenaPink opacity-60 animate-bounce"
-                  style={{ animationDelay: '0.5s' }} />
+          <Target
+            className="w-6 h-6 text-nocenaPink opacity-60 animate-bounce"
+            style={{ animationDelay: '0.5s' }}
+          />
         </div>
         <div className="absolute top-4 right-1/2 transform translate-x-12">
-          <Zap className="w-5 h-5 text-nocenaBlue opacity-60 animate-bounce" style={{ animationDelay: '1s' }} />
+          <Zap
+            className="w-5 h-5 text-nocenaBlue opacity-60 animate-bounce"
+            style={{ animationDelay: '1s' }}
+          />
         </div>
       </div>
 

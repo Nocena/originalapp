@@ -9,37 +9,37 @@
 export const getVideoSnapshot = async (
   videoBlob: Blob,
   captureTime = 0,
-  type: string = "image/png",
+  type: string = 'image/png',
   quality = 0.92
 ): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(videoBlob);
-    const video = document.createElement("video");
+    const video = document.createElement('video');
 
-    video.preload = "metadata";
+    video.preload = 'metadata';
     video.src = url;
     video.muted = true;
     video.playsInline = true;
 
-    video.addEventListener("loadedmetadata", () => {
+    video.addEventListener('loadedmetadata', () => {
       // Clamp capture time to video duration
       video.currentTime = Math.min(captureTime, video.duration);
     });
 
-    video.addEventListener("seeked", () => {
-      const canvas = document.createElement("canvas");
+    video.addEventListener('seeked', () => {
+      const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return reject(new Error("Cannot get canvas context"));
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('Cannot get canvas context'));
 
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       canvas.toBlob(
         (blob) => {
           if (blob) resolve(blob);
-          else reject(new Error("Failed to create snapshot blob"));
+          else reject(new Error('Failed to create snapshot blob'));
           URL.revokeObjectURL(url);
         },
         type,
@@ -47,7 +47,7 @@ export const getVideoSnapshot = async (
       );
     });
 
-    video.addEventListener("error", (err) => {
+    video.addEventListener('error', (err) => {
       URL.revokeObjectURL(url);
       reject(err);
     });

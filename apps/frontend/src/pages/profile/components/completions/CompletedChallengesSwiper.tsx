@@ -12,9 +12,9 @@ interface CompletedChallengesSwiperProps {
 }
 
 export const CompletedChallengesSwiper: React.FC<CompletedChallengesSwiperProps> = ({
-                                                                                      completions,
-                                                                                      onCompletionClick,
-                                                                                    }) => {
+  completions,
+  onCompletionClick,
+}) => {
   return (
     <div className="relative">
       <Swiper
