@@ -1,9 +1,5 @@
 // src/lib/map/components/ChallengePopup.tsx
-import React from 'react';
 import { ChallengeData } from '../../../lib/graphql/features/challenge/types';
-import { useAccountQuery } from '@nocena/indexer';
-import getAvatar from '../../../helpers/getAvatar';
-import { useRouter } from 'next/router';
 
 interface ChallengePopupProps {
   challenge: ChallengeData;
@@ -34,7 +30,6 @@ const ChallengePopup = ({
   onComplete,
   currentUserId,
 }: ChallengePopupProps): PopupContent => {
-  const router = useRouter();
   // Define popup options
   const options: PopupOptions = {
     closeButton: false,
@@ -340,13 +335,7 @@ const ChallengePopup = ({
                   console.error('Router navigation failed:', error);
                   // Method 3: Direct URL navigation (last resort)
                   console.log('🔄 Using direct URL navigation');
-                  router.push({
-                    pathname: '/browsing',
-                    query: {
-                      challengeId,
-                    },
-                  })
-                  // window.location.href = `/browsing?challengeId=${challengeId}&userId=${userId}`;
+                  window.location.href = `/browsing?challengeId=${challengeId}&userId=${userId}`;
                 });
             }
           }, 100);
