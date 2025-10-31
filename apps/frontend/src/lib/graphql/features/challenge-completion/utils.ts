@@ -53,8 +53,8 @@ export const getChallengeCompletionObjectFrom = async (
 
     // --- Parse media and extract CIDs ---
     try {
-      const media = JSON.parse(completion.media || "{}");
-      let { videoCID, selfieCID, previewCID } = media
+      const media = JSON.parse(completion.media || '{}');
+      let { videoCID, selfieCID, previewCID } = media;
 
       // Handle nested CID structure
       if (!videoCID && !selfieCID && media.directoryCID) {
@@ -64,7 +64,7 @@ export const getChallengeCompletionObjectFrom = async (
           selfieCID = directoryData.selfieCID;
           previewCID = directoryData.previewCID;
         } catch (dirParseError) {
-          console.error("Error parsing directory CID:", dirParseError);
+          console.error('Error parsing directory CID:', dirParseError);
         }
       }
 
@@ -72,7 +72,7 @@ export const getChallengeCompletionObjectFrom = async (
       if (selfieCID) selfieUrl = sanitizeDStorageUrl(selfieCID);
       if (previewCID) previewUrl = sanitizeDStorageUrl(previewCID);
     } catch (parseError) {
-      console.error("Error parsing media for completion:", parseError);
+      console.error('Error parsing media for completion:', parseError);
     }
 
     // --- Return enriched object ---
@@ -84,9 +84,7 @@ export const getChallengeCompletionObjectFrom = async (
 
       // Derived / computed fields
       totalLikes: completion.likesCount || 0,
-      isLiked: userId
-        ? completion.likedByLensAccountIds?.includes(userId)
-        : false,
+      isLiked: userId ? completion.likedByLensAccountIds?.includes(userId) : false,
       recentLikes: completion.likedByLensAccountIds?.slice(0, 5) || [],
 
       totalReactions: completion.reactions?.length || 0,
@@ -97,13 +95,11 @@ export const getChallengeCompletionObjectFrom = async (
       })),
 
       localLikes: completion.likesCount || 0,
-      localIsLiked: userId
-        ? completion.likedByLensAccountIds?.includes(userId)
-        : false,
+      localIsLiked: userId ? completion.likedByLensAccountIds?.includes(userId) : false,
     } as ChallengeCompletion;
   });
 
-  await addUserAccountToCompletions(updatedCompletions)
+  await addUserAccountToCompletions(updatedCompletions);
 
-  return updatedCompletions
+  return updatedCompletions;
 };

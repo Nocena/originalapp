@@ -20,7 +20,12 @@ import {
   fetchFollowingData,
   getLensAccountByAddress,
 } from '../../../lens/api';
-import { getDateParts, getEmojiForReactionType, serializeMedia } from './utils';
+import {
+  getDateParts,
+  getEmojiForReactionType,
+  serializeMedia,
+  getChallengeCompletionObjectFrom,
+} from './utils';
 import { CREATE_CHALLENGE_COMPLETION, UPDATE_LIKE } from './mutations';
 import { v4 as uuidv4 } from 'uuid';
 // ============================================================================
@@ -31,7 +36,7 @@ export const fetchAllUserChallengeCompletionsPaginate = async (
   userLensAccountId: string,
   limit = 10,
   offset = 0
-): Promise<ChallengeCompletion[]> =>  {
+): Promise<ChallengeCompletion[]> => {
   const { data } = await graphqlClient.query({
     query: USER_CHALLENGE_COMPLETIONS,
     variables: { userLensAccountId, limit, offset },
@@ -39,7 +44,7 @@ export const fetchAllUserChallengeCompletionsPaginate = async (
   });
 
   const rawCompletions = data?.queryChallengeCompletion ?? [];
-  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId)
+  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId);
 };
 
 export async function fetchUserCompletionsByFilters({
@@ -192,7 +197,7 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
     });
 
     let completions = data?.queryChallengeCompletion || [];
-    return await getChallengeCompletionObjectFrom(completions, userId)
+    return await getChallengeCompletionObjectFrom(completions, userId);
   } catch (error) {
     console.error('❌ Error fetching completions with likes and reactions:', error);
     throw error;

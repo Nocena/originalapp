@@ -50,42 +50,42 @@ export const FETCH_USER_COMPLETIONS_BY_FILTERS = gql`
 
 export const USER_CHALLENGE_COMPLETIONS = gql`
   query GetUserChallengeCompletions($userLensAccountId: String!, $limit: Int, $offset: Int) {
-        queryChallengeCompletion(
-            filter: { userLensAccountId: { eq: $userLensAccountId } }
-            order: { desc: completionDate }
-            first: $limit
-            offset: $offset
-        ) {
-            id
-            userLensAccountId
-            completionDate
-            likedByLensAccountIds
-            likesCount
-            challengeType
-            status
-            media
+    queryChallengeCompletion(
+      filter: { userLensAccountId: { eq: $userLensAccountId } }
+      order: { desc: completionDate }
+      first: $limit
+      offset: $offset
+    ) {
+      id
+      userLensAccountId
+      completionDate
+      likedByLensAccountIds
+      likesCount
+      challengeType
+      status
+      media
 
-            aiChallenge {
-                id
-                title
-                description
-                frequency
-                reward
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+      aiChallenge {
+        id
+        title
+        description
+        frequency
+        reward
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
+  }
 `;
 
 export const FETCH_LATEST_USER_COMPLETION = gql`

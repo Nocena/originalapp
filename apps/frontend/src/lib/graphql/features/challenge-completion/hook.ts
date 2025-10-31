@@ -2,10 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchAllUserChallengeCompletionsPaginate } from './api';
 import { ChallengeCompletion } from './types';
 
-export const useUserChallengeCompletions = (
-  userLensAccountId: string,
-  initialLimit = 10
-) => {
+export const useUserChallengeCompletions = (userLensAccountId: string, initialLimit = 10) => {
   const [completions, setCompletions] = useState<ChallengeCompletion[]>([]);
   const [limit] = useState(initialLimit);
   const [offset, setOffset] = useState(0);
