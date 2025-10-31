@@ -32,7 +32,7 @@ export interface CompletionResult {
 export async function completeChallengeWorkflow(
   userId: string,
   completionData: CompletionData,
-  userWalletAddress?: string,
+  userWalletAddress?: string
 ): Promise<CompletionResult> {
   try {
     console.log('🔍 DEBUG: Function inputs:', {
@@ -45,13 +45,7 @@ export async function completeChallengeWorkflow(
       creatorWalletAddress: completionData?.challenge?.creatorWalletAddress,
     });
 
-    const {
-      challenge,
-      video,
-      photo,
-      description,
-      verificationResult,
-    } = completionData;
+    const { challenge, video, photo, description, verificationResult } = completionData;
 
     console.log('Starting challenge completion workflow for user:', userId);
     console.log('Challenge type:', challenge.type, 'Frequency:', challenge.frequency);
@@ -106,7 +100,7 @@ export async function completeChallengeWorkflow(
         }
 
         console.log('🔗 Mint payload:', mintPayload);
-        
+
         const mintResponse = await fetch('/api/mint-challenge-reward', {
           method: 'POST',
           headers: {
@@ -118,7 +112,7 @@ export async function completeChallengeWorkflow(
         console.log('🔗 Mint API response status:', mintResponse.status);
         const mintResult = await mintResponse.json();
         console.log('🔗 Mint API result:', mintResult);
-        
+
         if (mintResult.success) {
           console.log(`✅ Blockchain NCT tokens minted: ${mintResult.txHash}`);
 
@@ -143,7 +137,7 @@ export async function completeChallengeWorkflow(
               } else {
                 console.error(
                   '❌ Failed to mark private challenge as completed:',
-                  completeResult.error,
+                  completeResult.error
                 );
               }
             } catch (error) {
@@ -156,20 +150,22 @@ export async function completeChallengeWorkflow(
             try {
               console.log('🔄 Triggering PUBLIC challenge replacement...');
               // Dispatch custom event to notify map to refresh challenges
-              window.dispatchEvent(new CustomEvent('challengeCompleted', {
-                detail: { challengeId: challenge.challengeId, userId }
-              }));
+              window.dispatchEvent(
+                new CustomEvent('challengeCompleted', {
+                  detail: { challengeId: challenge.challengeId, userId },
+                })
+              );
             } catch (error) {
               console.error('❌ Error triggering challenge replacement:', error);
             }
           }
 
           let completionId = 'mock-completion-id';
-          
+
           if (challenge.challengeId) {
             // Check if this is dev mode (mock blobs)
             const isDevMode = video.size <= 20 && photo.size <= 20; // Mock blobs are tiny
-            
+
             if (isDevMode) {
               console.log('🧪 Dev mode detected - skipping database record');
               completionId = `dev-${Date.now()}`;
@@ -199,7 +195,7 @@ export async function completeChallengeWorkflow(
                     videoFileName: `challenge_video_${userId}_${timestamp}.webm`,
                     selfieFileName: `challenge_selfie_${userId}_${timestamp}.jpg`,
                   }),
-                  challenge.challengeId,
+                  challenge.challengeId
                 );
                 console.log('✅ Completion record created');
               } catch (error) {

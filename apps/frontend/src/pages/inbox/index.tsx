@@ -6,8 +6,9 @@ import { fetchNotifications } from '../../lib/api/dgraph';
 
 // Simplified notification fetcher for inbox
 const fetchSimpleNotifications = async (userId: string) => {
-  const DGRAPH_ENDPOINT = process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || 'http://localhost:8080/graphql';
-  
+  const DGRAPH_ENDPOINT =
+    process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || 'http://localhost:8080/graphql';
+
   const query = `
     query getNotifications($userId: String!) {
       queryNotification(filter: { userId: { eq: $userId } }) {

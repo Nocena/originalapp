@@ -50,9 +50,9 @@ const OtherProfileView: React.FC = () => {
   const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
-  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements' | 'challenges'>(
-    'challenges',
-  );
+  const [activeSection, setActiveSection] = useState<
+    'trailer' | 'calendar' | 'achievements' | 'challenges'
+  >('challenges');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch Lens account for the user
@@ -61,20 +61,22 @@ const OtherProfileView: React.FC = () => {
     loading: lensLoading,
     error: lensError,
   } = useAccountQuery({
-    variables: { request: { username: { localName: (accountLocalName as string || '') } } },
+    variables: { request: { username: { localName: (accountLocalName as string) || '' } } },
     skip: !accountLocalName,
   });
-  const selectedUserAccount = lensData?.account
+  const selectedUserAccount = lensData?.account;
 
   const { data: accountStatsData, loading: accountStatsLoading } = useAccountStatsQuery({
-    variables: { request: { account: selectedUserAccount?.address } }
+    variables: { request: { account: selectedUserAccount?.address } },
   });
   const stats = accountStatsData?.accountStats.graphFollowStats;
 
   const { followeringAccount, handleFollow, handleUnfollow } = useLensFollowActions();
 
   // Fetch NCT balance using the global hook
-  const { balance: nctBalance, loading: nctLoading } = useNoceniteBalanceFormatted(selectedUserAccount?.owner);
+  const { balance: nctBalance, loading: nctLoading } = useNoceniteBalanceFormatted(
+    selectedUserAccount?.owner
+  );
 
   // Check if this page is visible in the PageManager
   useEffect(() => {
@@ -127,7 +129,7 @@ const OtherProfileView: React.FC = () => {
     if (!currentLensAccount || !selectedUserAccount) return;
     selectedUserAccount.operations?.isFollowedByMe
       ? handleUnfollow(selectedUserAccount)
-      : handleFollow(selectedUserAccount)
+      : handleFollow(selectedUserAccount);
   };
 
   // Handle "Challenge Me" button click
@@ -144,7 +146,7 @@ const OtherProfileView: React.FC = () => {
   // Calculate stats for components
   const currentStreak = useMemo(() => {
     return 0;
-/*
+    /*
     if (!selectedUserAccount) return 0;
     const dailyChallenges = user.dailyChallenge.split('').map((char) => char === '1');
     let streak = 0;
@@ -159,7 +161,7 @@ const OtherProfileView: React.FC = () => {
 */
   }, [selectedUserAccount]);
 
-/*
+  /*
   const totalChallenges = useMemo(() => {
     if (!user) return 0;
     const dailyChallenges = user.dailyChallenge.split('').map((char) => char === '1');
@@ -282,7 +284,12 @@ const OtherProfileView: React.FC = () => {
                 mask: 'linear-gradient(to bottom, #101010 0%, #101010 60%, transparent 100%)',
               }}
             >
-              <Image src={selectedUserAccount?.metadata?.coverPicture || '/images/cover.jpg'} alt="Cover" fill className="object-cover" />
+              <Image
+                src={selectedUserAccount?.metadata?.coverPicture || '/images/cover.jpg'}
+                alt="Cover"
+                fill
+                className="object-cover"
+              />
             </div>
           </div>
 
@@ -337,22 +344,20 @@ const OtherProfileView: React.FC = () => {
             {/* Bio - Read-only */}
             <div className="mb-6">
               <div className="flex-1">
-                {(selectedUserAccount?.metadata?.bio || 'This user has no bio.').split('\n').map((line, index) => (
-                  <p key={index} className="text-white/80 leading-relaxed">
-                    {line}
-                  </p>
-                ))}
+                {(selectedUserAccount?.metadata?.bio || 'This user has no bio.')
+                  .split('\n')
+                  .map((line, index) => (
+                    <p key={index} className="text-white/80 leading-relaxed">
+                      {line}
+                    </p>
+                  ))}
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="mb-6 flex space-x-3">
               <PrimaryButton
-                text={
-                isFollowing
-                      ? 'Following'
-                      : 'Follow'
-                }
+                text={isFollowing ? 'Following' : 'Follow'}
                 onClick={handleFollowToggle}
                 loading={!!followeringAccount}
                 className="flex-1"
@@ -398,9 +403,7 @@ const OtherProfileView: React.FC = () => {
             {/* Content Based on Active Section - with bottom margin */}
             <div className="space-y-4 mb-8">
               {activeSection === 'challenges' && (
-                <CompletionsSection
-                  userID={selectedUserAccount?.address}
-                />
+                <CompletionsSection userID={selectedUserAccount?.address} />
               )}
 
               {activeSection === 'trailer' && (

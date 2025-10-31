@@ -560,7 +560,7 @@ export async function generateRandomChallenges(
       console.log(`🤖 Generating AI challenge for ${category} at ${poiName}...`);
 
       const aiChallenge = await generateAIChallenge(category, poiName, distance);
-      
+
       try {
         const challengeId = await createPublicChallenge(
           'system', // System-generated challenges
@@ -577,21 +577,21 @@ export async function generateRandomChallenges(
           title: aiChallenge.title,
           description: aiChallenge.description,
           position: [element.lon, element.lat],
-        reward: aiChallenge.reward,
-        color: ['#FD4EF5', '#10CAFF', '#ffffff'][Math.floor(Math.random() * 3)],
-        completionCount: 0,
-        participantCount: 0,
-        maxParticipants: 50,
-        recentCompletions: [],
-        category: category,
-        distance: Math.round(distance),
-        poiName: poiName,
-      };
+          reward: aiChallenge.reward,
+          color: ['#FD4EF5', '#10CAFF', '#ffffff'][Math.floor(Math.random() * 3)],
+          completionCount: 0,
+          participantCount: 0,
+          maxParticipants: 50,
+          recentCompletions: [],
+          category: category,
+          distance: Math.round(distance),
+          poiName: poiName,
+        };
 
         challenges.push(challenge);
         usedPositions.add(posKey);
         categoryCount[category] = currentCount + 1;
-        
+
         console.log(`✅ Saved challenge to database: ${challengeId}`);
       } catch (dbError) {
         console.error('❌ Failed to save challenge to database:', dbError);
@@ -752,9 +752,9 @@ export async function generateSingleReplacement(
 ): Promise<ChallengeData | null> {
   try {
     const query = buildOverpassQuery(userLat, userLng);
-    
+
     console.log('🔍 Finding replacement challenge location...');
-    
+
     const response = await fetch('https://overpass-api.de/api/interpreter', {
       method: 'POST',
       body: query,
@@ -770,30 +770,30 @@ export async function generateSingleReplacement(
     }
 
     const data: OverpassResponse = await response.json();
-    
+
     if (!data.elements || data.elements.length === 0) {
       console.warn('⚠️ No POIs found for replacement');
       return null;
     }
 
     // Get existing challenge positions to avoid
-    const existingPositions = existingChallenges.map(c => ({
+    const existingPositions = existingChallenges.map((c) => ({
       lat: c.position[1],
-      lng: c.position[0]
+      lng: c.position[0],
     }));
 
     // Find a POI that's not too close to existing challenges
     const minDistance = 200; // 200m minimum distance
     const shuffledElements = data.elements.sort(() => Math.random() - 0.5);
-    
+
     for (const element of shuffledElements) {
       if (element.type !== 'node' || !element.lat || !element.lon) continue;
-      
+
       const category = categorizePOI(element.tags);
       if (!category) continue;
 
       // Check if this location is far enough from existing challenges
-      const tooClose = existingPositions.some(pos => {
+      const tooClose = existingPositions.some((pos) => {
         const distance = calculateDistance(element.lat, element.lon, pos.lat, pos.lng);
         return distance < minDistance;
       });
@@ -803,11 +803,11 @@ export async function generateSingleReplacement(
       // Generate AI challenge for this location
       const distance = calculateDistance(userLat, userLng, element.lat, element.lon);
       const poiName = element.tags.name || 'Mystery Location';
-      
+
       console.log(`🤖 Generating replacement challenge for ${category} at ${poiName}...`);
-      
+
       const aiChallenge = await generateAIChallenge(category, poiName, distance);
-      
+
       try {
         const challengeId = await createPublicChallenge(
           'system',
@@ -837,7 +837,6 @@ export async function generateSingleReplacement(
 
         console.log(`✅ Generated replacement challenge: ${challenge.title}`);
         return challenge;
-        
       } catch (dbError) {
         console.error('❌ Failed to save replacement challenge:', dbError);
         // Continue with fallback
@@ -856,14 +855,13 @@ export async function generateSingleReplacement(
           distance: Math.round(distance),
           poiName: poiName,
         };
-        
+
         return challenge;
       }
     }
-    
+
     console.warn('⚠️ No suitable replacement location found');
     return null;
-    
   } catch (error) {
     console.error('❌ Error generating replacement challenge:', error);
     return null;

@@ -17,7 +17,11 @@ import { account as accountMetadata, MetadataAttributeType } from '@lens-protoco
 import { toast } from 'react-hot-toast';
 import trimify from '../../helpers/trimify';
 import uploadMetadata from 'src/helpers/uploadMetadata';
-import { useAccountStatsQuery, useMeLazyQuery, useSetAccountMetadataMutation } from '@nocena/indexer';
+import {
+  useAccountStatsQuery,
+  useMeLazyQuery,
+  useSetAccountMetadataMutation,
+} from '@nocena/indexer';
 import useTransactionLifecycle from '../../hooks/useTransactionLifecycle';
 import usePollTransactionStatus from '../../hooks/usePollTransactionStatus';
 import { uploadImageFile } from 'src/helpers/accountPictureUtils';
@@ -43,27 +47,29 @@ const ProfileView: React.FC = () => {
   const [username, setUsername] = useState<string>(currentLensAccount?.metadata?.name || '');
   const [bio, setBio] = useState<string>(currentLensAccount?.metadata?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState<boolean>(false);
-  const [activeSection, setActiveSection] = useState<'trailer' | 'calendar' | 'achievements' | 'challenges'>(
-    'challenges',
-  );
+  const [activeSection, setActiveSection] = useState<
+    'trailer' | 'calendar' | 'achievements' | 'challenges'
+  >('challenges');
 
   // Fetch NCT balance using the global hook
-  const { balance: tokenBalance, loading: nctLoading } = useNoceniteBalanceFormatted(currentLensAccount?.owner);
+  const { balance: tokenBalance, loading: nctLoading } = useNoceniteBalanceFormatted(
+    currentLensAccount?.owner
+  );
 
   // Avatar generation state - NEW
   const [generatedAvatar, setGeneratedAvatar] = useState<string | null>(
-    currentLensAccount?.metadata?.picture || null,
+    currentLensAccount?.metadata?.picture || null
   );
 
   // Challenge data
   const [dailyChallenges, setDailyChallenges] = useState<boolean[]>(
-    /*user?.dailyChallenge.split('').map((char) => char === '1') || */[],
+    /*user?.dailyChallenge.split('').map((char) => char === '1') || */ []
   );
   const [weeklyChallenges, setWeeklyChallenges] = useState<boolean[]>(
-    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */[],
+    /*user?.weeklyChallenge.split('').map((char) => char === '1') || */ []
   );
   const [monthlyChallenges, setMonthlyChallenges] = useState<boolean[]>(
-    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */[],
+    /*user?.monthlyChallenge.split('').map((char) => char === '1') || */ []
   );
 
   const { data: accountStatsData, loading: accountStatsLoading } = useAccountStatsQuery({
@@ -82,7 +88,8 @@ const ProfileView: React.FC = () => {
       setCoverPhoto(currentLensAccount?.metadata?.coverPicture);
       setUsername(currentLensAccount?.metadata?.name || '');
       setBio(
-        currentLensAccount?.metadata?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!',
+        currentLensAccount?.metadata?.bio ||
+          'Creator building the future of social challenges 🚀\nJoin me on this journey!'
       );
 
       // NEW: Avatar data loading
@@ -152,20 +159,14 @@ const ProfileView: React.FC = () => {
     onError,
   });
 
-  const updateAccount = async (
-    pfpUrl: string | undefined,
-    coverUrl: string | undefined,
-  ) => {
+  const updateAccount = async (pfpUrl: string | undefined, coverUrl: string | undefined) => {
     if (!currentLensAccount) {
       return toast.error('Please sign in your wallet.');
     }
 
     const otherAttributes =
       currentLensAccount.metadata?.attributes
-        ?.filter(
-          (attr) =>
-            !['app', 'location', 'timestamp', 'website', 'x'].includes(attr.key),
-        )
+        ?.filter((attr) => !['app', 'location', 'timestamp', 'website', 'x'].includes(attr.key))
         .map(({ key, type, value }) => ({
           key,
           type: MetadataAttributeType[type] as any,
@@ -186,19 +187,15 @@ const ProfileView: React.FC = () => {
       coverPicture: coverUrl || undefined,
       picture: pfpUrl || undefined,
     };
-    preparedAccountMetadata.attributes =
-      preparedAccountMetadata.attributes?.filter((m) => {
-        return m.key !== '' && Boolean(trimify(m.value));
-      });
-    const metadataUri = await uploadMetadata(
-      accountMetadata(preparedAccountMetadata),
-    );
+    preparedAccountMetadata.attributes = preparedAccountMetadata.attributes?.filter((m) => {
+      return m.key !== '' && Boolean(trimify(m.value));
+    });
+    const metadataUri = await uploadMetadata(accountMetadata(preparedAccountMetadata));
 
     return await setAccountMetadata({
       variables: { request: { metadataUri } },
     });
   };
-
 
   // NEW: Updated avatar handler
   const handleAvatarUpdated = (newAvatarUrl: string) => {
@@ -267,7 +264,8 @@ const ProfileView: React.FC = () => {
 
   const handleCancelEdit = () => {
     setBio(
-      currentLensAccount?.metadata?.bio || 'Creator building the future of social challenges 🚀\nJoin me on this journey!',
+      currentLensAccount?.metadata?.bio ||
+        'Creator building the future of social challenges 🚀\nJoin me on this journey!'
     );
     setIsEditingBio(false);
   };
@@ -303,11 +301,15 @@ const ProfileView: React.FC = () => {
       <div className="min-h-screen mb-20">
         {/* Cover Photo Section */}
         <div className="relative h-80 overflow-hidden">
-          <Image src={coverPhoto || '/images/cover.jpg'} alt="Cover" fill className="object-cover" />
+          <Image
+            src={coverPhoto || '/images/cover.jpg'}
+            alt="Cover"
+            fill
+            className="object-cover"
+          />
 
           {/* Gradient overlay for smooth blending effect */}
-          <div
-            className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-transparent via-70% to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% via-transparent via-70% to-black/80" />
 
           <div
             className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
@@ -318,13 +320,11 @@ const ProfileView: React.FC = () => {
             </div>
           </div>
 
-          {
-            isCoverSaving && (
-              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                <LoadingSpinner size="lg" />
-              </div>
-            )
-          }
+          {isCoverSaving && (
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+              <LoadingSpinner size="lg" />
+            </div>
+          )}
 
           <input
             type="file"
@@ -351,13 +351,11 @@ const ProfileView: React.FC = () => {
                       height={120}
                       className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform"
                     />
-                    {
-                      isAvatarSaving && (
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center rounded-full">
-                          <LoadingSpinner size="md" />
-                        </div>
-                      )
-                    }
+                    {isAvatarSaving && (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center rounded-full">
+                        <LoadingSpinner size="md" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -490,9 +488,7 @@ const ProfileView: React.FC = () => {
             )}
 
             {activeSection === 'challenges' && (
-              <CompletionsSection
-                userID={currentLensAccount?.address}
-              />
+              <CompletionsSection userID={currentLensAccount?.address} />
             )}
 
             {activeSection === 'calendar' && (

@@ -13,17 +13,14 @@ export const CREATE_NOTIFICATION = gql`
 `;
 
 export const MARK_NOTIFICATIONS_AS_READ = gql`
-    mutation MarkAllNotificationsRead($userLensAccountId: String!) {
-        updateNotification(
-            input: {
-                filter: {
-                    userLensAccountId: { eq: $userLensAccountId },
-                    isRead: false
-                },
-                set: { isRead: true }
-            }
-        ) {
-            numUids
-        }
+  mutation MarkAllNotificationsRead($userLensAccountId: String!) {
+    updateNotification(
+      input: {
+        filter: { userLensAccountId: { eq: $userLensAccountId }, isRead: false }
+        set: { isRead: true }
+      }
+    ) {
+      numUids
     }
+  }
 `;

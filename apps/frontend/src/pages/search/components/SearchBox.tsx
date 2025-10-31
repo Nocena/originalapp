@@ -5,7 +5,13 @@ import { useAuth } from '../../../contexts/AuthContext';
 
 import ThematicImage from '../../../components/ui/ThematicImage';
 import Image from 'next/image';
-import { AccountFragment, AccountsOrderBy, AccountsRequest, PageSize, useAccountsQuery } from '@nocena/indexer';
+import {
+  AccountFragment,
+  AccountsOrderBy,
+  AccountsRequest,
+  PageSize,
+  useAccountsQuery,
+} from '@nocena/indexer';
 import getAvatar from 'src/helpers/getAvatar';
 
 // Local interface for search results that's compatible with both old and new user structures

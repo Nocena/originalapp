@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { useApolloClient } from "@apollo/client";
+import { useState, useCallback } from 'react';
+import { useApolloClient } from '@apollo/client';
 import { AccountFragment, useFollowMutation, useUnfollowMutation } from '@nocena/indexer';
 import useTransactionLifecycle from './useTransactionLifecycle';
 
@@ -31,8 +31,8 @@ export const useLensFollowActions = () => {
 
   const [follow] = useFollowMutation({
     onCompleted: async ({ follow }) => {
-      if (follow.__typename === "FollowResponse") return onCompleted();
-      if (follow.__typename === "AccountFollowOperationValidationFailed")
+      if (follow.__typename === 'FollowResponse') return onCompleted();
+      if (follow.__typename === 'AccountFollowOperationValidationFailed')
         return onError?.({ message: follow.reason });
 
       return handleTransactionLifecycle({
@@ -46,8 +46,8 @@ export const useLensFollowActions = () => {
 
   const [unfollow] = useUnfollowMutation({
     onCompleted: async ({ unfollow }) => {
-      if (unfollow.__typename === "UnfollowResponse") return onCompleted();
-      if (unfollow.__typename === "AccountFollowOperationValidationFailed")
+      if (unfollow.__typename === 'UnfollowResponse') return onCompleted();
+      if (unfollow.__typename === 'AccountFollowOperationValidationFailed')
         return onError?.({ message: unfollow.reason });
 
       return handleTransactionLifecycle({

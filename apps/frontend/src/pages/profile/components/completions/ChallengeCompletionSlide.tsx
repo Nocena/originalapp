@@ -11,8 +11,10 @@ interface ChallengeSlideProps {
   onClick: () => void;
 }
 
-export const ChallengeCompletionSlide: React.FC<ChallengeSlideProps> = ({ completion, onClick }) => {
-
+export const ChallengeCompletionSlide: React.FC<ChallengeSlideProps> = ({
+  completion,
+  onClick,
+}) => {
   const challenge =
     completion.publicChallenge || completion.privateChallenge || completion.aiChallenge;
 
@@ -44,22 +46,16 @@ export const ChallengeCompletionSlide: React.FC<ChallengeSlideProps> = ({ comple
         </div>
 
         {/* Challenge Title */}
-        <h3 className="text-white text-sm font-medium mt-2 line-clamp-1">
-          {challenge.title}
-        </h3>
+        <h3 className="text-white text-sm font-medium mt-2 line-clamp-1">{challenge.title}</h3>
 
         {/* Challenge Description */}
-        <p className="text-gray-400 text-xs mb-2 line-clamp-2 flex-1">
-          {challenge.description}
-        </p>
+        <p className="text-gray-400 text-xs mb-2 line-clamp-2 flex-1">{challenge.description}</p>
 
         {/* User Note (Optional) */}
         <div className="mt-auto">
           <div className="flex items-start space-x-2 bg-gray-700 rounded-lg p-2">
             <MessageSquare className="w-3 h-3 text-nocenaBlue mt-0.5 flex-shrink-0" />
-            <p className="text-gray-300 text-xs italic line-clamp-2">
-              "Completed the challenge!"
-            </p>
+            <p className="text-gray-300 text-xs italic line-clamp-2">"Completed the challenge!"</p>
           </div>
         </div>
       </div>

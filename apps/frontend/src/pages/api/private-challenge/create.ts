@@ -47,16 +47,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check limit of 3 pending challenges per user
     try {
-      const sentResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/private-challenge/sent?userId=${creatorId}`);
-      
+      const sentResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/private-challenge/sent?userId=${creatorId}`
+      );
+
       if (sentResponse.ok) {
         const sentData = await sentResponse.json();
-        const pendingChallenges = sentData.challenges?.filter((challenge: any) => 
-          challenge.status === 'pending'
-        ) || [];
-        
+        const pendingChallenges =
+          sentData.challenges?.filter((challenge: any) => challenge.status === 'pending') || [];
+
         if (pendingChallenges.length >= 3) {
-          return res.status(400).json({ error: 'You can only have 3 pending challenges at a time. Wait for existing challenges to be resolved.' });
+          return res
+            .status(400)
+            .json({
+              error:
+                'You can only have 3 pending challenges at a time. Wait for existing challenges to be resolved.',
+            });
         }
       }
     } catch (error) {

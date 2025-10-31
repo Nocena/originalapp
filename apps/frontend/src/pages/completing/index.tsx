@@ -694,7 +694,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
                 const mockVideoBlob = new Blob(['mock video data'], { type: 'video/webm' });
                 const mockPhotoBlob = new Blob(['mock photo data'], { type: 'image/jpeg' });
                 const mockVerificationResult = { success: true, confidence: 0.95 };
-                
+
                 setVideoBlob(mockVideoBlob);
                 setPhotoBlob(mockPhotoBlob);
                 setVerificationResult(mockVerificationResult);
@@ -705,7 +705,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
               🚀 DEV: Skip to Claiming (Test Mode)
             </button>
           )}
-          
+
           <PrimaryButton className="w-full" onClick={handleStartChallenge} text={typeInfo.action} />
         </div>
       </div>

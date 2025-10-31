@@ -17,15 +17,16 @@ interface SimilarChallengeCompletionsPartProps {
 }
 
 const SimilarChallengeCompletionsPart: React.FC<SimilarChallengeCompletionsPartProps> = ({
-                                                                                           userID = 'current-user',
-                                                                                           challengeIds,
-                                                                                         }) => {
+  userID = 'current-user',
+  challengeIds,
+}) => {
   const { currentLensAccount } = useAuth();
   const router = useRouter();
   const { completions, loading } = useUserSimilarChallengeCompletions(userID, challengeIds);
   const handleChallengeClick = (completion: ChallengeCompletion) => {
     router.push({
-      pathname: '/browsing', query: {
+      pathname: '/browsing',
+      query: {
         completionId: completion.id,
         userId: userID,
       },
@@ -46,24 +47,20 @@ const SimilarChallengeCompletionsPart: React.FC<SimilarChallengeCompletionsPartP
           </div>
         </div>
       </div>
-      {
-        loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <SkeletonSlide key={index} />
-            ))}
-          </div>
-        ) : (
-          completions.length === 0 ? (
-            <SimilarCompletionEmptyState />
-          ) : (
-            <CompletedChallengesSwiper
-              completions={completions}
-              onCompletionClick={handleChallengeClick}
-            />
-          )
-        )
-      }
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonSlide key={index} />
+          ))}
+        </div>
+      ) : completions.length === 0 ? (
+        <SimilarCompletionEmptyState />
+      ) : (
+        <CompletedChallengesSwiper
+          completions={completions}
+          onCompletionClick={handleChallengeClick}
+        />
+      )}
     </div>
   );
 };

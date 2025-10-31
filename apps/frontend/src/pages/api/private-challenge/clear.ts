@@ -5,7 +5,11 @@
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { deletePrivateChallenge, getPrivateChallengesByRecipient, getPrivateChallengesByCreator } from '../../../lib/api/dgraph';
+import {
+  deletePrivateChallenge,
+  getPrivateChallengesByRecipient,
+  getPrivateChallengesByCreator,
+} from '../../../lib/api/dgraph';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -22,14 +26,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get all challenges for this user (both received and created)
     const [receivedChallenges, createdChallenges] = await Promise.all([
       getPrivateChallengesByRecipient(userId),
-      getPrivateChallengesByCreator(userId)
+      getPrivateChallengesByCreator(userId),
     ]);
 
     const allChallenges = [...receivedChallenges, ...createdChallenges];
-    
+
     // Filter completed and expired challenges
-    const challengesToClear = allChallenges.filter(challenge => 
-      challenge.isCompleted || !challenge.isActive
+    const challengesToClear = allChallenges.filter(
+      (challenge) => challenge.isCompleted || !challenge.isActive
     );
 
     // Delete completed and expired challenges

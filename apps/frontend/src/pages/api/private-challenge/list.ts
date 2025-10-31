@@ -7,11 +7,11 @@ async function getLensUsername(lensAccountId: string): Promise<string> {
   try {
     const { data } = await lensApolloClient.query<AccountQuery, AccountQueryVariables>({
       query: AccountDocument,
-      variables: { 
-        request: { address: lensAccountId }
+      variables: {
+        request: { address: lensAccountId },
       },
     });
-    
+
     return data?.account?.username?.localName || 'User';
   } catch (error) {
     console.error('Error fetching Lens username:', error);
@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const formattedChallenges = await Promise.all(
       challenges.map(async (challenge) => {
         const creatorUsername = await getLensUsername(challenge.creatorLensAccountId);
-        
+
         return {
           id: challenge.id,
           name: challenge.title,

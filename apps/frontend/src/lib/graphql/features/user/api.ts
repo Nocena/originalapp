@@ -5,7 +5,11 @@ import * as mutations from './mutations';
 import { createPublicClient, defineChain, http } from 'viem';
 import { CONTRACTS, FLOW_TESTNET_CONFIG } from '../../../constants';
 import noceniteTokenArtifact from '../../../../lib/contracts/nocenite.json';
-import { AccountsBulkDocument, AccountsBulkQuery, AccountsBulkQueryVariables } from '@nocena/indexer';
+import {
+  AccountsBulkDocument,
+  AccountsBulkQuery,
+  AccountsBulkQueryVariables,
+} from '@nocena/indexer';
 import { lensApolloClient } from '../../../../pages/_app';
 // ============================================================================
 // QUERY FUNCTIONS
@@ -199,39 +203,42 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
     const response = await fetch(
       `https://evm-testnet.flowscan.io/api?module=token&action=getTokenHolders&contractaddress=${CONTRACTS.Nocenite}&page=1&offset=${limit}`
     );
-    
+
     if (!response.ok) {
       throw new Error(`Blockscout API error: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
+
     if (data.status !== '1' || !data.result) {
       throw new Error('Invalid Blockscout API response');
     }
-    
+
     const holders = data.result;
-    
+
     // Extract wallet addresses for bulk Lens account lookup
     const walletAddresses = holders.map((holder: any) => holder.address);
-    
+
     // Query Lens accounts by owner addresses in bulk
     let lensAccounts: any[] = [];
     try {
-      const { data: lensData } = await lensApolloClient.query<AccountsBulkQuery, AccountsBulkQueryVariables>({
+      const { data: lensData } = await lensApolloClient.query<
+        AccountsBulkQuery,
+        AccountsBulkQueryVariables
+      >({
         query: AccountsBulkDocument,
-        variables: { 
-          request: { 
-            ownedBy: walletAddresses
-          }
+        variables: {
+          request: {
+            ownedBy: walletAddresses,
+          },
         },
       });
-      
+
       lensAccounts = lensData?.accountsBulk || [];
     } catch (error) {
       console.error('Error fetching Lens accounts:', error);
     }
-    
+
     // Create a map of owner address -> Lens account for quick lookup
     const lensAccountMap = new Map();
     lensAccounts.forEach((account: any) => {
@@ -239,16 +246,19 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
         lensAccountMap.set(account.owner.toLowerCase(), account);
       }
     });
-    
+
     // Process holders and match with Lens accounts
     const leaderboardEntries = holders.map((holder: any, index: number) => {
       const balanceInTokens = Number(holder.value) / Math.pow(10, 18);
       const lensAccount = lensAccountMap.get(holder.address.toLowerCase());
-      
+
       return {
         rank: index + 1,
         userId: lensAccount?.username?.localName || holder.address, // Use Lens username for routing
-        username: lensAccount?.metadata?.name || lensAccount?.username?.value || `${holder.address.slice(0, 6)}...${holder.address.slice(-4)}`,
+        username:
+          lensAccount?.metadata?.name ||
+          lensAccount?.username?.value ||
+          `${holder.address.slice(0, 6)}...${holder.address.slice(-4)}`,
         profilePicture: lensAccount?.metadata?.picture || '/images/profile.png',
         currentPeriodTokens: parseFloat(balanceInTokens.toFixed(1)),
         allTimeTokens: parseFloat(balanceInTokens.toFixed(1)),
@@ -259,9 +269,8 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
         ownerAddress: holder.address,
       };
     });
-    
+
     return leaderboardEntries;
-    
   } catch (error) {
     console.error('Error in getBlockchainLeaderboard:', error);
     return [];

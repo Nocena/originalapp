@@ -7,9 +7,7 @@ import { generateId } from '../../utils';
 // QUERY FUNCTIONS
 // ============================================================================
 
-export async function fetchUnreadNotificationsCount(
-  userLensAccountId: string,
-): Promise<number> {
+export async function fetchUnreadNotificationsCount(userLensAccountId: string): Promise<number> {
   try {
     const { data } = await graphqlClient.query({
       query: FETCH_UNREAD_NOTIFICATIONS_COUNT,
@@ -25,11 +23,10 @@ export async function fetchUnreadNotificationsCount(
 
 export async function markNotificationsAsRead(userLensAccountId: string): Promise<boolean> {
   try {
-    const { data } = await graphqlClient.mutate(
-      {
-        mutation: mutations.MARK_NOTIFICATIONS_AS_READ,
-        variables: { userLensAccountId },
-      });
+    const { data } = await graphqlClient.mutate({
+      mutation: mutations.MARK_NOTIFICATIONS_AS_READ,
+      variables: { userLensAccountId },
+    });
 
     const numUids = data?.updateNotification?.numUids || 0;
     console.log(`✅ Marked ${numUids} notifications as read.`);
@@ -79,7 +76,6 @@ export async function createNotification(data: {
     throw error;
   }
 }
-
 
 /**
  * Fetch notifications for a user

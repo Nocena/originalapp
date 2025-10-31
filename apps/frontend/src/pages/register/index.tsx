@@ -216,7 +216,7 @@ const RegisterPage = () => {
 */
 
         // STEP 4: Generate initial invite codes
-/*
+        /*
         try {
           await generateInviteCode(addedUser.id, 'initial');
           await generateInviteCode(addedUser.id, 'initial');

@@ -428,7 +428,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
         });
 
         setTimeout(() => {
-          router.push({ pathname: '/home' })
+          router.push({ pathname: '/home' });
           // window.location.href = '/home';
         }, 5000);
       } else {

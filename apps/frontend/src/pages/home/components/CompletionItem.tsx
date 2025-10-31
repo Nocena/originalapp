@@ -63,7 +63,7 @@ const CompletionItem: React.FC<CompletionItemProps> = ({ account, completion, is
   // Get media URLs using the centralized functions
   const videoUrl = media ? sanitizeDStorageUrl(media.videoCID) : null;
   const selfieUrl = media ? sanitizeDStorageUrl(media.selfieCID) : null;
-  const profilePicUrl = getAvatar(account)
+  const profilePicUrl = getAvatar(account);
 
   // Debug logging
   console.log('Completion data:', completion);

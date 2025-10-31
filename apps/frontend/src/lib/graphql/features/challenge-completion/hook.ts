@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchAllUserChallengeCompletionsPaginate, fetchUserSimilarChallengeCompletionsPaginate } from './api';
+import {
+  fetchAllUserChallengeCompletionsPaginate,
+  fetchUserSimilarChallengeCompletionsPaginate,
+} from './api';
 import { ChallengeCompletion } from './types';
 
-export const useUserChallengeCompletions = (
-  userLensAccountId: string,
-  initialLimit = 10
-) => {
+export const useUserChallengeCompletions = (userLensAccountId: string, initialLimit = 10) => {
   const [completions, setCompletions] = useState<ChallengeCompletion[]>([]);
   const [limit] = useState(initialLimit);
   const [offset, setOffset] = useState(0);
@@ -33,7 +33,7 @@ export const useUserChallengeCompletions = (
 
         setCompletions((prev) => (append ? [...prev, ...data] : data));
       } catch (err: any) {
-        console.error("Error fetching user completion completions:", err);
+        console.error('Error fetching user completion completions:', err);
         setError(err);
       } finally {
         setLoading(false);
@@ -96,7 +96,7 @@ export const useUserSimilarChallengeCompletions = (
 
         setCompletions((prev) => (append ? [...prev, ...data] : data));
       } catch (err: any) {
-        console.error("Error fetching user completion completions:", err);
+        console.error('Error fetching user completion completions:', err);
         setError(err);
       } finally {
         setLoading(false);

@@ -1,14 +1,21 @@
 import graphqlClient from '../../client';
 import {
-  FETCH_ALL_COMPLETIONS, FETCH_COMPLETION_BY_COMPLETION_ID,
+  FETCH_ALL_COMPLETIONS,
+  FETCH_COMPLETION_BY_COMPLETION_ID,
   FETCH_COMPLETIONS_BY_CHALLENGE,
   FETCH_COMPLETIONS_OF_USERS,
   FETCH_LATEST_USER_COMPLETION,
   FETCH_USER_COMPLETIONS_BY_FILTERS,
   GET_COMPLETION_FOR_LIKES,
-  USER_CHALLENGE_COMPLETIONS, USER_SIMILAR_CHALLENGE_COMPLETIONS,
+  USER_CHALLENGE_COMPLETIONS,
+  USER_SIMILAR_CHALLENGE_COMPLETIONS,
 } from './queries';
-import { BasicCompletionType, ChallengeCompletion, FetchUserCompletionsParams, MediaMetadata } from './types';
+import {
+  BasicCompletionType,
+  ChallengeCompletion,
+  FetchUserCompletionsParams,
+  MediaMetadata,
+} from './types';
 import { getDateRange } from '../follow/utils';
 import { fetchFollowingData, getLensAccountByAddress } from '../../../lens/api';
 import { getChallengeCompletionObjectFrom, getDateParts, serializeMedia } from './utils';
@@ -22,15 +29,15 @@ export const fetchAllUserChallengeCompletionsPaginate = async (
   userLensAccountId: string,
   limit = 10,
   offset = 0
-): Promise<ChallengeCompletion[]> =>  {
+): Promise<ChallengeCompletion[]> => {
   const { data } = await graphqlClient.query({
     query: USER_CHALLENGE_COMPLETIONS,
     variables: { userLensAccountId, limit, offset },
-    fetchPolicy: "network-only",
+    fetchPolicy: 'network-only',
   });
 
   const rawCompletions = data?.queryChallengeCompletion ?? [];
-  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId)
+  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId);
 };
 
 export const fetchUserSimilarChallengeCompletionsPaginate = async (
@@ -38,23 +45,23 @@ export const fetchUserSimilarChallengeCompletionsPaginate = async (
   challengeIds: string[],
   limit = 10,
   offset = 0
-): Promise<ChallengeCompletion[]> =>  {
+): Promise<ChallengeCompletion[]> => {
   const { data } = await graphqlClient.query({
     query: USER_SIMILAR_CHALLENGE_COMPLETIONS,
     variables: { userLensAccountId, challengeIds, limit, offset },
-    fetchPolicy: "network-only",
+    fetchPolicy: 'network-only',
   });
 
   const rawCompletions = data?.queryChallengeCompletion ?? [];
-  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId)
+  return await getChallengeCompletionObjectFrom(rawCompletions, userLensAccountId);
 };
 
 export async function fetchUserCompletionsByFilters({
-                                             userLensAccountId,
-                                             startDate,
-                                             endDate,
-                                             challengeType,
-                                           }: FetchUserCompletionsParams): Promise<BasicCompletionType[]> {
+  userLensAccountId,
+  startDate,
+  endDate,
+  challengeType,
+}: FetchUserCompletionsParams): Promise<BasicCompletionType[]> {
   try {
     const { data } = await graphqlClient.query({
       query: FETCH_USER_COMPLETIONS_BY_FILTERS,
@@ -76,7 +83,7 @@ export async function fetchUserCompletionsByFilters({
     const completions = data.queryChallengeCompletion || [];
 
     // Map the results to match CompletedChallenge type
-    return completions as BasicCompletionType[]
+    return completions as BasicCompletionType[];
   } catch (error) {
     console.error('Error fetching user completions:', error);
     throw error;
@@ -85,7 +92,7 @@ export async function fetchUserCompletionsByFilters({
 
 export async function fetchLatestUserCompletion(
   userLensAccountId: string,
-  challengeType: 'ai' | 'private' | 'public' = 'ai',
+  challengeType: 'ai' | 'private' | 'public' = 'ai'
 ): Promise<any | null> {
   try {
     const { data } = await graphqlClient.query({
@@ -107,15 +114,15 @@ export async function fetchLatestUserCompletion(
   }
 }
 
-
-export async function fetchFollowingsCompletions(userLensAccountAddress: string,
-                                                 date: string,
-                                                 frequency: 'daily' | 'weekly' | 'monthly',
+export async function fetchFollowingsCompletions(
+  userLensAccountAddress: string,
+  date: string,
+  frequency: 'daily' | 'weekly' | 'monthly'
 ): Promise<BasicCompletionType[]> {
   try {
     const { startDate, endDate } = getDateRange(date, frequency);
     const followings = await fetchFollowingData(userLensAccountAddress);
-    const followingAccountAddresses = followings?.items.map(item => item.following.address) || [];
+    const followingAccountAddresses = followings?.items.map((item) => item.following.address) || [];
 
     const { data } = await graphqlClient.query({
       query: FETCH_COMPLETIONS_OF_USERS,
@@ -132,7 +139,9 @@ export async function fetchFollowingsCompletions(userLensAccountAddress: string,
     // Map the results to match CompletedChallenge type
     return completions.map((c: any) => ({
       ...c,
-      userAccount: followings?.items.find(item => item.following.address === c.userLensAccountId)?.following || null,
+      userAccount:
+        followings?.items.find((item) => item.following.address === c.userLensAccountId)
+          ?.following || null,
     }));
   } catch (error) {
     console.error('Error fetching user completions:', error);
@@ -142,7 +151,7 @@ export async function fetchFollowingsCompletions(userLensAccountAddress: string,
 
 export async function fetchChallengeCompletionsWithLikesAndReactions(
   challengeId?: string,
-  userId?: string,
+  userId?: string
 ): Promise<ChallengeCompletion[]> {
   try {
     const { data } = await graphqlClient.query({
@@ -152,7 +161,7 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
     });
 
     let completions = data?.queryChallengeCompletion || [];
-    return await getChallengeCompletionObjectFrom(completions, userId)
+    return await getChallengeCompletionObjectFrom(completions, userId);
   } catch (error) {
     console.error('❌ Error fetching completions with likes and reactions:', error);
     throw error;
@@ -161,7 +170,7 @@ export async function fetchChallengeCompletionsWithLikesAndReactions(
 
 export async function fetchChallengeCompletionById(
   completionId: string,
-  userId?: string,
+  userId?: string
 ): Promise<ChallengeCompletion> {
   try {
     const { data } = await graphqlClient.query({
@@ -171,27 +180,31 @@ export async function fetchChallengeCompletionById(
     });
 
     let completions = data?.queryChallengeCompletion || [];
-    const updatedCompletions = await getChallengeCompletionObjectFrom(completions, userId)
-    return updatedCompletions[0]
+    const updatedCompletions = await getChallengeCompletionObjectFrom(completions, userId);
+    return updatedCompletions[0];
   } catch (error) {
     console.error('❌ Error fetching completions with likes and reactions:', error);
     throw error;
   }
 }
 
-
 export async function createChallengeCompletion(
   userLensAccountId: string,
   challengeType: 'private' | 'public' | 'ai',
   mediaData: string | MediaMetadata,
-  challengeId: string,
+  challengeId: string
 ): Promise<string> {
-  console.log('📘 Creating challenge completion', { userLensAccountId, challengeId, challengeType });
+  console.log('📘 Creating challenge completion', {
+    userLensAccountId,
+    challengeId,
+    challengeType,
+  });
 
   const id = uuidv4();
   const now = new Date();
   const media = serializeMedia(mediaData);
-  const { completionDate, completionDay, completionWeek, completionMonth, completionYear } = getDateParts(now);
+  const { completionDate, completionDay, completionWeek, completionMonth, completionYear } =
+    getDateParts(now);
 
   // Define challenge linkage based on type
   const privateChallenge = challengeType === 'private' ? { id: challengeId } : undefined;
@@ -225,7 +238,10 @@ export async function createChallengeCompletion(
       },
     });
 
-    console.log('✅ Challenge completion created:', data?.addChallengeCompletion?.challengeCompletion?.[0]?.id);
+    console.log(
+      '✅ Challenge completion created:',
+      data?.addChallengeCompletion?.challengeCompletion?.[0]?.id
+    );
 
     // Extra logic for AI challenges
     /*
@@ -252,22 +268,22 @@ export async function createChallengeCompletion(
  */
 export const toggleCompletionLike = async (
   userLensAccountId: string,
-  completionId: string,
+  completionId: string
 ): Promise<{ isLiked: boolean; newLikeCount: number }> => {
   try {
     // 1️⃣ Validate user exists
     const userAccount = await getLensAccountByAddress(userLensAccountId);
-    if (!userAccount) throw new Error("User not found");
+    if (!userAccount) throw new Error('User not found');
 
     // 2️⃣ Fetch current completion data
     const { data } = await graphqlClient.query({
       query: GET_COMPLETION_FOR_LIKES,
       variables: { completionId },
-      fetchPolicy: "network-only",
+      fetchPolicy: 'network-only',
     });
 
     const completion = data?.getChallengeCompletion;
-    if (!completion) throw new Error("Completion not found");
+    if (!completion) throw new Error('Completion not found');
 
     const likedBy: string[] = completion.likedByLensAccountIds || [];
     const alreadyLiked = likedBy.includes(userLensAccountId);
@@ -293,20 +309,19 @@ export const toggleCompletionLike = async (
         likedByLensAccountIds: safeLikedBy,
         likesCount: newLikeCount,
       },
-      fetchPolicy: "no-cache",
+      fetchPolicy: 'no-cache',
     });
 
-    const updated =
-      updateResponse.data?.updateChallengeCompletion?.challengeCompletion?.[0];
+    const updated = updateResponse.data?.updateChallengeCompletion?.challengeCompletion?.[0];
 
-    if (!updated) throw new Error("Failed to update like state");
+    if (!updated) throw new Error('Failed to update like state');
 
     return {
       isLiked: !alreadyLiked,
       newLikeCount: updated.likesCount ?? newLikeCount,
     };
   } catch (error) {
-    console.error("Error toggling like:", error);
+    console.error('Error toggling like:', error);
     throw error;
   }
 };

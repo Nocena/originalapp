@@ -598,7 +598,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ handleLogout, children }) => {
 
     // Force a full page navigation to ensure clean state
     if (isBrowser) {
-      router.push({ pathname: '/login' })
+      router.push({ pathname: '/login' });
       // window.location.href = '/login';
     }
   }, [handleLogout, stopAllCameraStreams]);

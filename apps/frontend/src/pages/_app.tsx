@@ -311,7 +311,6 @@ function MyAppContent({ Component, pageProps }: AppProps) {
 
       {renderPWAPrompt()}
       <UpdateNotification />
-      <CacheDebugger />
     </>
   );
 }
@@ -324,7 +323,7 @@ function MyApp(props: AppProps) {
           <AuthProvider>
             <BackgroundTaskProvider>
               <MyAppContent {...props} />
-              <Toaster 
+              <Toaster
                 position="top-center"
                 toastOptions={{
                   duration: 3000,

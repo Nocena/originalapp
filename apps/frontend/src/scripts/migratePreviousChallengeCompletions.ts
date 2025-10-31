@@ -19,11 +19,13 @@ export async function fetchBlobFromUrl(url: string): Promise<Blob> {
 // Main execution
 async function main() {
   try {
-    const userId = "0x10110A0Cf8f97D3802953078A2C2629f1146ACBb"
+    const userId = '0x10110A0Cf8f97D3802953078A2C2629f1146ACBb';
     const timestamp = Date.now();
-    const challengeId = '90069b07-4b66-4389-8970-b2b8f948399d'
-    const videoUrl = 'https://jade-elaborate-emu-349.mypinata.cloud/ipfs/bafybeiegvuimdl572qngsjn5anfi5xl43635pomaw2wyoserz5uuvouaq4?pinataGatewayToken=XQTlgcFp9rPCXpkx3GkP5M28RfBWRUUwaUwF2H_SCyA3TiFZvm-ssBVMLgIRVz9G';
-    const photoUrl = 'https://jade-elaborate-emu-349.mypinata.cloud/ipfs/bafkreifylm3rcptrptptyo475fbfrkumrlclvcl5heyrhvbbwxnhbc55oa?pinataGatewayToken=XQTlgcFp9rPCXpkx3GkP5M28RfBWRUUwaUwF2H_SCyA3TiFZvm-ssBVMLgIRVz9G';
+    const challengeId = '90069b07-4b66-4389-8970-b2b8f948399d';
+    const videoUrl =
+      'https://jade-elaborate-emu-349.mypinata.cloud/ipfs/bafybeiegvuimdl572qngsjn5anfi5xl43635pomaw2wyoserz5uuvouaq4?pinataGatewayToken=XQTlgcFp9rPCXpkx3GkP5M28RfBWRUUwaUwF2H_SCyA3TiFZvm-ssBVMLgIRVz9G';
+    const photoUrl =
+      'https://jade-elaborate-emu-349.mypinata.cloud/ipfs/bafkreifylm3rcptrptptyo475fbfrkumrlclvcl5heyrhvbbwxnhbc55oa?pinataGatewayToken=XQTlgcFp9rPCXpkx3GkP5M28RfBWRUUwaUwF2H_SCyA3TiFZvm-ssBVMLgIRVz9G';
 
     const video = await fetchBlobFromUrl(videoUrl);
     const photo = await fetchBlobFromUrl(photoUrl);
@@ -32,7 +34,7 @@ async function main() {
     const snapshotBlob = await getVideoSnapshot(video, 0); // first frame
     const previewCID = await uploadBlob(snapshotBlob, 'photo');
 
-    console.log("creating......")
+    console.log('creating......');
     await createChallengeCompletion(
       userId,
       'ai',
@@ -41,7 +43,7 @@ async function main() {
         selfieCID,
         previewCID,
         timestamp,
-        description: "Tell us about completing this challenge...",
+        description: 'Tell us about completing this challenge...',
         verificationResult: {
           backgroundOptimized: true,
           timestamp: new Date().toISOString(),
@@ -52,9 +54,9 @@ async function main() {
         videoFileName: `challenge_video_${userId}_${timestamp}.webm`,
         selfieFileName: `challenge_selfie_${userId}_${timestamp}.jpg`,
       }),
-      challengeId,
+      challengeId
     );
-    console.log("finished......")
+    console.log('finished......');
   } catch (error) {
     console.error('❌ Error in daily challenge process:', error);
     process.exit(1);

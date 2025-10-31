@@ -178,11 +178,11 @@ function SearchView() {
   const renderTopThreeItem = useCallback(
     (item: LeaderboardUser, index: number) => {
       // Check if this is the current user by comparing both userId and ownerAddress
-      const isCurrentUser = 
+      const isCurrentUser =
         currentLensAccount?.address === item.userId || // Direct address match
         currentLensAccount?.username?.localName === item.userId || // Lens username match
         activeAccount?.address === item.ownerAddress; // Owner address match
-      
+
       const isPending = followeringAccount?.address === item.userId;
 
       // Podium heights and styles
@@ -230,7 +230,9 @@ function SearchView() {
         >
           {/* Profile Picture with Crown */}
           <div className="relative mb-2">
-            <ThematicImage className={`rounded-full ${isCurrentUser ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/30' : ''}`}>
+            <ThematicImage
+              className={`rounded-full ${isCurrentUser ? 'ring-2 ring-yellow-400 shadow-lg shadow-yellow-400/30' : ''}`}
+            >
               <Image
                 src={item.profilePicture || '/images/profile.png'}
                 alt="Profile"
@@ -417,7 +419,7 @@ function SearchView() {
               {currentLensAccount &&
                 (() => {
                   const userPosition = leaderboard.findIndex(
-                    (item) => 
+                    (item) =>
                       item.userId === currentLensAccount.address || // Direct address match
                       item.userId === currentLensAccount.username?.localName || // Lens username match
                       item.ownerAddress === activeAccount?.address // Owner address match
