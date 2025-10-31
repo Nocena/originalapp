@@ -42,10 +42,18 @@ export async function getLensAccountByAddress(address: string): Promise<AccountQ
   return data;
 }
 
-export async function getLensAccountsInAddresses(addresses: string[]) {
-  const result = await fetchAccountsBulk(lensPublicClient, {
-    addresses: addresses,
-  });
+export async function getLensAccountsInAddresses(
+  addresses: string[],
+) {
+  if (addresses.length <= 0)
+    return []
+
+  const result = await fetchAccountsBulk(
+    lensPublicClient,
+    {
+      addresses: addresses
+      ,
+    });
 
   if (result.isErr()) {
     return [];

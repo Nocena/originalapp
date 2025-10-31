@@ -3,14 +3,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext'; // Add this import
 import InteractionSidebar from './components/InteractionSidebar';
-import { fetchChallengeCompletionsWithLikesAndReactions } from '../../lib/graphql';
+import { fetchChallengeCompletionById, fetchChallengeCompletionsWithLikesAndReactions } from '../../lib/graphql';
 import { ChallengeCompletion } from '../../lib/graphql/features/challenge-completion/types';
 import { uploadBlob } from '../../helpers/accountPictureUtils';
 
 const BrowsingPage: React.FC = () => {
   const router = useRouter();
   const { currentLensAccount } = useAuth(); // Get current user from auth context
-  const { challengeId, userId } = router.query;
+  const { challengeId, completionId, userId } = router.query;
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [completions, setCompletions] = useState<ChallengeCompletion[]>([]);
@@ -22,7 +22,7 @@ const BrowsingPage: React.FC = () => {
   useEffect(() => {
     // Always fetch completions, with or without challengeId
     fetchChallengeCompletions();
-  }, [challengeId]); // Add challengeId back since we might need to refetch when it changes
+  }, [challengeId, completionId]); // Add challengeId back since we might need to refetch when it changes
 
   useEffect(() => {
     // Find the initial completion to show based on userId
@@ -41,11 +41,20 @@ const BrowsingPage: React.FC = () => {
       // Get current user ID for like status
       const currentUserId = currentLensAccount?.address; // Use actual user ID from auth context
 
-      // Fetch completions with like and reaction data
-      const allCompletions = await fetchChallengeCompletionsWithLikesAndReactions(
-        challengeId as string | undefined,
-        currentUserId
-      );
+      let allCompletions: ChallengeCompletion[] = [];
+      if (completionId) {
+        allCompletions = [
+          await fetchChallengeCompletionById(
+            completionId as string,
+            currentUserId,
+          )];
+      } else {
+        // Fetch completions with like and reaction data
+        allCompletions = await fetchChallengeCompletionsWithLikesAndReactions(
+          challengeId as string | undefined,
+          currentUserId,
+        );
+      }
 
       if (allCompletions.length === 0) {
         return;
@@ -53,7 +62,7 @@ const BrowsingPage: React.FC = () => {
 
       // Sort by completion date (most recent first)
       allCompletions.sort(
-        (a, b) => new Date(b.completionDate).getTime() - new Date(a.completionDate).getTime()
+        (a, b) => new Date(b.completionDate).getTime() - new Date(a.completionDate).getTime(),
       );
 
       setCompletions(allCompletions);
@@ -96,7 +105,7 @@ const BrowsingPage: React.FC = () => {
         }
       }
     },
-    [completions]
+    [completions],
   );
 
   const handleVideoClick = useCallback((completionId: string) => {
@@ -249,7 +258,7 @@ const BrowsingPage: React.FC = () => {
           };
         }
         return comp;
-      })
+      }),
     );
 
     try {
@@ -282,7 +291,7 @@ const BrowsingPage: React.FC = () => {
             };
           }
           return comp;
-        })
+        }),
       );
     } catch (error) {
       console.error('Failed to toggle like:', error);
@@ -298,7 +307,7 @@ const BrowsingPage: React.FC = () => {
             };
           }
           return comp;
-        })
+        }),
       );
 
       // Show error message to user
@@ -309,7 +318,7 @@ const BrowsingPage: React.FC = () => {
   const handleRealMojiCapture = async (
     imageBlob: Blob,
     reactionType: string,
-    completionId: string
+    completionId: string,
   ) => {
     console.log('🎭 [RealMoji] Starting capture process:', {
       reactionType,
@@ -384,7 +393,7 @@ const BrowsingPage: React.FC = () => {
             };
           }
           return comp;
-        })
+        }),
       );
 
       // Show success message to user
@@ -474,7 +483,7 @@ const BrowsingPage: React.FC = () => {
                           // Add event listeners for play/pause to update button visibility
                           const updatePlayButton = () => {
                             const playButton = document.getElementById(
-                              `play-button-${completion.id}`
+                              `play-button-${completion.id}`,
                             );
                             if (playButton) {
                               playButton.style.display = el.paused ? 'flex' : 'none';
@@ -502,7 +511,8 @@ const BrowsingPage: React.FC = () => {
                       className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
                       style={{ display: 'none' }}
                     >
-                      <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                      <div
+                        className="w-20 h-20 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
                         <svg
                           className="w-10 h-10 text-white ml-1"
                           fill="currentColor"
@@ -525,7 +535,8 @@ const BrowsingPage: React.FC = () => {
 
               {/* Corner selfie */}
               {completion.selfieUrl && (
-                <div className="absolute top-4 right-4 w-48 h-48 rounded-xl overflow-hidden border-2 border-white shadow-lg z-30">
+                <div
+                  className="absolute top-4 right-4 w-48 h-48 rounded-xl overflow-hidden border-2 border-white shadow-lg z-30">
                   <img
                     src={completion.selfieUrl}
                     alt="Selfie"
@@ -562,7 +573,8 @@ const BrowsingPage: React.FC = () => {
                         <div key={reaction.id || index} className="flex-shrink-0 relative">
                           {reaction.selfieUrl ? (
                             // User's RealMoji selfie with emoji overlay - BeReal style
-                            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-lg">
+                            <div
+                              className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-lg">
                               <img
                                 src={reaction.selfieUrl}
                                 alt={`${reaction.userAccount?.username?.localName}'s ${reaction.reactionType} reaction`}
@@ -574,19 +586,22 @@ const BrowsingPage: React.FC = () => {
                                 }}
                               />
                               {/* Emoji overlay in bottom right corner */}
-                              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm">
+                              <div
+                                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white border border-gray-300 flex items-center justify-center shadow-sm">
                                 <span className="text-xs">{reaction.emoji}</span>
                               </div>
                             </div>
                           ) : (
                             // Fallback: just emoji if no selfie
-                            <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center shadow-lg">
+                            <div
+                              className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center shadow-lg">
                               <span className="text-lg">{reaction.emoji}</span>
                             </div>
                           )}
 
                           {/* User indicator on hover/tap */}
-                          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                          <div
+                            className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
                             {reaction.userAccount?.username?.localName}
                           </div>
                         </div>
@@ -594,7 +609,8 @@ const BrowsingPage: React.FC = () => {
 
                       {/* Show "+X more" if there are more than 8 reactions */}
                       {completion.recentReactions.length > 8 && (
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center shadow-lg">
+                        <div
+                          className="flex-shrink-0 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center shadow-lg">
                           <span className="text-xs text-white font-medium">
                             +{completion.recentReactions.length - 8}
                           </span>

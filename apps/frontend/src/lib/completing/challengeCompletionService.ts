@@ -1,6 +1,7 @@
 // Simplified challenge completion service for monorepo
 import { createChallengeCompletion } from '../graphql';
 import { uploadBlob } from '../../helpers/accountPictureUtils';
+import { getVideoSnapshot } from '../../helpers/getVideoSnapshot';
 
 export interface CompletionData {
   video: Blob;
@@ -186,6 +187,8 @@ export async function completeChallengeWorkflow(
                 console.log('📁 Uploading blobs to IPFS...');
                 const videoCID = await uploadBlob(video, 'video');
                 const selfieCID = await uploadBlob(photo, 'photo');
+                const snapshotBlob = await getVideoSnapshot(video, 0); // first frame
+                const previewCID = await uploadBlob(snapshotBlob, 'photo');
 
                 const timestamp = Date.now();
                 console.log('💾 Creating completion record...');
@@ -195,11 +198,13 @@ export async function completeChallengeWorkflow(
                   JSON.stringify({
                     videoCID,
                     selfieCID,
+                    previewCID,
                     timestamp,
                     description,
                     verificationResult,
                     hasVideo: true,
                     hasSelfie: true,
+                    hasPreview: true,
                     videoFileName: `challenge_video_${userId}_${timestamp}.webm`,
                     selfieFileName: `challenge_selfie_${userId}_${timestamp}.jpg`,
                   }),

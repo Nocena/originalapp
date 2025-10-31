@@ -19,6 +19,7 @@
     "format": "pnpm run format:check",
     "format:check": "prettier '**/*.{js,jsx,ts,tsx}' --config .prettierrc.json --check",
     "format:fix": "prettier '**/*.{js,jsx,ts,tsx}' --config .prettierrc.json --write",
+    "completion:migrate": "tsx src/scripts/migratePreviousChallengeCompletions.ts",
     "challenge:daily": "tsx src/scripts/generateDailyChallenge.ts",
     "challenge:weekly": "tsx src/scripts/generateWeeklyChallenge.ts",
     "challenge:monthly": "tsx src/scripts/generateMonthlyChallenge.ts",
