@@ -311,7 +311,6 @@ function MyAppContent({ Component, pageProps }: AppProps) {
 
       {renderPWAPrompt()}
       <UpdateNotification />
-      <CacheDebugger />
     </>
   );
 }

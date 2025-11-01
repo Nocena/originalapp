@@ -454,26 +454,6 @@ const HomeView = () => {
   return (
     <div className="text-white p-4 min-h-screen mt-20">
       <div className="max-w-4xl mx-auto">
-        {/* Development Mode Controls */}
-        {isDevelopmentMode && currentLensAccount && currentChallenge && (
-          <div className="mb-6 px-4 py-3 bg-yellow-900/20 border border-yellow-700/50 rounded-xl">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-yellow-400 font-medium">🛠️ Development Mode</span>
-            </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-xs text-yellow-300">
-                Test the claiming screen with current challenge: "{currentChallenge.title}"
-              </p>
-              <button
-                onClick={handleTestClaiming}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                🧪 Test Claiming Screen
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Private Challenge Creator Modal */}
         {showPrivateChallengeCreator && (
           <PrivateChallengeCreator
