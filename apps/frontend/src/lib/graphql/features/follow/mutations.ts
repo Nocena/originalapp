@@ -13,3 +13,6 @@ export const REGISTER_USER = gql`
   ${USER_WITH_RELATIONS}
 `;
 */
+
+// Placeholder export to make this a valid module
+export {};

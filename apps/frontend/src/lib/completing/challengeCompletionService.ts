@@ -63,7 +63,7 @@ export async function completeChallengeWorkflow(
           mintPayload = {
             userAddress: userWalletAddress,
             challengeFrequency: challenge.frequency,
-            ipfsHash: 'challenge-completion',
+            ipfsHash: `challenge-completion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           };
         } else if (challenge.type === 'PUBLIC' && challenge.challengeId) {
           // PUBLIC challenges - variable reward amount
@@ -130,6 +130,19 @@ export async function completeChallengeWorkflow(
                   userId: userId,
                 }),
               });
+
+              if (!completeResponse.ok) {
+                console.error(
+                  '❌ API response not ok:',
+                  completeResponse.status,
+                  completeResponse.statusText
+                );
+                const errorText = await completeResponse.text();
+                console.error('❌ Error response body:', errorText);
+                throw new Error(
+                  `API error: ${completeResponse.status} ${completeResponse.statusText}`
+                );
+              }
 
               const completeResult = await completeResponse.json();
               if (completeResult.success) {

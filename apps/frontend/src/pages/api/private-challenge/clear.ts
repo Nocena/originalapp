@@ -33,7 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Filter completed and expired challenges
     const challengesToClear = allChallenges.filter(
-      (challenge) => challenge.isCompleted || !challenge.isActive
+      (challenge) =>
+        challenge.isCompleted ||
+        !challenge.isActive ||
+        (challenge.expiresAt && new Date(challenge.expiresAt) < new Date())
     );
 
     // Delete completed and expired challenges

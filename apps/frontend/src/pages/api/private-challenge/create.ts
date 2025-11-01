@@ -57,12 +57,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           sentData.challenges?.filter((challenge: any) => challenge.status === 'pending') || [];
 
         if (pendingChallenges.length >= 3) {
-          return res
-            .status(400)
-            .json({
-              error:
-                'You can only have 3 pending challenges at a time. Wait for existing challenges to be resolved.',
-            });
+          return res.status(400).json({
+            error:
+              'You can only have 3 pending challenges at a time. Wait for existing challenges to be resolved.',
+          });
         }
       }
     } catch (error) {

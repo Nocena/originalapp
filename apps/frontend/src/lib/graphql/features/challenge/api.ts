@@ -1,7 +1,39 @@
 import graphqlClient from '../../client';
 import { GET_ACTIVE_PUBLIC_CHALLENGES } from './queries';
+import { ADD_AI_CHALLENGE } from './mutations';
 import { filterNearbyChallenges, transformChallengeData } from './utils';
 import { ChallengeData } from './types';
+
+interface LocationData {
+  latitude: number;
+  longitude: number;
+}
+
+interface AIChallengeInput {
+  id: string;
+  title: string;
+  description: string;
+  frequency: string;
+  reward: number;
+  createdAt: string;
+  isActive: boolean;
+  day?: number;
+  month?: number;
+  year?: number;
+}
+
+export async function createAIChallenge(challengeData: AIChallengeInput): Promise<boolean> {
+  try {
+    await graphqlClient.mutate({
+      mutation: ADD_AI_CHALLENGE,
+      variables: { challenge: challengeData },
+    });
+    return true;
+  } catch (error) {
+    console.error('❌ Error creating AI challenge:', error);
+    return false;
+  }
+}
 
 interface LocationData {
   latitude: number;

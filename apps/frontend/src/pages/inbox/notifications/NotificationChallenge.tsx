@@ -108,14 +108,12 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
       color="nocenaPink"
       rounded="xl"
       className={`w-full max-w-lg px-6 py-2 transition-all relative ${
-        isExpired ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:brightness-110'
+        isExpired ? 'cursor-not-allowed' : 'cursor-pointer hover:brightness-110'
       }`}
       onClick={handleCardClick}
     >
       {/* Challenge Text - smaller and less bold */}
-      <div className={`text-lg font-light mb-2 ${isExpired ? 'line-through text-gray-400' : ''}`}>
-        {title} {isExpired && '(Expired)'}
-      </div>
+      <div className="text-lg font-light mb-2">{title}</div>
 
       {/* User and Reward Info Row */}
       <div className="flex items-center justify-between">
@@ -137,7 +135,7 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
         {/* Reward Display - now has relative positioning */}
         <div className="relative">
           {/* NEW tag for unread notifications - positioned above reward */}
-          {shouldShowNew && (
+          {shouldShowNew && !isExpired && (
             <div className="absolute -top-8 right-0 transform translate-y-[-100%]">
               <ThematicContainer
                 asButton={false}
@@ -151,12 +149,23 @@ const NotificationChallenge: React.FC<NotificationChallengeProps> = ({
             </div>
           )}
 
-          <ThematicContainer asButton={false} color="nocenaPink" className="px-4 py-1">
-            <div className="flex items-center space-x-1">
-              <span className="text-xl font-semibold">{reward}</span>
-              <Image src="/nocenix.ico" alt="Nocenix" width={32} height={32} />
-            </div>
-          </ThematicContainer>
+          {/* Expired tag for expired notifications */}
+          {isExpired ? (
+            <ThematicContainer
+              asButton={false}
+              color="nocenaPink"
+              className="px-4 py-1 bg-gray-500"
+            >
+              <span className="text-sm font-medium text-gray-200">EXPIRED</span>
+            </ThematicContainer>
+          ) : (
+            <ThematicContainer asButton={false} color="nocenaPink" className="px-4 py-1">
+              <div className="flex items-center space-x-1">
+                <span className="text-xl font-semibold">{reward}</span>
+                <Image src="/nocenix.ico" alt="Nocenix" width={32} height={32} />
+              </div>
+            </ThematicContainer>
+          )}
         </div>
       </div>
     </ThematicContainer>

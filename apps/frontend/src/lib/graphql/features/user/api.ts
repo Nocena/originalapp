@@ -15,7 +15,7 @@ import { lensApolloClient } from '../../../../pages/_app';
 // QUERY FUNCTIONS
 // ============================================================================
 
-export async function getUserByWallet(walletAddress: string): Promise<User | null> {
+export async function getUserByWallet(walletAddress: string): Promise<any | null> {
   const normalizedWallet = normalizeWallet(walletAddress);
 
   try {
@@ -28,14 +28,14 @@ export async function getUserByWallet(walletAddress: string): Promise<User | nul
     if (!userData) return null;
 
     // Format the data to match User interface
-    return formatUserData(userData);
+    return userData;
   } catch (error) {
     console.error('Error getting user by wallet:', error);
     throw error;
   }
 }
 
-export async function getUserByLensAccountId(lensAccountAddress: string): Promise<User | null> {
+export async function getUserByLensAccountId(lensAccountAddress: string): Promise<any | null> {
   try {
     const { data } = await graphqlClient.query({
       query: queries.GET_USER_BY_LENS_ACCOUNT_ID,
@@ -46,14 +46,14 @@ export async function getUserByLensAccountId(lensAccountAddress: string): Promis
     if (!userData) return null;
 
     // Format the data to match User interface
-    return formatUserData(userData);
+    return userData;
   } catch (error) {
     console.error('Error getting user by wallet:', error);
     throw error;
   }
 }
 
-export async function getUserById(userId: string): Promise<User | null> {
+export async function getUserById(userId: string): Promise<any | null> {
   try {
     const { data } = await graphqlClient.query({
       query: queries.GET_USER_BY_ID,
@@ -63,20 +63,20 @@ export async function getUserById(userId: string): Promise<User | null> {
     const userData = data.queryUser?.[0];
     if (!userData) return null;
 
-    return formatUserData(userData);
+    return userData;
   } catch (error) {
     console.error('Error getting user by ID:', error);
     throw error;
   }
 }
 
-export async function fetchAllUsers(): Promise<User[]> {
+export async function fetchAllUsers(): Promise<any[]> {
   try {
     const { data } = await graphqlClient.query({
       query: queries.GET_ALL_USERS,
     });
 
-    return (data.queryUser || []).map(formatUserData);
+    return data.queryUser || [];
   } catch (error) {
     console.error('Error fetching all users:', error);
     throw error;
@@ -147,7 +147,7 @@ export async function getLeaderboard(
 ): Promise<any[]> {
   try {
     const { data } = await graphqlClient.query({
-      query: queries.GET_LEADERBOARD,
+      query: queries.GET_ALL_USERS_WITH_WALLETS,
       variables: { first: limit, offset },
     });
 

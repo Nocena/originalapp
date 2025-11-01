@@ -17,8 +17,17 @@ import {
   MediaMetadata,
 } from './types';
 import { getDateRange } from '../follow/utils';
-import { fetchFollowingData, getLensAccountByAddress } from '../../../lens/api';
-import { getChallengeCompletionObjectFrom, getDateParts, serializeMedia } from './utils';
+import {
+  addUserAccountToCompletions,
+  fetchFollowingData,
+  getLensAccountByAddress,
+} from '../../../lens/api';
+import {
+  getDateParts,
+  getEmojiForReactionType,
+  serializeMedia,
+  getChallengeCompletionObjectFrom,
+} from './utils';
 import { CREATE_CHALLENGE_COMPLETION, UPDATE_LIKE } from './mutations';
 import { v4 as uuidv4 } from 'uuid';
 // ============================================================================

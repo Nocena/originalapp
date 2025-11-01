@@ -15,7 +15,14 @@ export * from './fragments';
 export * from './features/user';
 
 // Export utilities
-export { generateId, normalizeWallet, generateRandomId } from './utils';
+export {
+  generateId,
+  normalizeWallet,
+  generateRandomId,
+  generateInviteCode,
+  getUserInviteStats,
+  validateInviteCode,
+} from './utils';
 
 // Re-export user functions with old names for backward compatibility
 export * from './features/user';

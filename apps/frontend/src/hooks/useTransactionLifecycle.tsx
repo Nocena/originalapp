@@ -32,8 +32,9 @@ const useTransactionLifecycle = () => {
     await handleWrongNetwork();
     if (!walletClient) return;
     return onCompleted(
-      await sendEip712Transaction(walletClient, {
-        account: walletClient.account,
+      await sendEip712Transaction(walletClient as any, {
+        account: walletClient.account as any,
+        chain: walletClient.chain as any,
         ...sponsoredTransactionData(transactionData.raw),
       })
     );
@@ -46,8 +47,9 @@ const useTransactionLifecycle = () => {
     await handleWrongNetwork();
     if (!walletClient) return;
     return onCompleted(
-      await sendTransaction(walletClient, {
-        account: walletClient.account,
+      await sendTransaction(walletClient as any, {
+        account: walletClient.account as any,
+        chain: walletClient.chain as any,
         ...selfFundedTransactionData(transactionData.raw),
       })
     );

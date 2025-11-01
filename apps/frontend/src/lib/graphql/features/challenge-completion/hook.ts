@@ -33,7 +33,7 @@ export const useUserChallengeCompletions = (userLensAccountId: string, initialLi
 
         setCompletions((prev) => (append ? [...prev, ...data] : data));
       } catch (err: any) {
-        console.error('Error fetching user completion completions:', err);
+        console.error('Error fetching user challenge completions:', err);
         setError(err);
       } finally {
         setLoading(false);

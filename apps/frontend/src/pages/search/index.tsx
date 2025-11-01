@@ -177,11 +177,11 @@ function SearchView() {
   // Render top 3 leaderboard items (podium style)
   const renderTopThreeItem = useCallback(
     (item: LeaderboardUser, index: number) => {
-      // Check if this is the current user by comparing both userId and ownerAddress
+      // Check if this is the current user by comparing both userId and address
       const isCurrentUser =
         currentLensAccount?.address === item.userId || // Direct address match
         currentLensAccount?.username?.localName === item.userId || // Lens username match
-        activeAccount?.address === item.ownerAddress; // Owner address match
+        activeAccount?.address === item.userId; // Active account address match
 
       const isPending = followeringAccount?.address === item.userId;
 
@@ -422,7 +422,7 @@ function SearchView() {
                     (item) =>
                       item.userId === currentLensAccount.address || // Direct address match
                       item.userId === currentLensAccount.username?.localName || // Lens username match
-                      item.ownerAddress === activeAccount?.address // Owner address match
+                      item.userId === activeAccount?.address // Active account address match
                   );
                   if (userPosition >= 10) {
                     const userItem = leaderboard[userPosition];
