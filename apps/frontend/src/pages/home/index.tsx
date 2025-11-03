@@ -21,11 +21,15 @@ import PrimaryButton from '../../components/ui/PrimaryButton';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import ThematicContainer from '../../components/ui/ThematicContainer';
 import {
+  createChallengeCompletion,
   fetchFollowingsCompletions,
   fetchLatestUserCompletion,
 } from 'src/lib/graphql/features/challenge-completion';
 import { BasicCompletionType } from '../../lib/graphql/features/challenge-completion/types';
 import { CreatePrivateChallengeRequest } from '../../types/notifications';
+import { uploadBlob } from '../../helpers/accountPictureUtils';
+import { getVideoSnapshot } from '../../helpers/getVideoSnapshot';
+import { fetchBlobFromUrl } from '../../scripts/migratePreviousChallengeCompletions';
 
 type ChallengeType = 'daily' | 'weekly' | 'monthly';
 
@@ -52,7 +56,7 @@ function hasCompletedWeekly(user: any): boolean {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
   const daysSinceStart = Math.floor(
-    (now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)
+    (now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24),
   );
   const weekOfYear = Math.floor(daysSinceStart / 7) + 1;
 
@@ -109,7 +113,7 @@ const createMockVideoBlob = (): Blob => {
         else resolve(new Blob(['mock video'], { type: 'video/mp4' }));
       },
       'image/jpeg',
-      0.8
+      0.8,
     );
   }) as any;
 };
@@ -136,7 +140,7 @@ const createMockPhotoBlob = (): Blob => {
         else resolve(new Blob(['mock photo'], { type: 'image/jpeg' }));
       },
       'image/jpeg',
-      0.8
+      0.8,
     );
   }) as any;
 };
@@ -262,7 +266,7 @@ const HomeView = () => {
         const completions = await fetchFollowingsCompletions(
           currentLensAccount.address,
           today,
-          selectedTab
+          selectedTab,
         );
         setFollowerCompletions(completions);
         console.log('Loaded follower completions:', completions.length);
@@ -351,6 +355,51 @@ const HomeView = () => {
 
   // Handle discover button click - navigate to browsing with all completions
   const handleDiscoverClick = () => {
+    /*
+        (async () => {
+          try {
+            const userId = "0x10110A0Cf8f97D3802953078A2C2629f1146ACBb"
+            const timestamp = Date.now();
+            const challengeId = 'cb0e6c5b-897e-4594-a4b2-d4270f14c09c'
+            const videoUrl = 'https://jade-elaborate-emu-349.mypinata.cloud/ipfs/bafybeig7ac2xdbzduruuoin2mqdvhztn3rawzwuwoxd6waxa7hdoym5hhe?pinataGatewayToken=XQTlgcFp9rPCXpkx3GkP5M28RfBWRUUwaUwF2H_SCyA3TiFZvm-ssBVMLgIRVz9G';
+            const photoUrl = 'https://jade-elaborate-emu-349.mypinata.cloud/ipfs/bafkreidrcrxhgfd4pz4uvlcogo3vw44mfhhcdyzdr5skhdmimg3bkck5ri?pinataGatewayToken=XQTlgcFp9rPCXpkx3GkP5M28RfBWRUUwaUwF2H_SCyA3TiFZvm-ssBVMLgIRVz9G';
+
+            const video = await fetchBlobFromUrl(videoUrl);
+            const photo = await fetchBlobFromUrl(photoUrl);
+            const videoCID = await uploadBlob(video, 'video');
+            const selfieCID = await uploadBlob(photo, 'photo');
+            const snapshotBlob = await getVideoSnapshot(video, 0); // first frame
+            const previewCID = await uploadBlob(snapshotBlob, 'photo');
+
+            console.log("creating......")
+            await createChallengeCompletion(
+              userId,
+              'ai',
+              JSON.stringify({
+                videoCID,
+                selfieCID,
+                previewCID,
+                timestamp,
+                description: "Tell us about completing this challenge...",
+                verificationResult: {
+                  backgroundOptimized: true,
+                  timestamp: new Date().toISOString(),
+                },
+                hasVideo: true,
+                hasSelfie: true,
+                hasPreview: true,
+                videoFileName: `challenge_video_${userId}_${timestamp}.webm`,
+                selfieFileName: `challenge_selfie_${userId}_${timestamp}.jpg`,
+              }),
+              challengeId,
+            );
+            console.log("finished......")
+          } catch (error) {
+            console.error('❌ Error in daily challenge process:', error);
+            process.exit(1);
+          }
+        })()
+    */
     if (!currentLensAccount) {
       alert('Please login to discover challenges!');
       router.push('/login');
@@ -431,7 +480,7 @@ const HomeView = () => {
           ...claimingData,
           // Note: Can't store blobs in sessionStorage, so we'll recreate them
           mockBlobsNeeded: true,
-        })
+        }),
       );
 
       // Navigate to claiming test route

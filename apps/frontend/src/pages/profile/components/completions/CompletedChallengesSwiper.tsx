@@ -5,6 +5,10 @@ import { Navigation, Pagination } from 'swiper/modules';
 import { ChallengeCompletion } from '../../../../lib/graphql/features/challenge-completion/types';
 import { ChallengeCompletionSlide } from '@pages/profile/components/completions/ChallengeCompletionSlide';
 import { NavigationButtons } from '@pages/profile/components/completions/NavigationButtons';
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 interface CompletedChallengesSwiperProps {
   completions: ChallengeCompletion[];
