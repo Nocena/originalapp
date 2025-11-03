@@ -475,7 +475,7 @@ const OtherProfileView: React.FC = () => {
             prefilledUser={{
               id: selectedUserAccount?.address,
               username: selectedUserAccount?.username?.localName || '',
-              profilePicture: selectedUserAccount?.metadata?.picture,
+              profilePicture: getAvatar(selectedUserAccount),
               wallet: selectedUserAccount?.address,
               earnedTokens: 0,
             }}
