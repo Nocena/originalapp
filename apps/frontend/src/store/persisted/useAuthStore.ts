@@ -26,6 +26,9 @@ const store = create(
       refreshToken: null,
       signIn: ({ accessToken, refreshToken }) => set({ accessToken, refreshToken }),
       signOut: async () => {
+        // clear Zustand state immediately
+        set({ accessToken: null, refreshToken: null });
+
         // Clear Localstorage only if in browser environment
         if (typeof window !== 'undefined' && window.localStorage) {
           const allLocalstorageStores = Object.values(Localstorage).filter(
