@@ -27,8 +27,8 @@ async function main() {
     const photoUrl =
       'https://jade-elaborate-emu-349.mypinata.cloud/ipfs/bafkreifylm3rcptrptptyo475fbfrkumrlclvcl5heyrhvbbwxnhbc55oa?pinataGatewayToken=XQTlgcFp9rPCXpkx3GkP5M28RfBWRUUwaUwF2H_SCyA3TiFZvm-ssBVMLgIRVz9G';
 
-    const video = await fetchBlobFromUrl(videoUrl);
-    const photo = await fetchBlobFromUrl(photoUrl);
+    const video = await fetchBlobFromUrl(`/api/proxy-ipfs/route?url=${encodeURIComponent(videoUrl)}`);
+    const photo = await fetchBlobFromUrl(`/api/proxy-ipfs/route?url=${encodeURIComponent(photoUrl)}`);
     const videoCID = await uploadBlob(video, 'video');
     const selfieCID = await uploadBlob(photo, 'photo');
     const snapshotBlob = await getVideoSnapshot(video, 0); // first frame
