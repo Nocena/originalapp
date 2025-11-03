@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { CreatePrivateChallengeRequest } from '../types/notifications';
 import SearchBox, { SearchUser } from '../pages/search/components/SearchBox';
 import { useAuth } from '../contexts/AuthContext';
+import ThematicImage from './ui/ThematicImage';
 import type { AccountFragment } from '@nocena/indexer';
 
 interface PrivateChallengeCreatorProps {
@@ -131,11 +133,15 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
             {selectedUser ? (
               <div className="flex items-center justify-between bg-gray-700 rounded-lg p-3">
                 <div className="flex items-center space-x-3">
-                  <img
-                    src={selectedUser.profilePicture}
-                    alt={selectedUser.username}
-                    className="w-8 h-8 rounded-full"
-                  />
+                  <ThematicImage className="rounded-full">
+                    <Image
+                      src={selectedUser.profilePicture || '/images/profile.png'}
+                      alt={selectedUser.username}
+                      width={32}
+                      height={32}
+                      className="w-8 h-8 object-cover rounded-full"
+                    />
+                  </ThematicImage>
                   <span>@{selectedUser.username}</span>
                 </div>
                 <button
