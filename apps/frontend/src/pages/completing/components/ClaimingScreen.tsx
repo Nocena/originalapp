@@ -12,6 +12,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useBackgroundTasks } from '../../../contexts/BackgroundTaskContext';
 import { useActiveAccount } from 'thirdweb/react';
 import { useRouter } from 'next/router';
+import toast from 'react-hot-toast';
 
 interface Challenge {
   title: string;
@@ -432,6 +433,18 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
           // window.location.href = '/home';
         }, 5000);
       } else {
+        // Handle cooldown error specifically before throwing
+        if (result.message && result.message.includes('CooldownActive')) {
+          toast.error('You need to wait before completing another challenge. Try again later!', {
+            duration: 4000,
+            position: 'top-center',
+          });
+          // Navigate back to home after showing toast
+          setTimeout(() => {
+            router.push('/home');
+          }, 2000);
+          return;
+        }
         throw new Error(result.message);
       }
     } catch (error) {
