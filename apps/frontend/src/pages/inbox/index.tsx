@@ -1071,7 +1071,7 @@ const InboxView = () => {
                         <span className="text-xs text-gray-400">
                           Sent to{' '}
                           <button
-                            onClick={() => router.push(`/profile/${challenge.recipientId}`)}
+                            onClick={() => router.push(`/profile/${challenge.recipientUsername}`)}
                             className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
                           >
                             @{challenge.recipientUsername}
