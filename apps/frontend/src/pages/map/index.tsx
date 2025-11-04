@@ -263,6 +263,25 @@ const MapView = () => {
     }
   };
 
+  // Check button state on page load
+  useEffect(() => {
+    const checkButtonState = async () => {
+      try {
+        const response = await fetch('/api/map/button-state');
+        const buttonState = await response.json();
+        
+        if (buttonState.enabled) {
+          console.log('🔘 Weekly event detected, enabling challenge button');
+          setButtonEnabled(true);
+        }
+      } catch (error) {
+        console.error('Error checking button state:', error);
+      }
+    };
+
+    checkButtonState();
+  }, []);
+
   // Initialize empty challenges - only generated via button
   useEffect(() => {
     if (!userLocation || !mapLoaded) return;

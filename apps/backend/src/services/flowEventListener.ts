@@ -167,10 +167,43 @@ export class FlowEventListener {
     
     try {
       await this.triggerChallengeGeneration(event.type);
+      
+      // Enable public challenge button for weekly events
+      if (event.type === 'weekly') {
+        await this.enablePublicChallengeButton();
+      }
+      
       console.log(`✅ ${event.type} challenge generated successfully`);
     } catch (error) {
       console.error(`❌ Failed to generate ${event.type} challenge:`, error);
     }
+  }
+
+  private async enablePublicChallengeButton(): Promise<void> {
+    console.log('🔘 Enabling public challenge button for all users...');
+    
+    try {
+      // Store the weekly event timestamp for frontend to check
+      const buttonStateFile = path.join(__dirname, '../data/button-state.json');
+      const buttonState = {
+        enabled: true,
+        lastWeeklyEvent: new Date().toISOString(),
+        weekId: this.getCurrentWeekId()
+      };
+      
+      await fs.writeFile(buttonStateFile, JSON.stringify(buttonState, null, 2));
+      console.log('✅ Public challenge button enabled for all users');
+    } catch (error) {
+      console.error('❌ Failed to enable public challenge button:', error);
+    }
+  }
+
+  private getCurrentWeekId(): string {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setUTCDate(now.getUTCDate() - (now.getUTCDay() + 6) % 7);
+    monday.setUTCHours(0, 0, 0, 0);
+    return monday.toISOString().split('T')[0]; // Returns "2025-11-04"
   }
 
   private async triggerChallengeGeneration(challengeType: string): Promise<void> {
