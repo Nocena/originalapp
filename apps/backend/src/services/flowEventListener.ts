@@ -114,7 +114,7 @@ export class FlowEventListener {
     const startBlock = this.lastProcessedBlock;
     const endBlock = Math.min(currentBlock, startBlock + 100); // Limit range to avoid timeouts
     
-    const command = `flow events get A.${this.contractAddress}.ChallengeScheduler.TriggerDailyChallenge A.${this.contractAddress}.ChallengeScheduler.TriggerWeeklyChallenge A.${this.contractAddress}.ChallengeScheduler.TriggerMonthlyChallenge --network testnet --start ${startBlock} --end ${endBlock}`;
+    const command = `flow events get A.${this.contractAddress}.NocenaChallengeHandler.TriggerDailyChallenge A.${this.contractAddress}.NocenaChallengeHandler.TriggerWeeklyChallenge A.${this.contractAddress}.NocenaChallengeHandler.TriggerMonthlyChallenge --network testnet --start ${startBlock} --end ${endBlock}`;
     
     console.log(`🔧 Checking blocks ${startBlock} to ${endBlock}`);
     
