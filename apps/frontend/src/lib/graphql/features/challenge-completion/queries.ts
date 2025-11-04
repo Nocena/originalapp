@@ -422,3 +422,28 @@ export const CHECK_LIKE_STATUS = gql`
     }
   }
 `;
+
+export const CHECK_CHALLENGE_COMPLETION = gql`
+    query CheckChallengeCompletion($userLensAccountId: String!, $challengeId: String!) {
+        queryChallengeCompletion(
+            filter: {
+                and: [
+                    { userLensAccountId: { eq: $userLensAccountId } }
+                    {
+                        or: [
+                            { aiChallengeId: { eq: $challengeId } }
+                            { publicChallengeId: { eq: $challengeId } }
+                            { privateChallengeId: { eq: $challengeId } }
+                        ]
+                    }
+                ]
+            }
+            first: 1
+        ) {
+            id
+            challengeType
+            completionDate
+            status
+        }
+    }
+`;

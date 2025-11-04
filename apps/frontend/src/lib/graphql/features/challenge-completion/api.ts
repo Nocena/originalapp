@@ -1,5 +1,6 @@
 import graphqlClient from '../../client';
 import {
+  CHECK_CHALLENGE_COMPLETION,
   FETCH_ALL_COMPLETIONS,
   FETCH_COMPLETION_BY_COMPLETION_ID,
   FETCH_COMPLETIONS_BY_CHALLENGE,
@@ -10,29 +11,35 @@ import {
   USER_CHALLENGE_COMPLETIONS,
   USER_SIMILAR_CHALLENGE_COMPLETIONS,
 } from './queries';
-import {
-  BasicCompletionType,
-  ChallengeCompletion,
-  FetchUserCompletionsParams,
-  MediaMetadata,
-} from './types';
+import { BasicCompletionType, ChallengeCompletion, FetchUserCompletionsParams, MediaMetadata } from './types';
 import { getDateRange } from '../follow/utils';
-import {
-  addUserAccountToCompletions,
-  fetchFollowingData,
-  getLensAccountByAddress,
-} from '../../../lens/api';
-import {
-  getDateParts,
-  getEmojiForReactionType,
-  serializeMedia,
-  getChallengeCompletionObjectFrom,
-} from './utils';
+import { fetchFollowingData, getLensAccountByAddress } from '../../../lens/api';
+import { getChallengeCompletionObjectFrom, getDateParts, serializeMedia } from './utils';
 import { CREATE_CHALLENGE_COMPLETION, UPDATE_LIKE } from './mutations';
 import { v4 as uuidv4 } from 'uuid';
 // ============================================================================
 // QUERY FUNCTIONS
 // ============================================================================
+
+
+export async function isChallengeCompletedByUser(
+  userLensAccountId: string,
+  challengeId: string
+): Promise<boolean> {
+  try {
+    const { data } = await graphqlClient.query({
+      query: CHECK_CHALLENGE_COMPLETION,
+      variables: { userLensAccountId, challengeId },
+      fetchPolicy: "network-only",
+    });
+
+    const completions = data?.queryChallengeCompletion ?? [];
+    return completions.length > 0;
+  } catch (error) {
+    console.error("❌ Error checking challenge completion:", error);
+    return false;
+  }
+}
 
 export const fetchAllUserChallengeCompletionsPaginate = async (
   userLensAccountId: string,
@@ -132,6 +139,9 @@ export async function fetchFollowingsCompletions(
     const { startDate, endDate } = getDateRange(date, frequency);
     const followings = await fetchFollowingData(userLensAccountAddress);
     const followingAccountAddresses = followings?.items.map((item) => item.following.address) || [];
+
+    if (followingAccountAddresses.length <= 0)
+      return []
 
     const { data } = await graphqlClient.query({
       query: FETCH_COMPLETIONS_OF_USERS,

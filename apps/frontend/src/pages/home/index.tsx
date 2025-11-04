@@ -2,14 +2,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import { useActiveAccount } from 'thirdweb/react';
 import { toast } from 'react-hot-toast';
-import {
-  AIChallenge,
-  getChallengeReward,
-  getCurrentChallenge,
-  getFallbackChallenge,
-} from '@utils/challengeUtils';
+import { AIChallenge, getChallengeReward, getCurrentChallenge, getFallbackChallenge } from '@utils/challengeUtils';
 
 // Component imports
 import ChallengeHeader from './components/ChallengeHeader';
@@ -21,134 +15,18 @@ import PrimaryButton from '../../components/ui/PrimaryButton';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import ThematicContainer from '../../components/ui/ThematicContainer';
 import {
-  createChallengeCompletion,
   fetchFollowingsCompletions,
   fetchLatestUserCompletion,
+  isChallengeCompletedByUser,
 } from 'src/lib/graphql/features/challenge-completion';
 import { BasicCompletionType } from '../../lib/graphql/features/challenge-completion/types';
 import { CreatePrivateChallengeRequest } from '../../types/notifications';
-import { uploadBlob } from '../../helpers/accountPictureUtils';
-import { getVideoSnapshot } from '../../helpers/getVideoSnapshot';
-import { fetchBlobFromUrl } from '../../scripts/migratePreviousChallengeCompletions';
 
 type ChallengeType = 'daily' | 'weekly' | 'monthly';
-
-// FIXED completion check functions
-function hasCompletedDaily(user: any): boolean {
-  if (!user || !user.dailyChallenge) return false;
-
-  const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-  console.log('Daily check:', {
-    dayOfYear,
-    stringLength: user.dailyChallenge.length,
-    value: user.dailyChallenge.charAt(dayOfYear - 1),
-  });
-
-  return user.dailyChallenge.charAt(dayOfYear - 2) === '1'; //L: why -2? I don't know, but it works (same as in dgraph.ts when I save the string)
-}
-
-function hasCompletedWeekly(user: any): boolean {
-  if (!user || !user.weeklyChallenge) return false;
-
-  const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const daysSinceStart = Math.floor(
-    (now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  const weekOfYear = Math.floor(daysSinceStart / 7) + 1;
-
-  console.log('Weekly check:', {
-    weekOfYear,
-    stringLength: user.weeklyChallenge.length,
-    value: user.weeklyChallenge.charAt(weekOfYear - 1),
-  });
-
-  return user.weeklyChallenge.charAt(weekOfYear - 1) === '1';
-}
-
-function hasCompletedMonthly(user: any): boolean {
-  if (!user || !user.monthlyChallenge) return false;
-
-  const now = new Date();
-  const month = now.getMonth(); // 0-based (0 = January)
-
-  console.log('Monthly check:', {
-    month,
-    stringLength: user.monthlyChallenge.length,
-    value: user.monthlyChallenge.charAt(month),
-  });
-
-  return user.monthlyChallenge.charAt(month) === '1';
-}
-
-function hasCompletedChallenge(user: any, challengeType: ChallengeType): boolean {
-  if (challengeType === 'daily') return hasCompletedDaily(user);
-  if (challengeType === 'weekly') return hasCompletedWeekly(user);
-  return hasCompletedMonthly(user);
-}
-
-// Mock data generator for development testing
-const createMockVideoBlob = (): Blob => {
-  // Create a simple mock video blob (1x1 pixel black video)
-  const canvas = document.createElement('canvas');
-  canvas.width = 640;
-  canvas.height = 480;
-  const ctx = canvas.getContext('2d');
-  if (ctx) {
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '48px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Mock Video', canvas.width / 2, canvas.height / 2);
-  }
-
-  return new Promise<Blob>((resolve) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) resolve(blob);
-        else resolve(new Blob(['mock video'], { type: 'video/mp4' }));
-      },
-      'image/jpeg',
-      0.8,
-    );
-  }) as any;
-};
-
-const createMockPhotoBlob = (): Blob => {
-  // Create a simple mock photo blob
-  const canvas = document.createElement('canvas');
-  canvas.width = 300;
-  canvas.height = 400;
-  const ctx = canvas.getContext('2d');
-  if (ctx) {
-    ctx.fillStyle = '#1a1a2e';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '24px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Mock Selfie', canvas.width / 2, canvas.height / 2);
-  }
-
-  return new Promise<Blob>((resolve) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) resolve(blob);
-        else resolve(new Blob(['mock photo'], { type: 'image/jpeg' }));
-      },
-      'image/jpeg',
-      0.8,
-    );
-  }) as any;
-};
 
 const HomeView = () => {
   const router = useRouter();
   const { currentLensAccount, loading } = useAuth();
-  const activeAccount = useActiveAccount();
   const [selectedTab, setSelectedTab] = useState<ChallengeType>('daily');
   const [followerCompletions, setFollowerCompletions] = useState<BasicCompletionType[]>([]);
   const [isFetchingCompletions, setIsFetchingCompletions] = useState(false);
@@ -156,30 +34,12 @@ const HomeView = () => {
 
   // Challenge state
   const [currentChallenge, setCurrentChallenge] = useState<AIChallenge | null>(null);
+  const [hasCompleted, setHasCompleted] = useState<boolean>(false);
   const [isLoadingChallenge, setIsLoadingChallenge] = useState(true);
 
   // Latest completion state
   const [latestCompletion, setLatestCompletion] = useState<any>(null);
   const [isLoadingLatestCompletion, setIsLoadingLatestCompletion] = useState(false);
-
-  // Development mode check
-  const isDevelopmentMode = process.env.NODE_ENV === 'development';
-
-  // Debug user completion strings
-  /*
-  useEffect(() => {
-    if (user) {
-      console.log('User completion data:', {
-        dailyChallenge: user.dailyChallenge,
-        weeklyChallenge: user.weeklyChallenge,
-        monthlyChallenge: user.monthlyChallenge,
-        dailyLength: user.dailyChallenge?.length,
-        weeklyLength: user.weeklyChallenge?.length,
-        monthlyLength: user.monthlyChallenge?.length,
-      });
-    }
-  }, [user]);
-*/
 
   // Fetch challenge from Dgraph when tab changes
   useEffect(() => {
@@ -189,7 +49,8 @@ const HomeView = () => {
 
       try {
         const challenge = await getCurrentChallenge(selectedTab);
-
+        const isCompleted = await isChallengeCompletedByUser(currentLensAccount?.address, challenge?.id || '')
+        setHasCompleted(isCompleted)
         if (challenge) {
           console.log(`✅ Loaded ${selectedTab} challenge:`, challenge.title);
           setCurrentChallenge(challenge);
@@ -206,7 +67,7 @@ const HomeView = () => {
     };
 
     loadChallenge();
-  }, [selectedTab]);
+  }, [currentLensAccount, selectedTab]);
 
   // Fetch latest completion when user changes or when completion status changes
   useEffect(() => {
@@ -229,14 +90,6 @@ const HomeView = () => {
 
     loadLatestCompletion();
   }, [currentLensAccount]);
-
-  // Check completion status using the user's completion flags
-  const hasCompleted = useMemo(() => {
-    if (!currentLensAccount) return false;
-    const completed = hasCompletedChallenge(currentLensAccount, selectedTab);
-    console.log(`${selectedTab} completion status:`, completed);
-    return completed;
-  }, [currentLensAccount, selectedTab]);
 
   // Calculate reward based on challenge data or fallback
   const reward = useMemo(() => {
@@ -409,86 +262,6 @@ const HomeView = () => {
     // Navigate to browsing page without specific challenge/user filters
     // This will show all completions across the app
     router.push('/browsing');
-  };
-
-  // Development function to test claiming screen
-  const handleTestClaiming = async () => {
-    if (!currentLensAccount || !currentChallenge) {
-      alert('Need user and challenge data to test claiming');
-      return;
-    }
-
-    try {
-      console.log('🧪 Testing claiming screen with mock data...');
-
-      // Create mock blobs
-      const mockVideoBlob = createMockVideoBlob();
-      const mockPhotoBlob = createMockPhotoBlob();
-
-      // Create mock verification result
-      const mockVerificationResult = {
-        passed: true,
-        overallConfidence: 0.95,
-        details: 'Mock verification completed successfully for testing',
-        steps: [
-          {
-            id: 'file-check',
-            name: 'File Validation',
-            status: 'completed',
-            progress: 100,
-            message: 'Mock files validated successfully',
-            confidence: 0.98,
-          },
-          {
-            id: 'face-match',
-            name: 'Face Matching',
-            status: 'completed',
-            progress: 100,
-            message: 'Mock face match completed',
-            confidence: 0.92,
-          },
-        ],
-        timestamp: new Date().toISOString(),
-      };
-
-      // Navigate to claiming screen with mock data
-      // You'll need to create a route for this or handle it in your existing routing
-      // For now, storing in sessionStorage to pass data
-      const claimingData = {
-        challenge: {
-          title: currentChallenge.title,
-          description: currentChallenge.description,
-          challengerName: 'AI Assistant',
-          challengerProfile: '/images/ai.png',
-          reward: reward,
-          color: 'nocenaPink',
-          type: 'AI' as const,
-          frequency: selectedTab,
-          challengeId: currentChallenge.id,
-          creatorId: 'ai-system',
-        },
-        videoBlob: await mockVideoBlob,
-        photoBlob: await mockPhotoBlob,
-        verificationResult: mockVerificationResult,
-        isDevelopmentMode: true,
-      };
-
-      // Store in sessionStorage for the claiming screen to pick up
-      sessionStorage.setItem(
-        'dev-claiming-data',
-        JSON.stringify({
-          ...claimingData,
-          // Note: Can't store blobs in sessionStorage, so we'll recreate them
-          mockBlobsNeeded: true,
-        }),
-      );
-
-      // Navigate to claiming test route
-      router.push('/test-claiming');
-    } catch (error) {
-      console.error('Error setting up claiming test:', error);
-      alert('Failed to set up claiming test. Check console for details.');
-    }
   };
 
   // Show loading state while auth is being checked
