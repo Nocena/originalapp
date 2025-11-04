@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePermissions } from '../../../hooks/usePermissions';
-import {
-  Settings,
-  Camera,
-  Mic,
-  Bell,
-  RefreshCw,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-} from 'lucide-react';
+import { AlertTriangle, Bell, Camera, CheckCircle, Mic, RefreshCw, Settings, XCircle } from 'lucide-react';
+import { usePermissionGuideModalStore } from '../../../store/non-persisted/usePermissionGuideModalStore';
+import { hasDeniedPermission } from '@utils/permissionManager';
 
 interface NotificationState {
   permission: NotificationPermission;
@@ -46,7 +39,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
     hasEssentialPermissions,
     clearError,
   } = usePermissions();
-
+  const {
+    setShowGuideModal,
+  } = usePermissionGuideModalStore()
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isRequesting, setIsRequesting] = useState<{
     camera: boolean;
@@ -72,7 +67,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
   ) => {
     setIsRequesting((prev) => ({ ...prev, [permission]: true }));
     try {
-      await requestFn();
+      const result = await requestFn();
+      if (hasDeniedPermission(result, permission)) {
+        setShowGuideModal(true);
+      }
     } catch (error) {
       console.error(`Failed to request ${permission} permission:`, error);
     } finally {
@@ -518,6 +516,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
           </div>
         </div>
       )}
+
     </div>
   );
 };

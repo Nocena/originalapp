@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ThematicContainer from '../../../components/ui/ThematicContainer';
+import { usePermissionGuideModalStore } from '../../../store/non-persisted/usePermissionGuideModalStore';
 
 interface Challenge {
   title: string;
@@ -29,6 +30,9 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({
   onVideoRecorded,
   onBack,
 }) => {
+  const {
+    setShowGuideModal,
+  } = usePermissionGuideModalStore()
   const [stage, setStage] = useState<RecordingStage>('ready');
   const [countdown, setCountdown] = useState(3);
   const [recordingTime, setRecordingTime] = useState(30);
@@ -95,6 +99,10 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({
 
         return true;
       } catch (cameraError: any) {
+        console.log("cameraError", cameraError)
+        if (cameraError?.toString().includes('denied')) {
+          setShowGuideModal(true)
+        }
         console.log('Camera-first approach failed, trying combined request:', cameraError);
 
         // Fallback to combined request
