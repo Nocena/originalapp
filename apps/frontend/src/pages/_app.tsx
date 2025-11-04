@@ -22,6 +22,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import apolloClient from '@nocena/indexer/apollo/client';
 import authLink from '../helpers/authLink';
 import { ApolloProvider } from '@apollo/client';
+import { PermissionGuideModal } from '@components/layout/PermissionGuideModal';
+import { usePermissionGuideModalStore } from '../store/non-persisted/usePermissionGuideModalStore';
 
 export const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
@@ -316,6 +318,11 @@ function MyAppContent({ Component, pageProps }: AppProps) {
 }
 
 function MyApp(props: AppProps) {
+  const {
+    showGuideModal,
+    setShowGuideModal,
+  } = usePermissionGuideModalStore()
+
   return (
     <QueryClientProvider client={queryClient}>
       <ApolloProvider client={lensApolloClient}>
@@ -332,6 +339,14 @@ function MyApp(props: AppProps) {
                     color: '#fff',
                     border: '1px solid #374151',
                   },
+                }}
+              />
+              <PermissionGuideModal
+                isOpen={showGuideModal}
+                onClose={() => setShowGuideModal(false)}
+                onRetry={() => {
+                  // setPermissionStatus('idle');
+                  // requestPermissions();
                 }}
               />
             </BackgroundTaskProvider>

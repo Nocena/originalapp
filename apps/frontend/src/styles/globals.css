@@ -212,3 +212,30 @@ body {
     background-color: inherit;
   }
 }
+
+/* Custom Scrollbar Styles - Global (Thin) */
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px; /* Thin width for the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #1F2937; /* Dark gray background for the track (gray-800) */
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6024FB; /* Nocena Purple for the thumb */
+  border-radius: 6px;
+  border: 1px solid #1F2937; /* Thin border color matching the track */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF15C9; /* Nocena Pink on hover */
+}
+
+/* For Firefox (limited customization) */
+html {
+  scrollbar-width: thin; /* Thin scrollbar */
+  scrollbar-color: #6024FB #1F2937; /* thumb color track color */
+}

@@ -497,3 +497,13 @@ export class PWAPermissionManager {
     await this.checkAllPermissions();
   }
 }
+
+export function hasDeniedPermission(
+  result: Record<string, string>,
+  permission: 'camera' | 'microphone' | 'notifications' | 'all'
+): boolean {
+  if (permission === 'all') {
+    return Object.values(result).some((status) => status === 'denied');
+  }
+  return result[permission] === 'denied';
+}
