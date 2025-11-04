@@ -12,6 +12,7 @@ interface MapControlsProps {
   onZoomOut: () => void;
   onGenerateChallenges: () => Promise<void>;
   userLocation?: LocationData | null;
+  buttonEnabled?: boolean;
 }
 
 const MapControls: React.FC<MapControlsProps> = ({
@@ -22,6 +23,7 @@ const MapControls: React.FC<MapControlsProps> = ({
   onZoomOut,
   onGenerateChallenges,
   userLocation,
+  buttonEnabled = false,
 }) => {
   const router = useRouter();
   const [isGenerating, setIsGenerating] = useState(false);
@@ -163,19 +165,21 @@ const MapControls: React.FC<MapControlsProps> = ({
       {/* AI Challenge Generation Button */}
       <button
         onClick={handleGenerateChallenges}
-        disabled={isGenerating || !userLocation}
+        disabled={isGenerating || !userLocation || !buttonEnabled}
         className={`w-14 h-14 rounded-full ${
-          userLocation && !isGenerating
+          userLocation && !isGenerating && buttonEnabled
             ? 'bg-gradient-to-r from-purple-500 to-blue-500'
             : 'bg-gray-500'
         } text-white flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
         aria-label="Generate AI challenges"
         title={
-          userLocation
-            ? isGenerating
-              ? 'Generating...'
-              : 'Generate challenges nearby'
-            : 'Location access required'
+          !userLocation
+            ? 'Location access required'
+            : !buttonEnabled
+            ? 'Waiting for weekly event'
+            : isGenerating
+            ? 'Generating...'
+            : 'Generate challenges nearby'
         }
         style={{
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',

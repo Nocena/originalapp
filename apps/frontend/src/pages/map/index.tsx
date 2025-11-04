@@ -59,6 +59,7 @@ const MapView = () => {
   const [userLocation, setUserLocation] = useState<LocationData | null>(null);
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
   const [initialLocationSet, setInitialLocationSet] = useState(false);
+  const [buttonEnabled, setButtonEnabled] = useState(false); // Disabled by default
 
   const handleZoomIn = () => {
     if (!mapInstanceRef.current) return;
@@ -214,73 +215,7 @@ const MapView = () => {
           console.log('Map loaded successfully');
           mapInstanceRef.current = map;
           setMapLoaded(true);
-
-          try {
-            // Load cached challenges if available and fresh (< 1 hour)
-            const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
-            const cached = localStorage.getItem(cacheKey);
-
-            if (cached) {
-              const { challenges: cachedChallenges, timestamp } = JSON.parse(cached);
-              if (Date.now() - timestamp < 3600000) {
-                console.log('📦 Using cached challenges');
-
-                // Filter out user's completed challenges from cache
-                try {
-                  const userCompletedIds = await getUserCompletedChallengeIds(
-                    currentLensAccount?.address
-                  );
-                  const visibleChallenges = cachedChallenges.filter(
-                    (c: any) => !userCompletedIds.includes(c.id)
-                  );
-
-                  console.log('🔍 Debug:', {
-                    totalCached: cachedChallenges.length,
-                    userCompletedIds,
-                    visibleAfterFilter: visibleChallenges.length,
-                    needToGenerate: 5 - visibleChallenges.length,
-                  });
-
-                  if (visibleChallenges.length < 10) {
-                    const needed = 10 - visibleChallenges.length;
-                    console.log(
-                      `🎯 User has ${visibleChallenges.length}/10 cached challenges, generating ${needed} replacements...`
-                    );
-
-                    const replacements: ChallengeData[] = [];
-                    for (let i = 0; i < needed; i++) {
-                      const replacement = await generateSingleReplacement(
-                        userLocation.latitude,
-                        userLocation.longitude,
-                        [...visibleChallenges, ...replacements] // Avoid existing + already generated
-                      );
-                      if (replacement) {
-                        replacements.push(replacement);
-                      }
-                    }
-
-                    setChallenges([...visibleChallenges, ...replacements]);
-                  } else {
-                    setChallenges(visibleChallenges);
-                  }
-                } catch (error) {
-                  console.error('❌ Error filtering cached challenges:', error);
-                  setChallenges(cachedChallenges);
-                }
-
-                setLocatingUser(false);
-                return;
-              }
-            }
-
-            // Fallback to database challenges
-            const nearbyChallenge = await fetchNearbyChallenge(userLocation);
-            setChallenges(nearbyChallenge);
-          } catch (error) {
-            console.error('Error fetching challenges:', error);
-          } finally {
-            setLocatingUser(false);
-          }
+          setLocatingUser(false);
         });
 
         map.on('error', (e) => {
@@ -328,55 +263,13 @@ const MapView = () => {
     }
   };
 
-  // Auto-generate challenges when none exist
+  // Initialize empty challenges - only generated via button
   useEffect(() => {
-    const autoGenerateIfNeeded = async () => {
-      if (!userLocation || !mapLoaded) return;
-
-      try {
-        // Get user's completed challenge IDs to filter them out
-        const userCompletedIds = await getUserCompletedChallengeIds(currentLensAccount?.address);
-
-        // Filter out completed challenges from current challenges
-        const visibleChallenges = challenges.filter((c) => !userCompletedIds.includes(c.id));
-
-        if (visibleChallenges.length < 10) {
-          const needed = 10 - visibleChallenges.length;
-          console.log(
-            `🎯 User has ${visibleChallenges.length}/10 challenges, generating ${needed} more...`
-          );
-
-          const newChallenges = await generateRandomChallenges(
-            userLocation.latitude,
-            userLocation.longitude,
-            needed
-          );
-
-          // Combine visible existing + new challenges
-          const allChallenges = [...visibleChallenges, ...newChallenges];
-          setChallenges(allChallenges);
-
-          // Update cache with all challenges (including completed ones for other users)
-          const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
-          localStorage.setItem(
-            cacheKey,
-            JSON.stringify({
-              challenges: [...challenges, ...newChallenges], // Keep all challenges in cache
-              timestamp: Date.now(),
-              location: userLocation,
-            })
-          );
-        } else {
-          // User has enough visible challenges, just update display
-          setChallenges(visibleChallenges);
-        }
-      } catch (error) {
-        console.error('❌ Auto-generation failed:', error);
-      }
-    };
-
-    autoGenerateIfNeeded();
-  }, [userLocation, mapLoaded, challenges.length, currentLensAccount?.address]);
+    if (!userLocation || !mapLoaded) return;
+    
+    // Ensure locatingUser is false when map is ready
+    setLocatingUser(false);
+  }, [userLocation, mapLoaded]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
@@ -551,6 +444,7 @@ const MapView = () => {
         onZoomOut={handleZoomOut}
         onGenerateChallenges={handleGenerateChallenges}
         userLocation={userLocation}
+        buttonEnabled={buttonEnabled}
       />
 
       <LoadingOverlay mapLoaded={mapLoaded} locatingUser={locatingUser} loadError={loadError} />
