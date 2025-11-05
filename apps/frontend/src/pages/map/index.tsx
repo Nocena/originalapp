@@ -481,6 +481,19 @@ const MapView = () => {
         buttonEnabled={buttonEnabled}
       />
 
+      {/* Challenge Generation Prompt */}
+      {buttonEnabled && challenges.length === 0 && (
+        <div className="absolute right-24 z-[200]" style={{ bottom: '168px' }}>
+          <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg shadow-lg animate-pulse">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Generate your 10 public challenges!</span>
+            </div>
+          </div>
+          {/* Arrow pointing right towards AI generation button */}
+          <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 w-0 h-0 border-t-8 border-b-8 border-l-8 border-t-transparent border-b-transparent border-l-purple-500"></div>
+        </div>
+      )}
+
       <LoadingOverlay mapLoaded={mapLoaded} locatingUser={locatingUser} loadError={loadError} />
     </div>
   );
