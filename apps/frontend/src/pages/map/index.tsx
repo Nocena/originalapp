@@ -15,6 +15,7 @@ import { fetchNearbyChallenge } from '../../lib/graphql';
 import { fetchUserCompletionsByFilters } from '../../lib/graphql';
 import { ChallengeData } from '../../lib/graphql/features/challenge/types';
 import { LocationData } from '../../lib/types';
+import toast from 'react-hot-toast';
 
 // Helper function to get user's completed PUBLIC challenge IDs
 async function getUserCompletedChallengeIds(userAddress?: string): Promise<string[]> {
@@ -81,41 +82,38 @@ const MapView = () => {
 
   // Handle AI challenge generation
   const handleGenerateChallenges = async () => {
-    if (!userLocation) {
-      throw new Error('User location is required');
+    if (!userLocation || !currentLensAccount?.address) {
+      throw new Error('User location and account required');
     }
 
-    console.log('🎯 Generating AI challenges at:', userLocation);
+    if (!buttonEnabled) {
+      throw new Error('Weekly challenge generation is not available yet');
+    }
+
+    console.log('🎯 Generating weekly challenges at:', userLocation);
+    console.log('🎯 User address:', currentLensAccount.address);
 
     try {
+      // Generate challenges with user as creator
       const newChallenges = await generateRandomChallenges(
         userLocation.latitude,
         userLocation.longitude,
-        10
+        10,
+        currentLensAccount.address // Pass user address as creator
       );
 
-      console.log(`✅ Generated ${newChallenges.length} challenges`);
+      console.log(`✅ Generated ${newChallenges.length} weekly challenges`);
+      console.log('🔍 Sample challenge:', newChallenges[0]);
 
       setChallenges(newChallenges);
-
-      // Cache challenges for persistence
-      const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
-      localStorage.setItem(
-        cacheKey,
-        JSON.stringify({
-          challenges: newChallenges,
-          timestamp: Date.now(),
-          location: userLocation,
-        })
-      );
-
+      setButtonEnabled(false); // Disable button after use
       setSelectedPin(null);
 
       setTimeout(() => {
-        alert(`Generated ${newChallenges.length} new AI challenges nearby! 🎉`);
+        toast.success(`Generated ${newChallenges.length} new weekly challenges! 🎉`);
       }, 100);
     } catch (error) {
-      console.error('❌ Error generating challenges:', error);
+      console.error('❌ Error generating weekly challenges:', error);
       throw error;
     }
   };
@@ -263,24 +261,41 @@ const MapView = () => {
     }
   };
 
-  // Check button state on page load
+  // Check button state and load existing challenges on page load
   useEffect(() => {
-    const checkButtonState = async () => {
+    const initializeWeeklyChallenges = async () => {
+      if (!currentLensAccount?.address) return;
+
       try {
-        const response = await fetch('/api/map/button-state');
-        const buttonState = await response.json();
+        // Load existing user challenges first
+        const challengesResponse = await fetch(`/api/map/user-challenges?userAddress=${currentLensAccount.address}`);
+        const challengeData = await challengesResponse.json();
         
-        if (buttonState.enabled) {
-          console.log('🔘 Weekly event detected, enabling challenge button');
-          setButtonEnabled(true);
+        if (challengeData.hasGenerated) {
+          // User already generated challenges this week - load them and disable button
+          console.log('📦 Loading existing weekly challenges');
+          setChallenges(challengeData.challenges);
+          setButtonEnabled(false);
+        } else {
+          // User hasn't generated yet - check if weekly event allows it
+          const buttonResponse = await fetch('/api/map/button-state');
+          const buttonState = await buttonResponse.json();
+          
+          if (buttonState.enabled) {
+            console.log('🔘 Weekly event detected, enabling challenge button');
+            setButtonEnabled(true);
+          } else {
+            console.log('⏳ No weekly event yet, button remains disabled');
+            setButtonEnabled(false);
+          }
         }
       } catch (error) {
-        console.error('Error checking button state:', error);
+        console.error('Error initializing weekly challenges:', error);
       }
     };
 
-    checkButtonState();
-  }, []);
+    initializeWeeklyChallenges();
+  }, [currentLensAccount?.address]);
 
   // Initialize empty challenges - only generated via button
   useEffect(() => {
