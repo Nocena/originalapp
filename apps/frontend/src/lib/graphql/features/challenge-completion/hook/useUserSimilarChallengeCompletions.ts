@@ -42,7 +42,7 @@ export const useUserSimilarChallengeCompletions = (
         loadingRef.current = false;
       }
     },
-    [userLensAccountId, limit, offset]
+    [userLensAccountId, challengeIds, limit, offset]
   );
 
   const loadMore = useCallback(() => {
@@ -53,7 +53,7 @@ export const useUserSimilarChallengeCompletions = (
 
   useEffect(() => {
     fetchCompletions(offset > 0);
-  }, [offset, fetchCompletions]);
+  }, [offset, fetchCompletions, challengeIds]);
 
   const refetch = useCallback(() => {
     setOffset(0);

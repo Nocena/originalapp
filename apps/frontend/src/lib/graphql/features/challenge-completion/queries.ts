@@ -94,61 +94,61 @@ export const USER_CHALLENGE_COMPLETIONS = gql`
 `;
 
 export const USER_SIMILAR_CHALLENGE_COMPLETIONS = gql`
-  query GetUserChallengeCompletions(
-    $userLensAccountId: String!
-    $challengeIds: [String!]!
-    $limit: Int
-    $offset: Int
-  ) {
-    queryChallengeCompletion(
-      filter: {
-        and: [
-          { userLensAccountId: { eq: $userLensAccountId } }
-          {
-            or: [
-              { privateChallengeId: { in: $challengeIds } }
-              { publicChallengeId: { in: $challengeIds } }
-              { aiChallengeId: { in: $challengeIds } }
-            ]
-          }
-        ]
-      }
-      order: { desc: completionDate }
-      first: $limit
-      offset: $offset
+    query GetUserSimilarChallengeCompletions(
+        $userLensAccountId: String!
+        $challengeIds: [String!]!
+        $limit: Int
+        $offset: Int
     ) {
-      id
-      userLensAccountId
-      completionDate
-      likedByLensAccountIds
-      likesCount
-      challengeType
-      status
-      media
-      privateChallengeId
-      publicChallengeId
-      aiChallengeId
-      aiChallenge {
-        id
-        title
-        description
-        frequency
-        reward
-      }
-      privateChallenge {
-        id
-        title
-        description
-        reward
-      }
-      publicChallenge {
-        id
-        title
-        description
-        reward
-      }
+        queryChallengeCompletion(
+            filter: {
+                and: [
+                    { userLensAccountId: { notIn: [$userLensAccountId] } }
+                    {
+                        or: [
+                            { privateChallengeId: { in: $challengeIds } }
+                            { publicChallengeId: { in: $challengeIds } }
+                            { aiChallengeId: { in: $challengeIds } }
+                        ]
+                    }
+                ]
+            }
+            order: { desc: completionDate }
+            first: $limit
+            offset: $offset
+        ) {
+            id
+            userLensAccountId
+            completionDate
+            likedByLensAccountIds
+            likesCount
+            challengeType
+            status
+            media
+            privateChallengeId
+            publicChallengeId
+            aiChallengeId
+            aiChallenge {
+                id
+                title
+                description
+                frequency
+                reward
+            }
+            privateChallenge {
+                id
+                title
+                description
+                reward
+            }
+            publicChallenge {
+                id
+                title
+                description
+                reward
+            }
+        }
     }
-  }
 `;
 
 export const FETCH_LATEST_USER_COMPLETION = gql`
