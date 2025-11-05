@@ -8,6 +8,7 @@ import {
   FETCH_LATEST_USER_COMPLETION,
   FETCH_USER_COMPLETIONS_BY_FILTERS,
   GET_COMPLETION_FOR_LIKES,
+  GET_USERS_WITH_COMPLETIONS,
   USER_CHALLENGE_COMPLETIONS,
   USER_SIMILAR_CHALLENGE_COMPLETIONS,
 } from './queries';
@@ -344,3 +345,33 @@ export const toggleCompletionLike = async (
     throw error;
   }
 };
+
+/**
+ * Fetch Lens account IDs that have completed at least one challenge.
+ *
+ * @param userLensAccountIds - Array of Lens account IDs to check.
+ * @returns Promise<string[]> Unique userLensAccountIds with completions.
+ */
+export async function getUsersWithCompletions(
+  userLensAccountIds: string[]
+): Promise<string[]> {
+  if (!userLensAccountIds?.length) return [];
+
+  try {
+    const { data } = await graphqlClient.query({
+      query: GET_USERS_WITH_COMPLETIONS,
+      variables: { userLensAccountIds },
+      fetchPolicy: 'no-cache',
+    });
+
+    const completions = data?.queryChallengeCompletion ?? [];
+
+    // Deduplicate userLensAccountIds
+    return Array.from(
+      new Set(completions.map((c: any) => c.userLensAccountId))
+    );
+  } catch (error) {
+    console.error('❌ Error fetching users with completions:', error);
+    throw error;
+  }
+}

@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-  useUserChallengeCompletions,
-  useUserSimilarChallengeCompletions,
-} from '../../../../lib/graphql/features/challenge-completion/hook';
+import { useUserSimilarChallengeCompletions } from '../../../../lib/graphql/features/challenge-completion/hook/useUserSimilarChallengeCompletions';
 import { ChallengeCompletion } from '../../../../lib/graphql/features/challenge-completion/types';
 import { SkeletonSlide } from './SkeletonSlide';
 import { Trophy } from 'lucide-react';
