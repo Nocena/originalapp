@@ -445,6 +445,17 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
           }, 2000);
           return;
         }
+        // Check for already completed challenge
+        if (result.message?.includes('SignatureAlreadyUsed')) {
+          toast.success('Challenge already completed! Tokens were previously claimed.', {
+            position: 'top-center',
+          });
+          setTimeout(() => {
+            router.push('/home');
+          }, 2000);
+          return;
+        }
+        
         throw new Error(result.message);
       }
     } catch (error) {

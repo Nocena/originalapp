@@ -19,6 +19,19 @@ const GET_USER_WEEKLY_CHALLENGES = gql`
   }
 `;
 
+const GET_USER_COMPLETIONS = gql`
+  query GetUserCompletions($userAddress: String!) {
+    queryChallengeCompletion(
+      filter: {
+        userLensAccountId: { eq: $userAddress }
+        challengeType: { eq: "public" }
+      }
+    ) {
+      publicChallengeId
+    }
+  }
+`;
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -38,18 +51,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     monday.setUTCHours(0, 0, 0, 0);
     const weekId = monday.toISOString().split('T')[0];
 
-    // Query user's challenges
-    const { data } = await graphqlClient.query({
-      query: GET_USER_WEEKLY_CHALLENGES,
-      variables: { creatorId: userAddress },
-      fetchPolicy: 'network-only'
-    });
+    // Query user's challenges and completions in parallel
+    const [challengesResult, completionsResult] = await Promise.all([
+      graphqlClient.query({
+        query: GET_USER_WEEKLY_CHALLENGES,
+        variables: { creatorId: userAddress },
+        fetchPolicy: 'network-only'
+      }),
+      graphqlClient.query({
+        query: GET_USER_COMPLETIONS,
+        variables: { userAddress },
+        fetchPolicy: 'network-only'
+      })
+    ]);
 
-    const allChallenges = data?.queryPublicChallenge || [];
+    const allChallenges = challengesResult.data?.queryPublicChallenge || [];
+    const completions = completionsResult.data?.queryChallengeCompletion || [];
     
-    // Filter challenges by current week
+    // Get completed challenge IDs
+    const completedChallengeIds = new Set(
+      completions.map((c: any) => c.publicChallengeId).filter(Boolean)
+    );
+    
+    // Filter challenges by current week and exclude completed ones
     const weekChallenges = allChallenges.filter((c: any) => 
-      c.description && c.description.includes(`|week:${weekId}`)
+      c.description && 
+      c.description.includes(`|week:${weekId}`) &&
+      !completedChallengeIds.has(c.id)
     );
 
     return res.status(200).json({ 
@@ -66,7 +94,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         maxParticipants: 1,
         recentCompletions: []
       })), 
-      hasGenerated: weekChallenges.length > 0
+      hasGenerated: allChallenges.some((c: any) => 
+        c.description && c.description.includes(`|week:${weekId}`)
+      )
     });
   } catch (error) {
     console.error('Error loading user challenges:', error);
