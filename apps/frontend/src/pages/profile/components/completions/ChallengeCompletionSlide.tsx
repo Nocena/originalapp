@@ -18,16 +18,20 @@ export const ChallengeCompletionSlide: React.FC<ChallengeSlideProps> = ({
   const challenge =
     completion.publicChallenge || completion.privateChallenge || completion.aiChallenge;
 
+  console.log("challenge", completion, challenge)
+
   return (
     <div className="group cursor-pointer bg-gray-800 rounded-lg overflow-hidden">
       {/* Challenge Image - Top Section */}
       <div className="relative aspect-video rounded-t-lg overflow-hidden">
         <img
           src={completion.previewUrl || '/images/cover.jpg'}
-          alt={''}
+          alt=""
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = '/images/cover.jpg';
+          }}
         />
-
         <PlayButton />
         <HoverOverlay onClick={onClick} />
       </div>

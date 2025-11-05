@@ -9,6 +9,7 @@ import { NavigationButtons } from '@pages/profile/components/completions/Navigat
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { getCompletionsWithChallenge } from '../../../../lib/graphql/features/challenge-completion/utils';
 
 interface CompletedChallengesSwiperProps {
   completions: ChallengeCompletion[];
@@ -41,7 +42,7 @@ export const CompletedChallengesSwiper: React.FC<CompletedChallengesSwiperProps>
         }}
         className="completed-challenges-swiper"
       >
-        {completions.map((completion) => (
+        {getCompletionsWithChallenge(completions).map((completion) => (
           <SwiperSlide key={completion.id}>
             <ChallengeCompletionSlide
               completion={completion}
