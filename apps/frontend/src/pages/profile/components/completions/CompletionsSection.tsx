@@ -12,11 +12,12 @@ const CompletionsSection: React.FC<CompletionsSectionProps> = ({ userID = 'curre
   const completedChallengeIds = useMemo(() => {
     return completions.map(
       (completion) =>
-        completion.aiChallenge?.id ||
-        completion.privateChallenge?.id ||
-        completion.publicChallenge?.id
+        completion.aiChallengeId ||
+        completion.privateChallengeId ||
+        completion.publicChallengeId || ''
     );
   }, [completions, loading]);
+  console.log("completions completedChallengeIds", completions, completedChallengeIds)
   return (
     <>
       <CompletedChallengePart userID={userID} completions={completions} loading={loading} />

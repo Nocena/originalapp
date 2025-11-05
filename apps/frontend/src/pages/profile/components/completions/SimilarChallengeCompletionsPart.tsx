@@ -20,6 +20,7 @@ const SimilarChallengeCompletionsPart: React.FC<SimilarChallengeCompletionsPartP
   const { currentLensAccount } = useAuth();
   const router = useRouter();
   const { completions, loading } = useUserSimilarChallengeCompletions(userID, challengeIds);
+  console.log("similar challenge completions", completions)
   const handleChallengeClick = (completion: ChallengeCompletion) => {
     router.push({
       pathname: '/browsing',
