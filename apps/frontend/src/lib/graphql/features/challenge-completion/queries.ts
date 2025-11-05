@@ -447,3 +447,13 @@ export const CHECK_CHALLENGE_COMPLETION = gql`
         }
     }
 `;
+
+export const GET_USERS_WITH_COMPLETIONS = gql`
+    query GetUsersWithCompletions($userLensAccountIds: [String!]!) {
+        queryChallengeCompletion(
+            filter: { userLensAccountId: { in: $userLensAccountIds } }
+        ) {
+            userLensAccountId
+        }
+    }
+`;

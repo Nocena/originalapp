@@ -6,13 +6,14 @@ import { signIn } from '../../store/persisted/useAuthStore';
 import { IS_MAINNET, NOCENA_APP } from '@nocena/data/constants';
 import { Errors } from '@nocena/data/errors';
 import {
+  AccountFragment,
   type ChallengeRequest,
   useAccountsAvailableQuery,
   useAuthenticateMutation,
   useChallengeMutation,
 } from '@nocena/indexer';
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useActiveAccount } from 'thirdweb/react';
 import { signMessage } from 'thirdweb/utils';
@@ -20,6 +21,9 @@ import SingleAccount from '../Account/SingleAccount';
 import { Loader } from '@components/ui';
 import AuthMessage from '@components/auth/AuthMessage';
 import AccountNotFound from '@components/auth/AccountNotFound';
+import {
+  useAvailableNocenaLensAccounts
+} from '../../lib/graphql/features/challenge-completion/hook/useAvailableNocenaLensAccounts';
 
 const Login = () => {
   const [hasAccounts, setHasAccounts] = useState(true);
@@ -52,14 +56,19 @@ const Login = () => {
 
   const allAccounts = data?.accountsAvailable.items || [];
   const lastLogin = data?.lastLoggedInAccount;
-
   const remainingAccounts = lastLogin
     ? allAccounts
         .filter(({ account }) => account.address !== lastLogin.address)
         .map(({ account }) => account)
     : allAccounts.map(({ account }) => account);
 
-  const accounts = lastLogin ? [lastLogin, ...remainingAccounts] : remainingAccounts;
+  const accounts = useMemo(() => {
+    if (lastLogin) return [lastLogin, ...remainingAccounts];
+    return remainingAccounts;
+  }, [lastLogin, remainingAccounts]);
+
+  const {availableNocenaLensAccounts, loading: availableFiltering} = useAvailableNocenaLensAccounts(accounts)
+
   const handleSign = async (account: string) => {
     if (!thirdWebAccount) return;
 
@@ -118,11 +127,11 @@ const Login = () => {
             error={errorChallenge || errorAuthenticate}
           />
         ) : null}
-        {loading ? (
+        {loading || availableFiltering ? (
           <Card className="w-full dark:divide-gray-700" forceRounded>
             <Loader className="my-4" message="Loading accounts managed by you..." small />
           </Card>
-        ) : accounts.length > 0 ? (
+        ) : availableNocenaLensAccounts.length > 0 ? (
           <AnimatePresence mode="popLayout">
             <motion.div
               initial="hidden"
@@ -144,7 +153,7 @@ const Login = () => {
                   description="Nocena uses this signature to verify that you're the owner of this address."
                   title="Please sign the message."
                 />
-                {accounts.map((account, index) => (
+                {availableNocenaLensAccounts.map((account, index) => (
                   <motion.div
                     key={account.address}
                     variants={{
