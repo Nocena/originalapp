@@ -480,9 +480,17 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 export async function generateRandomChallenges(
   userLat: number,
   userLng: number,
-  count: number = 10
+  count: number = 10,
+  creatorAddress: string = 'system'
 ): Promise<ChallengeData[]> {
   try {
+    // Get current week ID for metadata
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setUTCDate(now.getUTCDate() - (now.getUTCDay() + 6) % 7);
+    monday.setUTCHours(0, 0, 0, 0);
+    const weekId = monday.toISOString().split('T')[0];
+
     const query = buildOverpassQuery(userLat, userLng);
 
     console.log('🔍 Querying Overpass API...');
@@ -493,7 +501,7 @@ export async function generateRandomChallenges(
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {
@@ -563,13 +571,13 @@ export async function generateRandomChallenges(
 
       try {
         const challengeId = await createPublicChallenge(
-          'system', // System-generated challenges
+          creatorAddress, // Use provided creator
           aiChallenge.title,
-          aiChallenge.description,
+          `${aiChallenge.description}|week:${weekId}`, // Add week metadata
           aiChallenge.reward,
           element.lat,
           element.lon,
-          50 // maxParticipants
+          1 // maxParticipants = 1 for user-specific challenges
         );
 
         const challenge: ChallengeData = {
@@ -765,7 +773,7 @@ export async function generateSingleReplacement(
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {

@@ -176,45 +176,70 @@ export async function completeChallengeWorkflow(
           let completionId = 'mock-completion-id';
 
           if (challenge.challengeId) {
-            // Check if this is dev mode (mock blobs)
+            // Check if this is dev mode (mock blobs) - but always record PUBLIC challenges
             const isDevMode = video.size <= 20 && photo.size <= 20; // Mock blobs are tiny
 
-            if (isDevMode) {
+            if (isDevMode && challenge.type !== 'PUBLIC') {
               console.log('🧪 Dev mode detected - skipping database record');
               completionId = `dev-${Date.now()}`;
             } else {
-              try {
-                console.log('📁 Uploading blobs to IPFS...');
-                const videoCID = await uploadBlob(video, 'video');
-                const selfieCID = await uploadBlob(photo, 'photo');
-                const snapshotBlob = await getVideoSnapshot(video, 0); // first frame
-                const previewCID = await uploadBlob(snapshotBlob, 'photo');
-
+              if (isDevMode && challenge.type === 'PUBLIC') {
+                console.log('🧪 Dev mode - creating mock completion record for PUBLIC challenge');
                 const timestamp = Date.now();
-                console.log('💾 Creating completion record...');
                 completionId = await createChallengeCompletion(
                   userId,
-                  challenge.type.toLowerCase() as 'private' | 'public' | 'ai',
+                  'public',
                   JSON.stringify({
-                    videoCID,
-                    selfieCID,
-                    previewCID,
+                    videoCID: 'mock-video-cid',
+                    selfieCID: 'mock-selfie-cid',
+                    previewCID: 'mock-preview-cid',
                     timestamp,
                     description,
                     verificationResult,
+                    isMockData: true,
                     hasVideo: true,
                     hasSelfie: true,
                     hasPreview: true,
-                    videoFileName: `challenge_video_${userId}_${timestamp}.webm`,
-                    selfieFileName: `challenge_selfie_${userId}_${timestamp}.jpg`,
+                    videoFileName: `mock_challenge_video_${userId}_${timestamp}.webm`,
+                    selfieFileName: `mock_challenge_selfie_${userId}_${timestamp}.jpg`,
                   }),
                   challenge.challengeId
                 );
-                console.log('✅ Completion record created');
-              } catch (error) {
-                console.error('❌ Completion record failed:', error);
-                // Don't fail - tokens already minted
-                completionId = `fallback-${Date.now()}`;
+                console.log('✅ Mock completion record created');
+              } else {
+                try {
+                  console.log('📁 Uploading blobs to IPFS...');
+                  const videoCID = await uploadBlob(video, 'video');
+                  const selfieCID = await uploadBlob(photo, 'photo');
+                  const snapshotBlob = await getVideoSnapshot(video, 0); // first frame
+                  const previewCID = await uploadBlob(snapshotBlob, 'photo');
+
+                  const timestamp = Date.now();
+                  console.log('💾 Creating completion record...');
+                  completionId = await createChallengeCompletion(
+                    userId,
+                    challenge.type.toLowerCase() as 'private' | 'public' | 'ai',
+                    JSON.stringify({
+                      videoCID,
+                      selfieCID,
+                      previewCID,
+                      timestamp,
+                      description,
+                      verificationResult,
+                      hasVideo: true,
+                      hasSelfie: true,
+                      hasPreview: true,
+                      videoFileName: `challenge_video_${userId}_${timestamp}.webm`,
+                      selfieFileName: `challenge_selfie_${userId}_${timestamp}.jpg`,
+                    }),
+                    challenge.challengeId
+                  );
+                  console.log('✅ Completion record created');
+                } catch (error) {
+                  console.error('❌ Completion record failed:', error);
+                  // Don't fail - tokens already minted
+                  completionId = `fallback-${Date.now()}`;
+                }
               }
             }
           }

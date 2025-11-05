@@ -15,6 +15,7 @@ import { fetchNearbyChallenge } from '../../lib/graphql';
 import { fetchUserCompletionsByFilters } from '../../lib/graphql';
 import { ChallengeData } from '../../lib/graphql/features/challenge/types';
 import { LocationData } from '../../lib/types';
+import toast from 'react-hot-toast';
 
 // Helper function to get user's completed PUBLIC challenge IDs
 async function getUserCompletedChallengeIds(userAddress?: string): Promise<string[]> {
@@ -59,6 +60,7 @@ const MapView = () => {
   const [userLocation, setUserLocation] = useState<LocationData | null>(null);
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
   const [initialLocationSet, setInitialLocationSet] = useState(false);
+  const [buttonEnabled, setButtonEnabled] = useState(false); // Disabled by default
 
   const handleZoomIn = () => {
     if (!mapInstanceRef.current) return;
@@ -80,41 +82,38 @@ const MapView = () => {
 
   // Handle AI challenge generation
   const handleGenerateChallenges = async () => {
-    if (!userLocation) {
-      throw new Error('User location is required');
+    if (!userLocation || !currentLensAccount?.address) {
+      throw new Error('User location and account required');
     }
 
-    console.log('🎯 Generating AI challenges at:', userLocation);
+    if (!buttonEnabled) {
+      throw new Error('Weekly challenge generation is not available yet');
+    }
+
+    console.log('🎯 Generating weekly challenges at:', userLocation);
+    console.log('🎯 User address:', currentLensAccount.address);
 
     try {
+      // Generate challenges with user as creator
       const newChallenges = await generateRandomChallenges(
         userLocation.latitude,
         userLocation.longitude,
-        10
+        10,
+        currentLensAccount.address // Pass user address as creator
       );
 
-      console.log(`✅ Generated ${newChallenges.length} challenges`);
+      console.log(`✅ Generated ${newChallenges.length} weekly challenges`);
+      console.log('🔍 Sample challenge:', newChallenges[0]);
 
       setChallenges(newChallenges);
-
-      // Cache challenges for persistence
-      const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
-      localStorage.setItem(
-        cacheKey,
-        JSON.stringify({
-          challenges: newChallenges,
-          timestamp: Date.now(),
-          location: userLocation,
-        })
-      );
-
+      setButtonEnabled(false); // Disable button after use
       setSelectedPin(null);
 
       setTimeout(() => {
-        alert(`Generated ${newChallenges.length} new AI challenges nearby! 🎉`);
+        toast.success(`Generated ${newChallenges.length} new weekly challenges! 🎉`);
       }, 100);
     } catch (error) {
-      console.error('❌ Error generating challenges:', error);
+      console.error('❌ Error generating weekly challenges:', error);
       throw error;
     }
   };
@@ -214,73 +213,7 @@ const MapView = () => {
           console.log('Map loaded successfully');
           mapInstanceRef.current = map;
           setMapLoaded(true);
-
-          try {
-            // Load cached challenges if available and fresh (< 1 hour)
-            const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
-            const cached = localStorage.getItem(cacheKey);
-
-            if (cached) {
-              const { challenges: cachedChallenges, timestamp } = JSON.parse(cached);
-              if (Date.now() - timestamp < 3600000) {
-                console.log('📦 Using cached challenges');
-
-                // Filter out user's completed challenges from cache
-                try {
-                  const userCompletedIds = await getUserCompletedChallengeIds(
-                    currentLensAccount?.address
-                  );
-                  const visibleChallenges = cachedChallenges.filter(
-                    (c: any) => !userCompletedIds.includes(c.id)
-                  );
-
-                  console.log('🔍 Debug:', {
-                    totalCached: cachedChallenges.length,
-                    userCompletedIds,
-                    visibleAfterFilter: visibleChallenges.length,
-                    needToGenerate: 5 - visibleChallenges.length,
-                  });
-
-                  if (visibleChallenges.length < 10) {
-                    const needed = 10 - visibleChallenges.length;
-                    console.log(
-                      `🎯 User has ${visibleChallenges.length}/10 cached challenges, generating ${needed} replacements...`
-                    );
-
-                    const replacements: ChallengeData[] = [];
-                    for (let i = 0; i < needed; i++) {
-                      const replacement = await generateSingleReplacement(
-                        userLocation.latitude,
-                        userLocation.longitude,
-                        [...visibleChallenges, ...replacements] // Avoid existing + already generated
-                      );
-                      if (replacement) {
-                        replacements.push(replacement);
-                      }
-                    }
-
-                    setChallenges([...visibleChallenges, ...replacements]);
-                  } else {
-                    setChallenges(visibleChallenges);
-                  }
-                } catch (error) {
-                  console.error('❌ Error filtering cached challenges:', error);
-                  setChallenges(cachedChallenges);
-                }
-
-                setLocatingUser(false);
-                return;
-              }
-            }
-
-            // Fallback to database challenges
-            const nearbyChallenge = await fetchNearbyChallenge(userLocation);
-            setChallenges(nearbyChallenge);
-          } catch (error) {
-            console.error('Error fetching challenges:', error);
-          } finally {
-            setLocatingUser(false);
-          }
+          setLocatingUser(false);
         });
 
         map.on('error', (e) => {
@@ -328,55 +261,49 @@ const MapView = () => {
     }
   };
 
-  // Auto-generate challenges when none exist
+  // Check button state and load existing challenges on page load
   useEffect(() => {
-    const autoGenerateIfNeeded = async () => {
-      if (!userLocation || !mapLoaded) return;
+    const initializeWeeklyChallenges = async () => {
+      if (!currentLensAccount?.address) return;
 
       try {
-        // Get user's completed challenge IDs to filter them out
-        const userCompletedIds = await getUserCompletedChallengeIds(currentLensAccount?.address);
-
-        // Filter out completed challenges from current challenges
-        const visibleChallenges = challenges.filter((c) => !userCompletedIds.includes(c.id));
-
-        if (visibleChallenges.length < 10) {
-          const needed = 10 - visibleChallenges.length;
-          console.log(
-            `🎯 User has ${visibleChallenges.length}/10 challenges, generating ${needed} more...`
-          );
-
-          const newChallenges = await generateRandomChallenges(
-            userLocation.latitude,
-            userLocation.longitude,
-            needed
-          );
-
-          // Combine visible existing + new challenges
-          const allChallenges = [...visibleChallenges, ...newChallenges];
-          setChallenges(allChallenges);
-
-          // Update cache with all challenges (including completed ones for other users)
-          const cacheKey = `challenges_${Math.floor(userLocation.latitude * 100)}_${Math.floor(userLocation.longitude * 100)}`;
-          localStorage.setItem(
-            cacheKey,
-            JSON.stringify({
-              challenges: [...challenges, ...newChallenges], // Keep all challenges in cache
-              timestamp: Date.now(),
-              location: userLocation,
-            })
-          );
+        // Load existing user challenges first
+        const challengesResponse = await fetch(`/api/map/user-challenges?userAddress=${currentLensAccount.address}`);
+        const challengeData = await challengesResponse.json();
+        
+        if (challengeData.hasGenerated) {
+          // User already generated challenges this week - load them and disable button
+          console.log('📦 Loading existing weekly challenges');
+          setChallenges(challengeData.challenges);
+          setButtonEnabled(false);
         } else {
-          // User has enough visible challenges, just update display
-          setChallenges(visibleChallenges);
+          // User hasn't generated yet - check if weekly event allows it
+          const buttonResponse = await fetch('/api/map/button-state');
+          const buttonState = await buttonResponse.json();
+          
+          if (buttonState.enabled) {
+            console.log('🔘 Weekly event detected, enabling challenge button');
+            setButtonEnabled(true);
+          } else {
+            console.log('⏳ No weekly event yet, button remains disabled');
+            setButtonEnabled(false);
+          }
         }
       } catch (error) {
-        console.error('❌ Auto-generation failed:', error);
+        console.error('Error initializing weekly challenges:', error);
       }
     };
 
-    autoGenerateIfNeeded();
-  }, [userLocation, mapLoaded, challenges.length, currentLensAccount?.address]);
+    initializeWeeklyChallenges();
+  }, [currentLensAccount?.address]);
+
+  // Initialize empty challenges - only generated via button
+  useEffect(() => {
+    if (!userLocation || !mapLoaded) return;
+    
+    // Ensure locatingUser is false when map is ready
+    setLocatingUser(false);
+  }, [userLocation, mapLoaded]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
@@ -551,7 +478,21 @@ const MapView = () => {
         onZoomOut={handleZoomOut}
         onGenerateChallenges={handleGenerateChallenges}
         userLocation={userLocation}
+        buttonEnabled={buttonEnabled}
       />
+
+      {/* Challenge Generation Prompt */}
+      {buttonEnabled && challenges.length === 0 && (
+        <div className="absolute right-24 z-[200]" style={{ bottom: '168px' }}>
+          <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg shadow-lg animate-pulse">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Generate your 10 public challenges!</span>
+            </div>
+          </div>
+          {/* Arrow pointing right towards AI generation button */}
+          <div className="absolute top-1/2 -right-2 transform -translate-y-1/2 w-0 h-0 border-t-8 border-b-8 border-l-8 border-t-transparent border-b-transparent border-l-purple-500"></div>
+        </div>
+      )}
 
       <LoadingOverlay mapLoaded={mapLoaded} locatingUser={locatingUser} loadError={loadError} />
     </div>

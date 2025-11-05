@@ -2,8 +2,38 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
+import { ApolloClient, InMemoryCache, gql, createHttpLink } from '@apollo/client';
+import dotenv from 'dotenv';
+
+// Load environment variables from backend directory
+dotenv.config({ path: path.join(__dirname, '../../.env.local') });
 
 const execAsync = promisify(exec);
+
+// GraphQL client for database operations
+const httpLink = createHttpLink({
+  uri: process.env.DGRAPH_ENDPOINT || 'http://localhost:8080/graphql',
+});
+
+const graphqlClient = new ApolloClient({
+  link: httpLink,
+  cache: new InMemoryCache(),
+});
+
+const DELETE_OLD_CHALLENGES = gql`
+  mutation DeleteOldChallenges {
+    deletePublicChallenge(
+      filter: {
+        not: {
+          creatorLensAccountId: { eq: "system" }
+        }
+      }
+    ) {
+      msg
+      numUids
+    }
+  }
+`;
 
 interface ChallengeEvent {
   type: 'daily' | 'weekly' | 'monthly';
@@ -114,7 +144,7 @@ export class FlowEventListener {
     const startBlock = this.lastProcessedBlock;
     const endBlock = Math.min(currentBlock, startBlock + 100); // Limit range to avoid timeouts
     
-    const command = `flow events get A.${this.contractAddress}.ChallengeScheduler.TriggerDailyChallenge A.${this.contractAddress}.ChallengeScheduler.TriggerWeeklyChallenge A.${this.contractAddress}.ChallengeScheduler.TriggerMonthlyChallenge --network testnet --start ${startBlock} --end ${endBlock}`;
+    const command = `flow events get A.${this.contractAddress}.NocenaChallengeHandler.TriggerDailyChallenge A.${this.contractAddress}.NocenaChallengeHandler.TriggerWeeklyChallenge A.${this.contractAddress}.NocenaChallengeHandler.TriggerMonthlyChallenge --network testnet --start ${startBlock} --end ${endBlock}`;
     
     console.log(`🔧 Checking blocks ${startBlock} to ${endBlock}`);
     
@@ -167,10 +197,53 @@ export class FlowEventListener {
     
     try {
       await this.triggerChallengeGeneration(event.type);
+      
+      // Enable public challenge button for weekly events
+      if (event.type === 'weekly') {
+        await this.enablePublicChallengeButton();
+      }
+      
       console.log(`✅ ${event.type} challenge generated successfully`);
     } catch (error) {
       console.error(`❌ Failed to generate ${event.type} challenge:`, error);
     }
+  }
+
+  private async enablePublicChallengeButton(): Promise<void> {
+    console.log('🔘 Enabling public challenge button for all users...');
+    
+    try {
+      const currentWeekId = this.getCurrentWeekId();
+      
+      // Clear old user challenges from database (all non-system challenges)
+      const { data } = await graphqlClient.mutate({
+        mutation: DELETE_OLD_CHALLENGES
+      });
+      
+      const deletedCount = data?.deletePublicChallenge?.numUids || 0;
+      console.log(`🧹 Cleared ${deletedCount} old user challenges`);
+      
+      // Store the weekly event timestamp for frontend to check
+      const buttonStateFile = path.join(__dirname, '../data/button-state.json');
+      const buttonState = {
+        enabled: true,
+        lastWeeklyEvent: new Date().toISOString(),
+        weekId: currentWeekId
+      };
+      
+      await fs.writeFile(buttonStateFile, JSON.stringify(buttonState, null, 2));
+      console.log('✅ Public challenge button enabled for all users');
+    } catch (error) {
+      console.error('❌ Failed to enable public challenge button:', error);
+    }
+  }
+
+  private getCurrentWeekId(): string {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setUTCDate(now.getUTCDate() - (now.getUTCDay() + 6) % 7);
+    monday.setUTCHours(0, 0, 0, 0);
+    return monday.toISOString().split('T')[0]; // Returns "2025-11-04"
   }
 
   private async triggerChallengeGeneration(challengeType: string): Promise<void> {
