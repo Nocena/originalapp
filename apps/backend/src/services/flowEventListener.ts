@@ -2,8 +2,38 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
+import { ApolloClient, InMemoryCache, gql, createHttpLink } from '@apollo/client';
+import dotenv from 'dotenv';
+
+// Load environment variables from backend directory
+dotenv.config({ path: path.join(__dirname, '../../.env.local') });
 
 const execAsync = promisify(exec);
+
+// GraphQL client for database operations
+const httpLink = createHttpLink({
+  uri: process.env.DGRAPH_ENDPOINT || 'http://localhost:8080/graphql',
+});
+
+const graphqlClient = new ApolloClient({
+  link: httpLink,
+  cache: new InMemoryCache(),
+});
+
+const DELETE_OLD_CHALLENGES = gql`
+  mutation DeleteOldChallenges {
+    deletePublicChallenge(
+      filter: {
+        not: {
+          creatorLensAccountId: { eq: "system" }
+        }
+      }
+    ) {
+      msg
+      numUids
+    }
+  }
+`;
 
 interface ChallengeEvent {
   type: 'daily' | 'weekly' | 'monthly';
@@ -183,12 +213,22 @@ export class FlowEventListener {
     console.log('🔘 Enabling public challenge button for all users...');
     
     try {
+      const currentWeekId = this.getCurrentWeekId();
+      
+      // Clear old user challenges from database (all non-system challenges)
+      const { data } = await graphqlClient.mutate({
+        mutation: DELETE_OLD_CHALLENGES
+      });
+      
+      const deletedCount = data?.deletePublicChallenge?.numUids || 0;
+      console.log(`🧹 Cleared ${deletedCount} old user challenges`);
+      
       // Store the weekly event timestamp for frontend to check
       const buttonStateFile = path.join(__dirname, '../data/button-state.json');
       const buttonState = {
         enabled: true,
         lastWeeklyEvent: new Date().toISOString(),
-        weekId: this.getCurrentWeekId()
+        weekId: currentWeekId
       };
       
       await fs.writeFile(buttonStateFile, JSON.stringify(buttonState, null, 2));
