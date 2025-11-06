@@ -29,6 +29,7 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
   const [selectedUser, setSelectedUser] = useState<SearchUser | null>(prefilledUser || null);
   const [rewardError, setRewardError] = useState<string>('');
   const [showShareModal, setShowShareModal] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState<string>('');
 
   // Update form data when prefilledUser changes
   useEffect(() => {
@@ -78,12 +79,49 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
     setFormData({ ...formData, rewardAmount: numValue });
   };
 
+  const handleCreateInviteLink = async () => {
+    if (!formData.name || !formData.description || !!rewardError || formData.rewardAmount <= 0) {
+      return;
+    }
+
+    try {
+      // Create the private challenge first
+      const response = await fetch('/api/private-challenge/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId: 'invite', // Special recipient ID for invite links
+          name: formData.name,
+          description: formData.description,
+          rewardAmount: formData.rewardAmount,
+          creatorId: currentLensAccount?.address,
+          creatorUsername: currentLensAccount?.username?.localName || 'Unknown',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create challenge');
+      }
+
+      const data = await response.json();
+      const challengeId = data.challengeId;
+      
+      // Create the real invite URL
+      const url = `${window.location.origin}/invite/${challengeId}?name=${encodeURIComponent(formData.name)}&reward=${formData.rewardAmount}`;
+      setInviteUrl(url);
+      setShowShareModal(true);
+    } catch (error) {
+      console.error('Error creating invite link:', error);
+      toast.error('Failed to create invite link');
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (
       formData.name &&
       formData.description &&
-      formData.recipientId &&
+      selectedUser && // Require selected user for direct challenges
       !rewardError &&
       formData.rewardAmount > 0
     ) {
@@ -203,10 +241,7 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
           </div>
           <button
             type="button"
-            onClick={() => {
-              console.log('Button clicked, showing modal');
-              setShowShareModal(true);
-            }}
+            onClick={handleCreateInviteLink}
             disabled={!formData.name || !formData.description || !!rewardError || formData.rewardAmount <= 0}
             className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors text-sm"
           >
@@ -227,8 +262,7 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
             <div className="space-y-3">
               <button
                 onClick={() => {
-                  const dummyUrl = `https://nocena.app/invite/abc123?name=${encodeURIComponent(formData.name)}&reward=${formData.rewardAmount}`;
-                  const message = `You've been challenged! Complete "${formData.name}" and earn ${formData.rewardAmount} tokens → ${dummyUrl}`;
+                  const message = `You've been challenged! Complete "${formData.name}" and earn ${formData.rewardAmount} tokens → ${inviteUrl}`;
                   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`, '_blank');
                 }}
                 className="w-full px-4 py-3 bg-black hover:bg-gray-900 rounded-lg transition-colors flex items-center justify-center space-x-3"
@@ -241,9 +275,8 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
 
               <button
                 onClick={() => {
-                  const dummyUrl = `https://nocena.app/invite/abc123?name=${encodeURIComponent(formData.name)}&reward=${formData.rewardAmount}`;
                   const message = `You've been challenged! Complete "${formData.name}" and earn ${formData.rewardAmount} tokens`;
-                  window.open(`https://t.me/share/url?url=${dummyUrl}&text=${encodeURIComponent(message)}`, '_blank');
+                  window.open(`https://t.me/share/url?url=${inviteUrl}&text=${encodeURIComponent(message)}`, '_blank');
                 }}
                 className="w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors flex items-center justify-center space-x-3"
               >
@@ -255,10 +288,8 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
 
               <button
                 onClick={() => {
-                  const dummyUrl = `https://nocena.app/invite/abc123?name=${encodeURIComponent(formData.name)}&reward=${formData.rewardAmount}`;
-                  navigator.clipboard.writeText(dummyUrl);
-                  // TODO: Show toast notification
-                  console.log('Copied to clipboard:', dummyUrl);
+                  navigator.clipboard.writeText(inviteUrl);
+                  toast.success('Link copied to clipboard!');
                 }}
                 className="w-full px-4 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors flex items-center justify-center space-x-3"
               >
