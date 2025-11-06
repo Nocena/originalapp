@@ -1,11 +1,12 @@
 /**
  * Complete Private Challenge API
  *
- * Mark a challenge as completed using real database.
+ * Mark a challenge as completed and create completion record.
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
 import { updatePrivateChallengeStatus } from '../../../lib/api/dgraph';
+import { createChallengeCompletion } from '../../../lib/graphql/features/challenge-completion/api';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -13,12 +14,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { challengeId } = req.body;
+    const { challengeId, userId, mediaData } = req.body;
 
-    if (!challengeId) {
-      return res.status(400).json({ error: 'Challenge ID is required' });
+    if (!challengeId || !userId) {
+      return res.status(400).json({ error: 'Challenge ID and User ID are required' });
     }
 
+    // Create completion record with proper JSON media data
+    const defaultMedia = {
+      type: 'completion',
+      data: 'Private challenge completed',
+      videoCID: '',
+      selfieCID: '',
+      previewCID: ''
+    };
+    
+    const completionId = await createChallengeCompletion(
+      userId,
+      challengeId,
+      'private',
+      mediaData || defaultMedia
+    );
+
+    // Update challenge status
     const success = await updatePrivateChallengeStatus(challengeId, false, true);
 
     if (!success) {
@@ -28,6 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json({
       success: true,
       message: 'Challenge completed successfully',
+      completionId,
     });
   } catch (error) {
     console.error('Error completing challenge:', error);

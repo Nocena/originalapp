@@ -59,10 +59,13 @@ export const getChallengeCompletionObjectFrom = async (
       // Handle nested CID structure
       if (!videoCID && !selfieCID && media.directoryCID) {
         try {
-          const directoryData = JSON.parse(media.directoryCID);
-          videoCID = directoryData.videoCID;
-          selfieCID = directoryData.selfieCID;
-          previewCID = directoryData.previewCID;
+          // Check if directoryCID is valid JSON before parsing
+          if (typeof media.directoryCID === 'string' && media.directoryCID.trim().startsWith('{')) {
+            const directoryData = JSON.parse(media.directoryCID);
+            videoCID = directoryData.videoCID;
+            selfieCID = directoryData.selfieCID;
+            previewCID = directoryData.previewCID;
+          }
         } catch (dirParseError) {
           console.error('Error parsing directory CID:', dirParseError);
         }

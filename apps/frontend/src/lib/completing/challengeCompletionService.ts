@@ -128,6 +128,7 @@ export async function completeChallengeWorkflow(
                 body: JSON.stringify({
                   challengeId: challenge.challengeId,
                   userId: userId,
+                  mediaData: completionData?.media,
                 }),
               });
 
