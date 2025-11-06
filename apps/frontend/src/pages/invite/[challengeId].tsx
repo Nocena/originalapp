@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
+import ThematicContainer from '../../components/ui/ThematicContainer';
+import Image from 'next/image';
 
 interface ChallengeData {
   id: string;
@@ -89,21 +91,39 @@ export default function InvitePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-nocenaBg to-gray-900 text-white flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4 shadow-xl border border-gray-700">
+      <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-700/50">
         <div className="text-center mb-6">
-          <h3 className="text-xl font-semibold mb-4 text-white">🎯 Challenge Invitation</h3>
+          <div className="flex items-center justify-center mb-4">
+            <Image
+              src="/logo/LogoDark.png"
+              alt="Nocena"
+              width={24}
+              height={24}
+              className="mr-2"
+            />
+            <h3 className="text-xl font-semibold text-white">Challenge Invitation</h3>
+          </div>
           <p className="text-gray-400">You've been invited to complete a challenge!</p>
         </div>
 
         <div className="space-y-4 mb-6">
-          <div>
-            <h2 className="text-xl font-semibold text-white">{challenge.title}</h2>
-            <p className="text-gray-300 mt-2">{challenge.description}</p>
+          <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600/20">
+            <h2 className="text-xl font-bold text-white mb-2 text-center">Challenge: "{challenge.title}"</h2>
+            <p className="text-gray-300 text-center leading-relaxed">{challenge.description}</p>
           </div>
-          <div className="bg-gray-700 rounded-lg p-3">
+          <div className="bg-gray-700/50 rounded-lg p-3 border border-gray-600/30">
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-sm">Reward:</span>
-              <span className="text-green-400 font-semibold">{challenge.reward} tokens</span>
+              <div className="flex items-center">
+                <Image
+                  src="/nocenix.ico"
+                  alt="NCT"
+                  width={16}
+                  height={16}
+                  className="mr-1"
+                />
+                <span className="text-green-400 font-semibold">{challenge.reward} NCT</span>
+              </div>
             </div>
           </div>
         </div>
