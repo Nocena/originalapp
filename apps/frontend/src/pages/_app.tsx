@@ -125,14 +125,32 @@ function MyAppContent({ Component, pageProps }: AppProps) {
     if (!router?.pathname) return;
 
     const publicRoutes = ['/login', '/register', '/admin/seed-invites', '/test-admin'];
+    const isInvitePage = currentPathname.startsWith('/invite');
     const isPublicRoute =
       publicRoutes.some((route) => currentPathname.startsWith(route)) ||
-      currentPathname.startsWith('/admin/');
+      currentPathname.startsWith('/admin/') ||
+      isInvitePage;
 
     if (!loading && !currentLensAccount && !isPublicRoute) {
       router.replace('/login');
     }
   }, [currentLensAccount, loading, router, currentPathname]);
+
+  // Handle post-auth challenge redirect
+  useEffect(() => {
+    if (currentLensAccount && typeof window !== 'undefined') {
+      const pendingChallengeId = sessionStorage.getItem('pendingChallengeId');
+      const pendingChallengeData = sessionStorage.getItem('pendingChallengeData');
+      
+      if (pendingChallengeId && pendingChallengeData) {
+        sessionStorage.removeItem('pendingChallengeId');
+        sessionStorage.removeItem('pendingChallengeData');
+        
+        const challengeData = JSON.parse(pendingChallengeData);
+        router.push(`/completing?type=PRIVATE&challengeId=${pendingChallengeId}&title=${encodeURIComponent(challengeData.title)}&description=${encodeURIComponent(challengeData.description)}&reward=${challengeData.reward}&creatorWalletAddress=${challengeData.creatorLensAccountId}`);
+      }
+    }
+  }, [currentLensAccount, router]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -209,8 +227,9 @@ function MyAppContent({ Component, pageProps }: AppProps) {
 
   // Determine layout type
   const isSpecialPage = specialPages.includes(currentPathname);
+  const isInvitePage = currentPathname.startsWith('/invite/');
   const shouldUseAppLayout =
-    !noLayoutPages.includes(currentPathname) && !isAdminPage && !isSpecialPage;
+    !noLayoutPages.includes(currentPathname) && !isAdminPage && !isSpecialPage && !isInvitePage;
   const shouldUseSpecialLayout = isSpecialPage && currentLensAccount;
 
   console.log('Layout decision:', {
@@ -218,16 +237,18 @@ function MyAppContent({ Component, pageProps }: AppProps) {
     isSpecialPage,
     shouldUseAppLayout,
     shouldUseSpecialLayout,
+    isInvitePage,
     user: !!currentLensAccount,
   });
 
-  // Handle public routes (login, register, admin)
+  // Handle public routes (login, register, admin, invite)
   if (
     !currentLensAccount &&
     (currentPathname === '/login' ||
       currentPathname === '/register' ||
       currentPathname.startsWith('/admin/') ||
-      currentPathname === '/test-admin')
+      currentPathname === '/test-admin' ||
+      currentPathname.startsWith('/invite/'))
   ) {
     return (
       <>
@@ -308,7 +329,10 @@ function MyAppContent({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </AppLayout>
       ) : (
-        <Component {...pageProps} />
+        <>
+          {console.log('Rendering component without layout for:', currentPathname)}
+          <Component {...pageProps} />
+        </>
       )}
 
       {renderPWAPrompt()}

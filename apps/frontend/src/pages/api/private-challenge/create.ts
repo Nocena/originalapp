@@ -16,8 +16,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('📥 Received private challenge request:', req.body);
-
     const {
       recipientId,
       name,
@@ -38,6 +36,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (rewardAmount > 250) {
       return res.status(400).json({ error: 'Reward amount cannot exceed 250 tokens' });
+    }
+
+    // Handle invite link creation (no specific recipient)
+    if (recipientId === 'invite') {
+      const challengeId = await createPrivateChallenge(
+        creatorId,
+        'invite-link', // Special recipient for invite links
+        name,
+        description,
+        rewardAmount,
+        7 // 7 days expiration for invite links
+      );
+
+      return res.status(201).json({
+        success: true,
+        challengeId,
+        message: 'Invite link created successfully',
+        isInviteLink: true,
+      });
     }
 
     // Prevent sending challenges to yourself
@@ -68,22 +85,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Continue with creation if limit check fails
     }
 
-    // Get owner wallet addresses from Lens accounts
+    // Get owner wallet addresses from Lens accounts (skip for invite links)
     const [creatorData, recipientData] = await Promise.all([
       lensApolloClient.query<AccountQuery, AccountQueryVariables>({
         query: AccountDocument,
         variables: { request: { address: creatorId } },
       }),
-      lensApolloClient.query<AccountQuery, AccountQueryVariables>({
+      recipientId !== 'invite-link' ? lensApolloClient.query<AccountQuery, AccountQueryVariables>({
         query: AccountDocument,
         variables: { request: { address: recipientId } },
-      }),
+      }) : Promise.resolve({ data: { account: { owner: 'invite-link' } } }),
     ]);
 
     const creatorOwnerAddress = creatorData.data?.account?.owner;
     const recipientOwnerAddress = recipientData.data?.account?.owner;
 
-    if (!creatorOwnerAddress || !recipientOwnerAddress) {
+    if (!creatorOwnerAddress || (!recipientOwnerAddress && recipientId !== 'invite-link')) {
       return res.status(400).json({ error: 'Could not find wallet addresses for users' });
     }
 
@@ -96,8 +113,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       rewardAmount,
       1 // 1 day expiration
     );
-
-    console.log('✅ Private challenge created:', challengeId);
 
     res.status(201).json({
       success: true,
