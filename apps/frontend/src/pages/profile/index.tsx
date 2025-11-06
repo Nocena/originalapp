@@ -28,9 +28,7 @@ import { uploadImageFile } from 'src/helpers/accountPictureUtils';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
 import PrimaryButton from '@components/ui/PrimaryButton';
 import CompletionsSection from '@pages/profile/components/completions/CompletionsSection';
-import {
-  useUserCompletionsCalendar
-} from '../../lib/graphql/features/challenge-completion/hook/useUserCompletionsCalendar';
+import { useUserCompletionsCalendar } from '../../lib/graphql/features/challenge-completion/hook/useUserCompletionsCalendar';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -80,7 +78,9 @@ const ProfileView: React.FC = () => {
   });
   const stats = accountStatsData?.accountStats.graphFollowStats;
 
-  const { data: userCompletionsCalendarData } = useUserCompletionsCalendar(currentLensAccount?.address)
+  const { data: userCompletionsCalendarData } = useUserCompletionsCalendar(
+    currentLensAccount?.address
+  );
 
   // Sync user data when user changes
   useEffect(() => {
@@ -497,9 +497,7 @@ const ProfileView: React.FC = () => {
             )}
 
             {activeSection === 'calendar' && (
-              <CalendarSection
-                userCompletionsData={userCompletionsCalendarData}
-              />
+              <CalendarSection userCompletionsData={userCompletionsCalendarData} />
             )}
 
             {activeSection === 'achievements' && (

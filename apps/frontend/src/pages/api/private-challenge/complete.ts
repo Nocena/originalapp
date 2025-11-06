@@ -26,9 +26,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: 'Private challenge completed',
       videoCID: '',
       selfieCID: '',
-      previewCID: ''
+      previewCID: '',
     };
-    
+
     const completionId = await createChallengeCompletion(
       userId,
       challengeId,

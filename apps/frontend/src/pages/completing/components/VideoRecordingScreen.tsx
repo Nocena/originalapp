@@ -30,9 +30,7 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({
   onVideoRecorded,
   onBack,
 }) => {
-  const {
-    setShowGuideModal,
-  } = usePermissionGuideModalStore()
+  const { setShowGuideModal } = usePermissionGuideModalStore();
   const [stage, setStage] = useState<RecordingStage>('ready');
   const [countdown, setCountdown] = useState(3);
   const [recordingTime, setRecordingTime] = useState(30);
@@ -99,9 +97,9 @@ const VideoRecordingScreen: React.FC<VideoRecordingScreenProps> = ({
 
         return true;
       } catch (cameraError: any) {
-        console.log("cameraError", cameraError)
+        console.log('cameraError', cameraError);
         if (cameraError?.toString().includes('denied')) {
-          setShowGuideModal(true)
+          setShowGuideModal(true);
         }
         console.log('Camera-first approach failed, trying combined request:', cameraError);
 

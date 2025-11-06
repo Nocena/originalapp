@@ -56,10 +56,9 @@ export const isSameMonth = (date1: Date, date2: Date): boolean => {
   return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth();
 };
 
-
 export const getStartOfMonthDayIndex = (year: number, month: number): number => {
   const startOfYear = Date.UTC(year, 0, 1);
   const startOfMonth = Date.UTC(year, month, 1);
   // Add 1 for 1-based day-of-year index
   return Math.round((startOfMonth - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
-}
+};

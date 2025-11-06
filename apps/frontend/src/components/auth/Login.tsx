@@ -21,9 +21,7 @@ import SingleAccount from '../Account/SingleAccount';
 import { Loader } from '@components/ui';
 import AuthMessage from '@components/auth/AuthMessage';
 import AccountNotFound from '@components/auth/AccountNotFound';
-import {
-  useAvailableNocenaLensAccounts
-} from '../../lib/graphql/features/challenge-completion/hook/useAvailableNocenaLensAccounts';
+import { useAvailableNocenaLensAccounts } from '../../lib/graphql/features/challenge-completion/hook/useAvailableNocenaLensAccounts';
 
 const Login = () => {
   const [hasAccounts, setHasAccounts] = useState(true);
@@ -67,7 +65,8 @@ const Login = () => {
     return remainingAccounts;
   }, [lastLogin, remainingAccounts]);
 
-  const {availableNocenaLensAccounts, loading: availableFiltering} = useAvailableNocenaLensAccounts(accounts)
+  const { availableNocenaLensAccounts, loading: availableFiltering } =
+    useAvailableNocenaLensAccounts(accounts);
 
   const handleSign = async (account: string) => {
     if (!thirdWebAccount) return;

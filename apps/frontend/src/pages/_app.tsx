@@ -141,13 +141,15 @@ function MyAppContent({ Component, pageProps }: AppProps) {
     if (currentLensAccount && typeof window !== 'undefined') {
       const pendingChallengeId = sessionStorage.getItem('pendingChallengeId');
       const pendingChallengeData = sessionStorage.getItem('pendingChallengeData');
-      
+
       if (pendingChallengeId && pendingChallengeData) {
         sessionStorage.removeItem('pendingChallengeId');
         sessionStorage.removeItem('pendingChallengeData');
-        
+
         const challengeData = JSON.parse(pendingChallengeData);
-        router.push(`/completing?type=PRIVATE&challengeId=${pendingChallengeId}&title=${encodeURIComponent(challengeData.title)}&description=${encodeURIComponent(challengeData.description)}&reward=${challengeData.reward}&creatorWalletAddress=${challengeData.creatorLensAccountId}`);
+        router.push(
+          `/completing?type=PRIVATE&challengeId=${pendingChallengeId}&title=${encodeURIComponent(challengeData.title)}&description=${encodeURIComponent(challengeData.description)}&reward=${challengeData.reward}&creatorWalletAddress=${challengeData.creatorLensAccountId}`
+        );
       }
     }
   }, [currentLensAccount, router]);
@@ -342,10 +344,7 @@ function MyAppContent({ Component, pageProps }: AppProps) {
 }
 
 function MyApp(props: AppProps) {
-  const {
-    showGuideModal,
-    setShowGuideModal,
-  } = usePermissionGuideModalStore()
+  const { showGuideModal, setShowGuideModal } = usePermissionGuideModalStore();
 
   return (
     <QueryClientProvider client={queryClient}>

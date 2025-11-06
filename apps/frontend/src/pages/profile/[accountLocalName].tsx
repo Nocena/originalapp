@@ -16,9 +16,7 @@ import getAvatar from '../../helpers/getAvatar';
 import { useLensFollowActions } from '../../hooks/useLensFollowActions';
 import { useNoceniteBalanceFormatted } from '../../hooks/useNoceniteBalance';
 import CompletionsSection from '@pages/profile/components/completions/CompletionsSection';
-import {
-  useUserCompletionsCalendar
-} from '../../lib/graphql/features/challenge-completion/hook/useUserCompletionsCalendar';
+import { useUserCompletionsCalendar } from '../../lib/graphql/features/challenge-completion/hook/useUserCompletionsCalendar';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -81,7 +79,9 @@ const OtherProfileView: React.FC = () => {
     selectedUserAccount?.owner
   );
 
-  const { data: userCompletionsCalendarData } = useUserCompletionsCalendar(selectedUserAccount?.address)
+  const { data: userCompletionsCalendarData } = useUserCompletionsCalendar(
+    selectedUserAccount?.address
+  );
 
   // Check if this page is visible in the PageManager
   useEffect(() => {
@@ -416,9 +416,7 @@ const OtherProfileView: React.FC = () => {
               )}
 
               {activeSection === 'calendar' && (
-                <CalendarSection
-                  userCompletionsData={userCompletionsCalendarData}
-                />
+                <CalendarSection userCompletionsData={userCompletionsCalendarData} />
               )}
 
               {activeSection === 'achievements' && (

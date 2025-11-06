@@ -487,7 +487,7 @@ export async function generateRandomChallenges(
     // Get current week ID for metadata
     const now = new Date();
     const monday = new Date(now);
-    monday.setUTCDate(now.getUTCDate() - (now.getUTCDay() + 6) % 7);
+    monday.setUTCDate(now.getUTCDate() - ((now.getUTCDay() + 6) % 7));
     monday.setUTCHours(0, 0, 0, 0);
     const weekId = monday.toISOString().split('T')[0];
 

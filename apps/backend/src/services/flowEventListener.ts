@@ -35,6 +35,13 @@ const DELETE_OLD_CHALLENGES = gql`
   }
 `;
 
+interface DeleteChallengeResult {
+  deletePublicChallenge: {
+    msg: string;
+    numUids: number;
+  };
+}
+
 interface ChallengeEvent {
   type: 'daily' | 'weekly' | 'monthly';
   txId: string;
@@ -216,7 +223,7 @@ export class FlowEventListener {
       const currentWeekId = this.getCurrentWeekId();
       
       // Clear old user challenges from database (all non-system challenges)
-      const { data } = await graphqlClient.mutate({
+      const { data } = await graphqlClient.mutate<DeleteChallengeResult>({
         mutation: DELETE_OLD_CHALLENGES
       });
       

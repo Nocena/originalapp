@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const buttonStateFile = path.join(process.cwd(), '../backend/src/data/button-state.json');
-    
+
     // Check if button state file exists
     if (!fs.existsSync(buttonStateFile)) {
       return res.status(200).json({ enabled: false });

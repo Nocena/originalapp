@@ -4,7 +4,7 @@ import { UserCompletionsCalendar } from '../../../lib/graphql/features/challenge
 import { getStartOfMonthDayIndex } from '@utils/dateUtils';
 
 interface CalendarSectionProps {
-  userCompletionsData: UserCompletionsCalendar | null | undefined
+  userCompletionsData: UserCompletionsCalendar | null | undefined;
 }
 
 const CalendarSection: React.FC<CalendarSectionProps> = ({ userCompletionsData }) => {
@@ -173,7 +173,9 @@ const CalendarSection: React.FC<CalendarSectionProps> = ({ userCompletionsData }
               key={index}
               asButton={true}
               glassmorphic={true}
-              color={userCompletionsData?.monthly.includes(index + 1) ? 'nocenaPurple' : 'nocenaBlue'}
+              color={
+                userCompletionsData?.monthly.includes(index + 1) ? 'nocenaPurple' : 'nocenaBlue'
+              }
               rounded="lg"
               className="p-3 text-center"
               isActive={userCompletionsData?.monthly.includes(index + 1)}
@@ -183,7 +185,9 @@ const CalendarSection: React.FC<CalendarSectionProps> = ({ userCompletionsData }
               }}
             >
               <div className="text-sm font-medium">{month}</div>
-              {userCompletionsData?.monthly.includes(index + 1) && <div className="text-lg mt-1">🏆</div>}
+              {userCompletionsData?.monthly.includes(index + 1) && (
+                <div className="text-lg mt-1">🏆</div>
+              )}
             </ThematicContainer>
           ))}
         </div>

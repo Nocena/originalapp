@@ -3,7 +3,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
-import { AIChallenge, getChallengeReward, getCurrentChallenge, getFallbackChallenge } from '@utils/challengeUtils';
+import {
+  AIChallenge,
+  getChallengeReward,
+  getCurrentChallenge,
+  getFallbackChallenge,
+} from '@utils/challengeUtils';
 
 // Component imports
 import ChallengeHeader from './components/ChallengeHeader';
@@ -49,8 +54,11 @@ const HomeView = () => {
 
       try {
         const challenge = await getCurrentChallenge(selectedTab);
-        const isCompleted = await isChallengeCompletedByUser(currentLensAccount?.address, challenge?.id || '')
-        setHasCompleted(isCompleted)
+        const isCompleted = await isChallengeCompletedByUser(
+          currentLensAccount?.address,
+          challenge?.id || ''
+        );
+        setHasCompleted(isCompleted);
         if (challenge) {
           console.log(`✅ Loaded ${selectedTab} challenge:`, challenge.title);
           setCurrentChallenge(challenge);
@@ -119,7 +127,7 @@ const HomeView = () => {
         const completions = await fetchFollowingsCompletions(
           currentLensAccount.address,
           today,
-          selectedTab,
+          selectedTab
         );
         setFollowerCompletions(completions);
         console.log('Loaded follower completions:', completions.length);

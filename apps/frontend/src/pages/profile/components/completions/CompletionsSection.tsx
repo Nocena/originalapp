@@ -14,10 +14,11 @@ const CompletionsSection: React.FC<CompletionsSectionProps> = ({ userID = 'curre
       (completion) =>
         completion.aiChallengeId ||
         completion.privateChallengeId ||
-        completion.publicChallengeId || ''
+        completion.publicChallengeId ||
+        ''
     );
   }, [completions, loading]);
-  console.log("completions completedChallengeIds", completions, completedChallengeIds)
+  console.log('completions completedChallengeIds', completions, completedChallengeIds);
   return (
     <>
       <CompletedChallengePart userID={userID} completions={completions} loading={loading} />

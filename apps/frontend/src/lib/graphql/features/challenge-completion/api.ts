@@ -3,7 +3,8 @@ import {
   CHECK_CHALLENGE_COMPLETION,
   FETCH_ALL_COMPLETIONS,
   FETCH_COMPLETION_BY_COMPLETION_ID,
-  FETCH_COMPLETIONS_BY_CHALLENGE, FETCH_COMPLETIONS_OF_USER_FOR_CALENDAR,
+  FETCH_COMPLETIONS_BY_CHALLENGE,
+  FETCH_COMPLETIONS_OF_USER_FOR_CALENDAR,
   FETCH_COMPLETIONS_OF_USERS,
   FETCH_LATEST_USER_COMPLETION,
   FETCH_USER_COMPLETIONS_BY_FILTERS,
@@ -17,7 +18,8 @@ import {
   ChallengeCompletion,
   FetchUserCompletionsForCalendarParams,
   FetchUserCompletionsParams,
-  MediaMetadata, UserCompletionsCalendar,
+  MediaMetadata,
+  UserCompletionsCalendar,
 } from './types';
 import { getDateRange } from '../follow/utils';
 import { fetchFollowingData, getLensAccountByAddress } from '../../../lens/api';
@@ -28,7 +30,6 @@ import { v4 as uuidv4 } from 'uuid';
 // QUERY FUNCTIONS
 // ============================================================================
 
-
 export async function isChallengeCompletedByUser(
   userLensAccountId: string,
   challengeId: string
@@ -37,13 +38,13 @@ export async function isChallengeCompletedByUser(
     const { data } = await graphqlClient.query({
       query: CHECK_CHALLENGE_COMPLETION,
       variables: { userLensAccountId, challengeId },
-      fetchPolicy: "network-only",
+      fetchPolicy: 'network-only',
     });
 
     const completions = data?.queryChallengeCompletion ?? [];
     return completions.length > 0;
   } catch (error) {
-    console.error("❌ Error checking challenge completion:", error);
+    console.error('❌ Error checking challenge completion:', error);
     return false;
   }
 }
@@ -147,8 +148,7 @@ export async function fetchFollowingsCompletions(
     const followings = await fetchFollowingData(userLensAccountAddress);
     const followingAccountAddresses = followings?.items.map((item) => item.following.address) || [];
 
-    if (followingAccountAddresses.length <= 0)
-      return []
+    if (followingAccountAddresses.length <= 0) return [];
 
     const { data } = await graphqlClient.query({
       query: FETCH_COMPLETIONS_OF_USERS,
@@ -358,9 +358,7 @@ export const toggleCompletionLike = async (
  * @param userLensAccountIds - Array of Lens account IDs to check.
  * @returns Promise<string[]> Unique userLensAccountIds with completions.
  */
-export async function getUsersWithCompletions(
-  userLensAccountIds: string[]
-): Promise<string[]> {
+export async function getUsersWithCompletions(userLensAccountIds: string[]): Promise<string[]> {
   if (!userLensAccountIds?.length) return [];
 
   try {
@@ -373,9 +371,7 @@ export async function getUsersWithCompletions(
     const completions = data?.queryChallengeCompletion ?? [];
 
     // Deduplicate userLensAccountIds
-    return Array.from(
-      new Set(completions.map((c: any) => c.userLensAccountId))
-    );
+    return Array.from(new Set(completions.map((c: any) => c.userLensAccountId)));
   } catch (error) {
     console.error('❌ Error fetching users with completions:', error);
     throw error;
@@ -383,8 +379,8 @@ export async function getUsersWithCompletions(
 }
 
 export async function fetchUserCompletionsForCalendar({
-                                                      userLensAccountId,
-                                                    }: FetchUserCompletionsForCalendarParams): Promise<UserCompletionsCalendar> {
+  userLensAccountId,
+}: FetchUserCompletionsForCalendarParams): Promise<UserCompletionsCalendar> {
   try {
     const { data } = await graphqlClient.query({
       query: FETCH_COMPLETIONS_OF_USER_FOR_CALENDAR,
@@ -397,15 +393,15 @@ export async function fetchUserCompletionsForCalendar({
     const result: UserCompletionsCalendar = {
       daily: [],
       weekly: [],
-      monthly: []
-    }
+      monthly: [],
+    };
 
-    for(const completion of completions) {
+    for (const completion of completions) {
       if (completion.aiChallenge) {
-        const { frequency, day, week, month } = completion.aiChallenge
-        if (frequency === 'daily') result.daily.push(day)
-        else if (frequency === 'weekly') result.weekly.push(week)
-        else if (frequency === 'monthly') result.monthly.push(month)
+        const { frequency, day, week, month } = completion.aiChallenge;
+        if (frequency === 'daily') result.daily.push(day);
+        else if (frequency === 'weekly') result.weekly.push(week);
+        else if (frequency === 'monthly') result.monthly.push(month);
       }
     }
 

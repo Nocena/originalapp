@@ -94,65 +94,61 @@ export const USER_CHALLENGE_COMPLETIONS = gql`
 `;
 
 export const USER_SIMILAR_CHALLENGE_COMPLETIONS = gql`
-    query GetUserSimilarChallengeCompletions(
-        $userLensAccountId: String!
-        $challengeIds: [String!]!
-        $limit: Int
-        $offset: Int
+  query GetUserSimilarChallengeCompletions(
+    $userLensAccountId: String!
+    $challengeIds: [String!]!
+    $limit: Int
+    $offset: Int
+  ) {
+    queryChallengeCompletion(
+      filter: {
+        and: [
+          { not: { userLensAccountId: { eq: $userLensAccountId } } }
+          {
+            or: [
+              { privateChallengeId: { in: $challengeIds } }
+              { publicChallengeId: { in: $challengeIds } }
+              { aiChallengeId: { in: $challengeIds } }
+            ]
+          }
+        ]
+      }
+      order: { desc: completionDate }
+      first: $limit
+      offset: $offset
     ) {
-        queryChallengeCompletion(
-            filter: {
-                and: [
-                    {
-                        not: {
-                            userLensAccountId: { eq: $userLensAccountId }
-                        }
-                    }
-                    {
-                        or: [
-                            { privateChallengeId: { in: $challengeIds } }
-                            { publicChallengeId: { in: $challengeIds } }
-                            { aiChallengeId: { in: $challengeIds } }
-                        ]
-                    }
-                ]
-            }
-            order: { desc: completionDate }
-            first: $limit
-            offset: $offset
-        ) {
-            id
-            userLensAccountId
-            completionDate
-            likedByLensAccountIds
-            likesCount
-            challengeType
-            status
-            media
-            privateChallengeId
-            publicChallengeId
-            aiChallengeId
-            aiChallenge {
-                id
-                title
-                description
-                frequency
-                reward
-            }
-            privateChallenge {
-                id
-                title
-                description
-                reward
-            }
-            publicChallenge {
-                id
-                title
-                description
-                reward
-            }
-        }
+      id
+      userLensAccountId
+      completionDate
+      likedByLensAccountIds
+      likesCount
+      challengeType
+      status
+      media
+      privateChallengeId
+      publicChallengeId
+      aiChallengeId
+      aiChallenge {
+        id
+        title
+        description
+        frequency
+        reward
+      }
+      privateChallenge {
+        id
+        title
+        description
+        reward
+      }
+      publicChallenge {
+        id
+        title
+        description
+        reward
+      }
     }
+  }
 `;
 
 export const FETCH_LATEST_USER_COMPLETION = gql`
@@ -258,39 +254,35 @@ export const FETCH_COMPLETIONS_OF_USERS = gql`
 `;
 
 export const FETCH_COMPLETIONS_OF_USER_FOR_CALENDAR = gql`
-    query FetchUserCompletions(
-        $userLensAccountId: String!
+  query FetchUserCompletions($userLensAccountId: String!) {
+    queryChallengeCompletion(
+      filter: { userLensAccountId: { eq: $userLensAccountId } }
+      order: { desc: completionDate }
     ) {
-        queryChallengeCompletion(
-            filter: {
-                userLensAccountId: { eq: $userLensAccountId }
-            }
-            order: { desc: completionDate }
-        ) {
-            id
-            media
-            completionDate
-            completionDay
-            completionWeek
-            completionMonth
-            completionYear
-            status
-            challengeType
-            likesCount
-            aiChallenge {
-                id
-                frequency
-                title
-                description
-                frequency
-                reward
-                day
-                week
-                month
-                year
-            }
-        }
+      id
+      media
+      completionDate
+      completionDay
+      completionWeek
+      completionMonth
+      completionYear
+      status
+      challengeType
+      likesCount
+      aiChallenge {
+        id
+        frequency
+        title
+        description
+        frequency
+        reward
+        day
+        week
+        month
+        year
+      }
     }
+  }
 `;
 
 export const FETCH_ALL_COMPLETIONS = gql`
@@ -464,36 +456,34 @@ export const CHECK_LIKE_STATUS = gql`
 `;
 
 export const CHECK_CHALLENGE_COMPLETION = gql`
-    query CheckChallengeCompletion($userLensAccountId: String!, $challengeId: String!) {
-        queryChallengeCompletion(
-            filter: {
-                and: [
-                    { userLensAccountId: { eq: $userLensAccountId } }
-                    {
-                        or: [
-                            { aiChallengeId: { eq: $challengeId } }
-                            { publicChallengeId: { eq: $challengeId } }
-                            { privateChallengeId: { eq: $challengeId } }
-                        ]
-                    }
-                ]
-            }
-            first: 1
-        ) {
-            id
-            challengeType
-            completionDate
-            status
-        }
+  query CheckChallengeCompletion($userLensAccountId: String!, $challengeId: String!) {
+    queryChallengeCompletion(
+      filter: {
+        and: [
+          { userLensAccountId: { eq: $userLensAccountId } }
+          {
+            or: [
+              { aiChallengeId: { eq: $challengeId } }
+              { publicChallengeId: { eq: $challengeId } }
+              { privateChallengeId: { eq: $challengeId } }
+            ]
+          }
+        ]
+      }
+      first: 1
+    ) {
+      id
+      challengeType
+      completionDate
+      status
     }
+  }
 `;
 
 export const GET_USERS_WITH_COMPLETIONS = gql`
-    query GetUsersWithCompletions($userLensAccountIds: [String!]!) {
-        queryChallengeCompletion(
-            filter: { userLensAccountId: { in: $userLensAccountIds } }
-        ) {
-            userLensAccountId
-        }
+  query GetUsersWithCompletions($userLensAccountIds: [String!]!) {
+    queryChallengeCompletion(filter: { userLensAccountId: { in: $userLensAccountIds } }) {
+      userLensAccountId
     }
+  }
 `;

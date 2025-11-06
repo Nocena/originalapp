@@ -176,10 +176,10 @@ const MapControls: React.FC<MapControlsProps> = ({
           !userLocation
             ? 'Location access required'
             : !buttonEnabled
-            ? 'Waiting for weekly event'
-            : isGenerating
-            ? 'Generating...'
-            : 'Generate challenges nearby'
+              ? 'Waiting for weekly event'
+              : isGenerating
+                ? 'Generating...'
+                : 'Generate challenges nearby'
         }
         style={{
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',

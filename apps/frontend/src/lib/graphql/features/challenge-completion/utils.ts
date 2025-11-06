@@ -107,7 +107,6 @@ export const getChallengeCompletionObjectFrom = async (
   return updatedCompletions;
 };
 
-
 /**
  * Filters completions that have a challenge (public, private, or AI).
  */
@@ -116,10 +115,6 @@ export function getCompletionsWithChallenge(
 ): ChallengeCompletion[] {
   return completions.filter(
     (completion) =>
-      !!(
-        completion.publicChallenge ||
-        completion.privateChallenge ||
-        completion.aiChallenge
-      )
+      !!(completion.publicChallenge || completion.privateChallenge || completion.aiChallenge)
   );
 }

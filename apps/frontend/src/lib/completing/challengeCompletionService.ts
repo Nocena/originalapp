@@ -120,6 +120,16 @@ export async function completeChallengeWorkflow(
           if (challenge.type === 'PRIVATE' && challenge.challengeId) {
             try {
               console.log('🏁 Marking private challenge as completed...');
+
+              // Create media data structure from completion data
+              const mediaData = {
+                type: 'completion',
+                data: completionData?.description || 'Private challenge completed',
+                videoCID: '', // Will be populated after upload
+                selfieCID: '', // Will be populated after upload
+                previewCID: '',
+              };
+
               const completeResponse = await fetch('/api/private-challenge/complete', {
                 method: 'POST',
                 headers: {
@@ -128,7 +138,7 @@ export async function completeChallengeWorkflow(
                 body: JSON.stringify({
                   challengeId: challenge.challengeId,
                   userId: userId,
-                  mediaData: completionData?.media,
+                  mediaData: mediaData,
                 }),
               });
 
