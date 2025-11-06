@@ -30,6 +30,7 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
   const [rewardError, setRewardError] = useState<string>('');
   const [showShareModal, setShowShareModal] = useState(false);
   const [inviteUrl, setInviteUrl] = useState<string>('');
+  const [creatingInvite, setCreatingInvite] = useState(false);
 
   // Update form data when prefilledUser changes
   useEffect(() => {
@@ -84,13 +85,13 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
       return;
     }
 
+    setCreatingInvite(true);
     try {
-      // Create the private challenge first
       const response = await fetch('/api/private-challenge/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recipientId: 'invite', // Special recipient ID for invite links
+          recipientId: 'invite',
           name: formData.name,
           description: formData.description,
           rewardAmount: formData.rewardAmount,
@@ -106,13 +107,14 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
       const data = await response.json();
       const challengeId = data.challengeId;
       
-      // Create the real invite URL
       const url = `${window.location.origin}/invite/${challengeId}?name=${encodeURIComponent(formData.name)}&reward=${formData.rewardAmount}`;
       setInviteUrl(url);
       setShowShareModal(true);
     } catch (error) {
       console.error('Error creating invite link:', error);
       toast.error('Failed to create invite link');
+    } finally {
+      setCreatingInvite(false);
     }
   };
 
@@ -242,10 +244,10 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
           <button
             type="button"
             onClick={handleCreateInviteLink}
-            disabled={!formData.name || !formData.description || !!rewardError || formData.rewardAmount <= 0}
+            disabled={!formData.name || !formData.description || !!rewardError || formData.rewardAmount <= 0 || creatingInvite}
             className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors text-sm"
           >
-            Create Invite Link 🔗
+            {creatingInvite ? 'Creating Link...' : 'Create Invite Link 🔗'}
           </button>
           <p className="text-xs text-gray-400 text-center mt-2">
             Share on social media or copy link to clipboard
