@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Check if challenge is expired or inactive
     const now = new Date();
     const expiresAt = new Date(challenge.expiresAt);
-    
+
     if (now > expiresAt || !challenge.isActive || challenge.isCompleted) {
       return res.status(410).json({ error: 'Challenge has expired or is no longer available' });
     }

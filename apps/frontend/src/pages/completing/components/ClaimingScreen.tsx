@@ -455,7 +455,7 @@ const ClaimingScreen: React.FC<ClaimingScreenProps> = ({
           }, 2000);
           return;
         }
-        
+
         throw new Error(result.message);
       }
     } catch (error) {

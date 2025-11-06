@@ -18,7 +18,7 @@ export const ChallengeCompletionSlide: React.FC<ChallengeSlideProps> = ({
   const challenge =
     completion.publicChallenge || completion.privateChallenge || completion.aiChallenge;
 
-  console.log("challenge", completion, challenge)
+  console.log('challenge', completion, challenge);
 
   return (
     <div className="group cursor-pointer bg-gray-800 rounded-lg overflow-hidden">

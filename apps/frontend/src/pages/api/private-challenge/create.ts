@@ -91,10 +91,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         query: AccountDocument,
         variables: { request: { address: creatorId } },
       }),
-      recipientId !== 'invite-link' ? lensApolloClient.query<AccountQuery, AccountQueryVariables>({
-        query: AccountDocument,
-        variables: { request: { address: recipientId } },
-      }) : Promise.resolve({ data: { account: { owner: 'invite-link' } } }),
+      recipientId !== 'invite-link'
+        ? lensApolloClient.query<AccountQuery, AccountQueryVariables>({
+            query: AccountDocument,
+            variables: { request: { address: recipientId } },
+          })
+        : Promise.resolve({ data: { account: { owner: 'invite-link' } } }),
     ]);
 
     const creatorOwnerAddress = creatorData.data?.account?.owner;

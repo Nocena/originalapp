@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { usePermissions } from '../../../hooks/usePermissions';
-import { AlertTriangle, Bell, Camera, CheckCircle, Mic, RefreshCw, Settings, XCircle } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bell,
+  Camera,
+  CheckCircle,
+  Mic,
+  RefreshCw,
+  Settings,
+  XCircle,
+} from 'lucide-react';
 import { usePermissionGuideModalStore } from '../../../store/non-persisted/usePermissionGuideModalStore';
 import { hasDeniedPermission } from '@utils/permissionManager';
 
@@ -39,9 +48,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
     hasEssentialPermissions,
     clearError,
   } = usePermissions();
-  const {
-    setShowGuideModal,
-  } = usePermissionGuideModalStore()
+  const { setShowGuideModal } = usePermissionGuideModalStore();
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isRequesting, setIsRequesting] = useState<{
     camera: boolean;
@@ -516,7 +523,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
           </div>
         </div>
       )}
-
     </div>
   );
 };

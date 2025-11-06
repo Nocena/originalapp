@@ -46,12 +46,15 @@ export default function InvitePage() {
   const handleAuthRedirect = (authType: 'login' | 'register') => {
     if (challenge && typeof window !== 'undefined') {
       sessionStorage.setItem('pendingChallengeId', challengeId as string);
-      sessionStorage.setItem('pendingChallengeData', JSON.stringify({
-        title: challenge.title,
-        description: challenge.description,
-        reward: challenge.reward,
-        creatorLensAccountId: challenge.creatorLensAccountId
-      }));
+      sessionStorage.setItem(
+        'pendingChallengeData',
+        JSON.stringify({
+          title: challenge.title,
+          description: challenge.description,
+          reward: challenge.reward,
+          creatorLensAccountId: challenge.creatorLensAccountId,
+        })
+      );
     }
     router.push(`/${authType}`);
   };
@@ -74,7 +77,9 @@ export default function InvitePage() {
         }
 
         // Then redirect to completion page
-        router.push(`/completing?type=PRIVATE&challengeId=${challengeId}&title=${encodeURIComponent(challenge.title)}&description=${encodeURIComponent(challenge.description)}&reward=${challenge.reward}&creatorWalletAddress=${challenge.creatorLensAccountId}`);
+        router.push(
+          `/completing?type=PRIVATE&challengeId=${challengeId}&title=${encodeURIComponent(challenge.title)}&description=${encodeURIComponent(challenge.description)}&reward=${challenge.reward}&creatorWalletAddress=${challenge.creatorLensAccountId}`
+        );
       } catch (error) {
         console.error('Error accepting challenge:', error);
       }
@@ -89,18 +94,20 @@ export default function InvitePage() {
     );
   }
 
+  if (!challenge) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white">Challenge not found</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-nocenaBg to-gray-900 text-white flex items-center justify-center p-4">
       <div className="bg-gray-800/90 backdrop-blur-sm rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl border border-gray-700/50">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center mb-4">
-            <Image
-              src="/logo/LogoDark.png"
-              alt="Nocena"
-              width={24}
-              height={24}
-              className="mr-2"
-            />
+            <Image src="/logo/LogoDark.png" alt="Nocena" width={24} height={24} className="mr-2" />
             <h3 className="text-xl font-semibold text-white">Challenge Invitation</h3>
           </div>
           <p className="text-gray-400">You've been invited to complete a challenge!</p>
@@ -108,20 +115,16 @@ export default function InvitePage() {
 
         <div className="space-y-4 mb-6">
           <div className="bg-gray-700/30 rounded-lg p-4 border border-gray-600/20">
-            <h2 className="text-xl font-bold text-white mb-2 text-center">Challenge: "{challenge.title}"</h2>
+            <h2 className="text-xl font-bold text-white mb-2 text-center">
+              Challenge: "{challenge.title}"
+            </h2>
             <p className="text-gray-300 text-center leading-relaxed">{challenge.description}</p>
           </div>
           <div className="bg-gray-700/50 rounded-lg p-3 border border-gray-600/30">
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-sm">Reward:</span>
               <div className="flex items-center">
-                <Image
-                  src="/nocenix.ico"
-                  alt="NCT"
-                  width={16}
-                  height={16}
-                  className="mr-1"
-                />
+                <Image src="/nocenix.ico" alt="NCT" width={16} height={16} className="mr-1" />
                 <span className="text-green-400 font-semibold">{challenge.reward} NCT</span>
               </div>
             </div>
@@ -145,7 +148,7 @@ export default function InvitePage() {
           </div>
         ) : (
           <div className="space-y-3">
-            <button 
+            <button
               onClick={handleAcceptChallenge}
               className="w-full px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 rounded-lg transition-colors text-white font-medium"
             >

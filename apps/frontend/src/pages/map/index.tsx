@@ -268,9 +268,11 @@ const MapView = () => {
 
       try {
         // Load existing user challenges first
-        const challengesResponse = await fetch(`/api/map/user-challenges?userAddress=${currentLensAccount.address}`);
+        const challengesResponse = await fetch(
+          `/api/map/user-challenges?userAddress=${currentLensAccount.address}`
+        );
         const challengeData = await challengesResponse.json();
-        
+
         if (challengeData.hasGenerated) {
           // User already generated challenges this week - load them and disable button
           console.log('📦 Loading existing weekly challenges');
@@ -280,7 +282,7 @@ const MapView = () => {
           // User hasn't generated yet - check if weekly event allows it
           const buttonResponse = await fetch('/api/map/button-state');
           const buttonState = await buttonResponse.json();
-          
+
           if (buttonState.enabled) {
             console.log('🔘 Weekly event detected, enabling challenge button');
             setButtonEnabled(true);
@@ -300,7 +302,7 @@ const MapView = () => {
   // Initialize empty challenges - only generated via button
   useEffect(() => {
     if (!userLocation || !mapLoaded) return;
-    
+
     // Ensure locatingUser is false when map is ready
     setLocatingUser(false);
   }, [userLocation, mapLoaded]);

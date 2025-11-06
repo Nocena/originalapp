@@ -20,7 +20,7 @@ export function useAvailableNocenaLensAccounts(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const userLensAccountIds = useMemo(() => accounts.map(a => a.address), [accounts]);
+  const userLensAccountIds = useMemo(() => accounts.map((a) => a.address), [accounts]);
 
   useEffect(() => {
     if (!userLensAccountIds?.length) return;
@@ -31,7 +31,7 @@ export function useAvailableNocenaLensAccounts(
     getUsersWithCompletions(userLensAccountIds)
       .then((result) => {
         if (!cancelled) {
-          const filteredOnes = accounts.filter(account => result.includes(account.address));
+          const filteredOnes = accounts.filter((account) => result.includes(account.address));
           setFilteredAccounts(filteredOnes.length <= 0 ? accounts : filteredOnes.slice(0, 1));
         }
       })
@@ -42,7 +42,9 @@ export function useAvailableNocenaLensAccounts(
         if (!cancelled) setLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [JSON.stringify(userLensAccountIds)]);
 
   return { availableNocenaLensAccounts: filteredAccounts, loading, error };

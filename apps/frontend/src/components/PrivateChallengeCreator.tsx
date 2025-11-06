@@ -106,7 +106,7 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
 
       const data = await response.json();
       const challengeId = data.challengeId;
-      
+
       const url = `${window.location.origin}/invite/${challengeId}?name=${encodeURIComponent(formData.name)}&reward=${formData.rewardAmount}`;
       setInviteUrl(url);
       setShowShareModal(true);
@@ -244,7 +244,13 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
           <button
             type="button"
             onClick={handleCreateInviteLink}
-            disabled={!formData.name || !formData.description || !!rewardError || formData.rewardAmount <= 0 || creatingInvite}
+            disabled={
+              !formData.name ||
+              !formData.description ||
+              !!rewardError ||
+              formData.rewardAmount <= 0 ||
+              creatingInvite
+            }
             className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors text-sm"
           >
             {creatingInvite ? 'Creating Link...' : 'Create Invite Link 🔗'}
@@ -260,12 +266,15 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[100]">
           <div className="bg-gray-800 rounded-lg p-6 w-full max-w-sm mx-4">
             <h4 className="text-lg font-semibold mb-4 text-center">Share Challenge</h4>
-            
+
             <div className="space-y-3">
               <button
                 onClick={() => {
                   const message = `You've been challenged! Complete "${formData.name}" and earn ${formData.rewardAmount} tokens → ${inviteUrl}`;
-                  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`, '_blank');
+                  window.open(
+                    `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`,
+                    '_blank'
+                  );
                 }}
                 className="w-full px-4 py-3 bg-black hover:bg-gray-900 rounded-lg transition-colors flex items-center justify-center space-x-3"
               >
@@ -278,7 +287,10 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
               <button
                 onClick={() => {
                   const message = `You've been challenged! Complete "${formData.name}" and earn ${formData.rewardAmount} tokens`;
-                  window.open(`https://t.me/share/url?url=${inviteUrl}&text=${encodeURIComponent(message)}`, '_blank');
+                  window.open(
+                    `https://t.me/share/url?url=${inviteUrl}&text=${encodeURIComponent(message)}`,
+                    '_blank'
+                  );
                 }}
                 className="w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors flex items-center justify-center space-x-3"
               >
@@ -295,8 +307,18 @@ const PrivateChallengeCreator: React.FC<PrivateChallengeCreatorProps> = ({
                 }}
                 className="w-full px-4 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg transition-colors flex items-center justify-center space-x-3"
               >
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  />
                 </svg>
                 <span>Copy Link</span>
               </button>

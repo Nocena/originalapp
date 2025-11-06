@@ -4,16 +4,15 @@ import { gql } from '@apollo/client';
 
 const GET_USER_WEEKLY_CHALLENGES = gql`
   query GetUserWeeklyChallenges($creatorId: String!) {
-    queryPublicChallenge(
-      filter: {
-        creatorLensAccountId: { eq: $creatorId }
-      }
-    ) {
+    queryPublicChallenge(filter: { creatorLensAccountId: { eq: $creatorId } }) {
       id
       title
       description
       reward
-      location { latitude longitude }
+      location {
+        latitude
+        longitude
+      }
       createdAt
     }
   }
@@ -22,10 +21,7 @@ const GET_USER_WEEKLY_CHALLENGES = gql`
 const GET_USER_COMPLETIONS = gql`
   query GetUserCompletions($userAddress: String!) {
     queryChallengeCompletion(
-      filter: {
-        userLensAccountId: { eq: $userAddress }
-        challengeType: { eq: "public" }
-      }
+      filter: { userLensAccountId: { eq: $userAddress }, challengeType: { eq: "public" } }
     ) {
       publicChallengeId
     }
@@ -47,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get current week ID
     const now = new Date();
     const monday = new Date(now);
-    monday.setUTCDate(now.getUTCDate() - (now.getUTCDay() + 6) % 7);
+    monday.setUTCDate(now.getUTCDate() - ((now.getUTCDay() + 6) % 7));
     monday.setUTCHours(0, 0, 0, 0);
     const weekId = monday.toISOString().split('T')[0];
 
@@ -56,31 +52,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       graphqlClient.query({
         query: GET_USER_WEEKLY_CHALLENGES,
         variables: { creatorId: userAddress },
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
       }),
       graphqlClient.query({
         query: GET_USER_COMPLETIONS,
         variables: { userAddress },
-        fetchPolicy: 'network-only'
-      })
+        fetchPolicy: 'network-only',
+      }),
     ]);
 
     const allChallenges = challengesResult.data?.queryPublicChallenge || [];
     const completions = completionsResult.data?.queryChallengeCompletion || [];
-    
+
     // Get completed challenge IDs
     const completedChallengeIds = new Set(
       completions.map((c: any) => c.publicChallengeId).filter(Boolean)
     );
-    
+
     // Filter challenges by current week and exclude completed ones
-    const weekChallenges = allChallenges.filter((c: any) => 
-      c.description && 
-      c.description.includes(`|week:${weekId}`) &&
-      !completedChallengeIds.has(c.id)
+    const weekChallenges = allChallenges.filter(
+      (c: any) =>
+        c.description &&
+        c.description.includes(`|week:${weekId}`) &&
+        !completedChallengeIds.has(c.id)
     );
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       challenges: weekChallenges.map((c: any) => ({
         id: c.id,
         title: c.title,
@@ -92,11 +89,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         completionCount: 0,
         participantCount: 0,
         maxParticipants: 1,
-        recentCompletions: []
-      })), 
-      hasGenerated: allChallenges.some((c: any) => 
-        c.description && c.description.includes(`|week:${weekId}`)
-      )
+        recentCompletions: [],
+      })),
+      hasGenerated: allChallenges.some(
+        (c: any) => c.description && c.description.includes(`|week:${weekId}`)
+      ),
     });
   } catch (error) {
     console.error('Error loading user challenges:', error);
