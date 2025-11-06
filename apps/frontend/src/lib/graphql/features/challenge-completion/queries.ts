@@ -103,7 +103,11 @@ export const USER_SIMILAR_CHALLENGE_COMPLETIONS = gql`
         queryChallengeCompletion(
             filter: {
                 and: [
-                    { userLensAccountId: { notIn: [$userLensAccountId] } }
+                    {
+                        not: {
+                            userLensAccountId: { eq: $userLensAccountId }
+                        }
+                    }
                     {
                         or: [
                             { privateChallengeId: { in: $challengeIds } }
