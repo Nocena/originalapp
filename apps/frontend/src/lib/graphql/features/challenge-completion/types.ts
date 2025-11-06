@@ -7,6 +7,16 @@ export interface FetchUserCompletionsParams {
   challengeType?: 'ai' | 'private' | 'public';
 }
 
+export interface FetchUserCompletionsForCalendarParams {
+  userLensAccountId: string;
+}
+
+export interface UserCompletionsCalendar {
+  daily: number[];
+  weekly: number[];
+  monthly: number[];
+}
+
 export interface BasicCompletionType {
   id: any;
   media: any;

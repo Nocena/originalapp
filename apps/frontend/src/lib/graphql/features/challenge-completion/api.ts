@@ -3,7 +3,7 @@ import {
   CHECK_CHALLENGE_COMPLETION,
   FETCH_ALL_COMPLETIONS,
   FETCH_COMPLETION_BY_COMPLETION_ID,
-  FETCH_COMPLETIONS_BY_CHALLENGE,
+  FETCH_COMPLETIONS_BY_CHALLENGE, FETCH_COMPLETIONS_OF_USER_FOR_CALENDAR,
   FETCH_COMPLETIONS_OF_USERS,
   FETCH_LATEST_USER_COMPLETION,
   FETCH_USER_COMPLETIONS_BY_FILTERS,
@@ -12,7 +12,13 @@ import {
   USER_CHALLENGE_COMPLETIONS,
   USER_SIMILAR_CHALLENGE_COMPLETIONS,
 } from './queries';
-import { BasicCompletionType, ChallengeCompletion, FetchUserCompletionsParams, MediaMetadata } from './types';
+import {
+  BasicCompletionType,
+  ChallengeCompletion,
+  FetchUserCompletionsForCalendarParams,
+  FetchUserCompletionsParams,
+  MediaMetadata, UserCompletionsCalendar,
+} from './types';
 import { getDateRange } from '../follow/utils';
 import { fetchFollowingData, getLensAccountByAddress } from '../../../lens/api';
 import { getChallengeCompletionObjectFrom, getDateParts, serializeMedia } from './utils';
@@ -372,6 +378,40 @@ export async function getUsersWithCompletions(
     );
   } catch (error) {
     console.error('❌ Error fetching users with completions:', error);
+    throw error;
+  }
+}
+
+export async function fetchUserCompletionsForCalendar({
+                                                      userLensAccountId,
+                                                    }: FetchUserCompletionsForCalendarParams): Promise<UserCompletionsCalendar> {
+  try {
+    const { data } = await graphqlClient.query({
+      query: FETCH_COMPLETIONS_OF_USER_FOR_CALENDAR,
+      variables: {
+        userLensAccountId,
+      },
+    });
+
+    const completions = data.queryChallengeCompletion || [];
+    const result: UserCompletionsCalendar = {
+      daily: [],
+      weekly: [],
+      monthly: []
+    }
+
+    for(const completion of completions) {
+      if (completion.aiChallenge) {
+        const { frequency, day, week, month } = completion.aiChallenge
+        if (frequency === 'daily') result.daily.push(day)
+        else if (frequency === 'weekly') result.weekly.push(week)
+        else if (frequency === 'monthly') result.monthly.push(month)
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error fetching user completions:', error);
     throw error;
   }
 }

@@ -253,6 +253,42 @@ export const FETCH_COMPLETIONS_OF_USERS = gql`
   }
 `;
 
+export const FETCH_COMPLETIONS_OF_USER_FOR_CALENDAR = gql`
+    query FetchUserCompletions(
+        $userLensAccountId: String!
+    ) {
+        queryChallengeCompletion(
+            filter: {
+                userLensAccountId: { eq: $userLensAccountId }
+            }
+            order: { desc: completionDate }
+        ) {
+            id
+            media
+            completionDate
+            completionDay
+            completionWeek
+            completionMonth
+            completionYear
+            status
+            challengeType
+            likesCount
+            aiChallenge {
+                id
+                frequency
+                title
+                description
+                frequency
+                reward
+                day
+                week
+                month
+                year
+            }
+        }
+    }
+`;
+
 export const FETCH_ALL_COMPLETIONS = gql`
   query GetAllChallengeCompletions {
     queryChallengeCompletion(order: { desc: completionDate }) {

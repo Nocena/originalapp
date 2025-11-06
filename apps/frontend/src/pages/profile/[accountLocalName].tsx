@@ -16,6 +16,9 @@ import getAvatar from '../../helpers/getAvatar';
 import { useLensFollowActions } from '../../hooks/useLensFollowActions';
 import { useNoceniteBalanceFormatted } from '../../hooks/useNoceniteBalance';
 import CompletionsSection from '@pages/profile/components/completions/CompletionsSection';
+import {
+  useUserCompletionsCalendar
+} from '../../lib/graphql/features/challenge-completion/hook/useUserCompletionsCalendar';
 
 const defaultProfilePic = '/images/profile.png';
 const nocenix = '/nocenix.ico';
@@ -77,6 +80,8 @@ const OtherProfileView: React.FC = () => {
   const { balance: nctBalance, loading: nctLoading } = useNoceniteBalanceFormatted(
     selectedUserAccount?.owner
   );
+
+  const { data: userCompletionsCalendarData } = useUserCompletionsCalendar(selectedUserAccount?.address)
 
   // Check if this page is visible in the PageManager
   useEffect(() => {
@@ -412,9 +417,7 @@ const OtherProfileView: React.FC = () => {
 
               {activeSection === 'calendar' && (
                 <CalendarSection
-                  dailyChallenges={''.split('').map((char) => char === '1')}
-                  weeklyChallenges={''.split('').map((char) => char === '1')}
-                  monthlyChallenges={''.split('').map((char) => char === '1')}
+                  userCompletionsData={userCompletionsCalendarData}
                 />
               )}
 
