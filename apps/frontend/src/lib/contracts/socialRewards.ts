@@ -81,6 +81,40 @@ export class SocialRewardsService {
     return txHash;
   }
 
+  async processReaction(userAddress: string, completionId: string): Promise<string> {
+    const amount = parseEther('5'); // 5 NCT for reactions
+    const interactionId = keccak256(
+      encodeAbiParameters(
+        [{ name: 'data', type: 'string' }],
+        [`${userAddress}_reaction_${completionId}`] // No timestamp for duplicate protection
+      )
+    );
+
+    const messageHash = keccak256(
+      encodeAbiParameters(
+        [
+          { name: 'users', type: 'address[]' },
+          { name: 'amounts', type: 'uint256[]' },
+          { name: 'interactionIds', type: 'bytes32[]' },
+        ],
+        [[userAddress as `0x${string}`], [amount], [interactionId]]
+      )
+    );
+
+    const signature = await this.walletClient.signMessage({
+      message: { raw: messageHash },
+    });
+
+    const txHash = await this.walletClient.writeContract({
+      address: CONTRACTS.SocialRewards as `0x${string}`,
+      abi: socialRewardsABI.abi,
+      functionName: 'batchRewardSocialInteractions',
+      args: [[userAddress], [amount], [interactionId], signature],
+    });
+
+    return txHash;
+  }
+
   async processFollow(userAddress: string, followedUserId: string): Promise<string> {
     const amount = parseEther('10'); // 10 NCT for follows (max allowed)
     const interactionId = keccak256(
