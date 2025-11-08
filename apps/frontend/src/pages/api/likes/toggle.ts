@@ -51,7 +51,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           const completionOwnerId = completionData?.getChallengeCompletion?.userLensAccountId;
           
-          if (completionOwnerId) {
+          // Skip reward if user is liking their own post
+          if (completionOwnerId === userId) {
+            console.log('⚠️ Skipping reward - user liked their own post');
+          } else if (completionOwnerId) {
             // Get completion owner's Lens account data to get their wallet address
             const lensAccountData = await getLensAccountByAddress(completionOwnerId);
             const ownerWallet = lensAccountData?.account?.owner;
