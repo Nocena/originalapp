@@ -3,8 +3,11 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 
 // Import your existing functions from dgraph.ts
-import { createRealMojiReaction } from '../../../lib/graphql';
+import { createRealMojiReaction, graphqlClient } from '../../../lib/graphql';
 import sanitizeDStorageUrl from '../../../helpers/sanitizeDStorageUrl';
+import { SocialRewardsService } from '../../../lib/contracts/socialRewards';
+import { GET_COMPLETION_OWNER } from '../../../lib/graphql/features/reaction/queries';
+import { getLensAccountByAddress } from '../../../lib/lens/api';
 
 // Disable default body parser to handle multipart/form-data
 export const config = {
@@ -101,6 +104,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       emoji: getEmojiForReactionType(reactionType),
       message: 'RealMoji reaction created successfully',
     };
+
+    // Mint social reward for reaction
+    let rewardInfo = null;
+    try {
+      const relayerPrivateKey = process.env.RELAYER_PRIVATE_KEY;
+      if (relayerPrivateKey) {
+        // Get completion owner (who should receive the reward)
+        const { data: completionData } = await graphqlClient.query({
+          query: GET_COMPLETION_OWNER,
+          variables: { completionId },
+          fetchPolicy: 'network-only',
+        });
+
+        const completionOwnerId = completionData?.getChallengeCompletion?.userLensAccountId;
+        
+        if (completionOwnerId) {
+          // Get completion owner's Lens account data to get their wallet address
+          const lensAccountData = await getLensAccountByAddress(completionOwnerId);
+          const ownerWallet = lensAccountData?.account?.owner;
+          
+          if (ownerWallet) {
+            console.log('🎉 Processing reaction reward for post owner wallet:', ownerWallet);
+            const service = new SocialRewardsService(relayerPrivateKey);
+            const txHash = await service.processReaction(ownerWallet, completionId);
+            console.log('✅ Reaction reward minted to post owner:', txHash);
+            
+            rewardInfo = {
+              success: true,
+              txHash,
+              message: 'Reaction reward minted successfully! +5 NCT earned'
+            };
+            responseData.reward = rewardInfo;
+          } else {
+            console.log('⚠️ No wallet found for post owner Lens account:', completionOwnerId);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to process social reward:', error);
+    }
 
     console.log('🎭 [API] RealMoji creation completed successfully:', responseData);
 
