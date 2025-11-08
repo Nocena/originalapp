@@ -120,7 +120,7 @@ export class SocialRewardsService {
     const interactionId = keccak256(
       encodeAbiParameters(
         [{ name: 'data', type: 'string' }],
-        [`${userAddress}_follow_${followedUserId}_${Date.now()}`]
+        [`${userAddress}_follow_${followedUserId}`] // No timestamp for duplicate protection
       )
     );
 
