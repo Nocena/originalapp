@@ -1,8 +1,9 @@
 // pages/api/likes/toggle.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { toggleCompletionLike } from '../../../lib/graphql';
+import { toggleCompletionLike, graphqlClient } from '../../../lib/graphql';
 import { SocialRewardsService } from '../../../lib/contracts/socialRewards';
-import axios from 'axios';
+import { GET_COMPLETION_OWNER } from '../../../lib/graphql/features/reaction/queries';
+import { getLensAccountByAddress } from '../../../lib/lens/api';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -41,16 +42,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         const relayerPrivateKey = process.env.RELAYER_PRIVATE_KEY;
         if (relayerPrivateKey) {
-          console.log('🎉 Processing like reward for:', userId);
-          const service = new SocialRewardsService(relayerPrivateKey);
-          const txHash = await service.processLike(userId, completionId);
-          console.log('✅ Like reward minted:', txHash);
+          // Get completion owner (who should receive the reward)
+          const { data: completionData } = await graphqlClient.query({
+            query: GET_COMPLETION_OWNER,
+            variables: { completionId },
+            fetchPolicy: 'network-only',
+          });
+
+          const completionOwnerId = completionData?.getChallengeCompletion?.userLensAccountId;
           
-          rewardInfo = {
-            success: true,
-            txHash,
-            message: 'Like reward minted successfully! +2 NCT earned'
-          };
+          if (completionOwnerId) {
+            // Get completion owner's Lens account data to get their wallet address
+            const lensAccountData = await getLensAccountByAddress(completionOwnerId);
+            const ownerWallet = lensAccountData?.account?.owner;
+            
+            if (ownerWallet) {
+              console.log('🎉 Processing like reward for post owner wallet:', ownerWallet);
+              const service = new SocialRewardsService(relayerPrivateKey);
+              const txHash = await service.processLike(ownerWallet, completionId);
+              console.log('✅ Like reward minted to post owner:', txHash);
+              
+              rewardInfo = {
+                success: true,
+                txHash,
+                message: 'Like reward minted successfully! +2 NCT earned'
+              };
+            } else {
+              console.log('⚠️ No wallet found for post owner Lens account:', completionOwnerId);
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to process social reward:', error);
