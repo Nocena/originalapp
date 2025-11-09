@@ -218,8 +218,6 @@ Title: [SHORT PUNCHY NAME - 2-4 WORDS MAX]
 Description: [30-second challenge that makes people smile, max 140 chars]
 Reward: [number 1-10 based on social courage + absurdity level]`;
 
-    console.log(`🎨 Generating FUN challenge for ${poiType} at ${poiName}...`);
-
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -274,10 +272,6 @@ Reward: [number 1-10 based on social courage + absurdity level]`;
     // Adjust reward based on distance
     const distanceMultiplier = distance > 1000 ? 1.5 : distance > 500 ? 1.2 : 1;
     const finalReward = Math.round(scaledReward * distanceMultiplier);
-
-    console.log(
-      `✅ Generated: ${title} (AI: ${reward}/10, Scaled: ${scaledReward}, Final: ${finalReward})`
-    );
 
     return res.status(200).json({ title, description, reward: finalReward, fallback: false });
   } catch (error) {
