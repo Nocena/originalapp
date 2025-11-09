@@ -4,8 +4,9 @@ import { mainnet, PublicClient } from '@lens-protocol/client';
 export const FLOW_EVM_TESTNET_ID = 545;
 
 export const CONTRACTS = {
-  Nocenite: '0xEe5d018045bd2Fa8B1Da0d80c93A47DA6E9dc5E6',
-  ChallengeRewards: '0x14720ba38BcD4e141bF3CD10d8D78e2E3899f11c',
+  Nocenite: '0x3FdB92C4974a94E0e867E17e370d79DA6201edc8',
+  ChallengeRewards: '0xD1e882097dEA0EcC47Ce09e518e518dbD5E17879',
+  SocialRewards: '0x1f5d303E6fC60dd7C65631cF8B7BCeDfc341b747',
 } as const;
 
 // Challenge reward amounts (in tokens, not wei)
