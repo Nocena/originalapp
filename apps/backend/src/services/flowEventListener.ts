@@ -29,7 +29,7 @@ export class FlowEventListener {
   private processedEvents = new Set<string>();
 
   constructor() {
-    this.contractAddress = process.env.FLOW_CONTRACT_ADDRESS || '';
+    this.contractAddress = '7a6655221a6d9363';
     this.apolloClient = apolloClient;
   }
 
