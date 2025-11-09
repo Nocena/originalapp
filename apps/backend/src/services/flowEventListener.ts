@@ -1,5 +1,3 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import { ApolloClient, InMemoryCache, gql, createHttpLink } from '@apollo/client';
@@ -8,270 +6,223 @@ import dotenv from 'dotenv';
 // Load environment variables from backend directory
 dotenv.config({ path: path.join(__dirname, '../../.env.local') });
 
-const execAsync = promisify(exec);
-
 // GraphQL client for database operations
 const httpLink = createHttpLink({
-  uri: process.env.DGRAPH_ENDPOINT || 'http://localhost:8080/graphql',
+  uri: process.env.DGRAPH_ENDPOINT || process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT,
 });
 
-const graphqlClient = new ApolloClient({
+const apolloClient = new ApolloClient({
   link: httpLink,
   cache: new InMemoryCache(),
 });
 
-const DELETE_OLD_CHALLENGES = gql`
-  mutation DeleteOldChallenges {
-    deletePublicChallenge(
-      filter: {
-        not: {
-          creatorLensAccountId: { eq: "system" }
-        }
-      }
-    ) {
-      msg
-      numUids
-    }
-  }
-`;
-
-interface DeleteChallengeResult {
-  deletePublicChallenge: {
-    msg: string;
-    numUids: number;
-  };
-}
-
 interface ChallengeEvent {
   type: 'daily' | 'weekly' | 'monthly';
-  txId: string;
-  blockHeight?: string;
-}
-
-interface BlockState {
-  lastProcessedBlock: number;
+  blockHeight: number;
+  data?: any;
 }
 
 export class FlowEventListener {
-  private readonly contractAddress = '7a6655221a6d9363';
+  private contractAddress: string;
+  private apolloClient: ApolloClient<any>;
   private isListening = false;
-  private intervalId?: NodeJS.Timeout;
-  private processedEvents = new Set<string>(); // Store "txId-eventType" instead of just txId
-  private stateFile = path.join(__dirname, '../data/block-state.json');
-  private lastProcessedBlock = 287491600; // Start from block before our latest events
+  private processedEvents = new Set<string>();
+
+  constructor() {
+    this.contractAddress = process.env.FLOW_CONTRACT_ADDRESS || '';
+    this.apolloClient = apolloClient;
+  }
 
   async startListening(): Promise<void> {
-    if (this.isListening) return;
-    
+    if (this.isListening) {
+      console.log('⚠️ Event listener is already running');
+      return;
+    }
+
     this.isListening = true;
-    console.log('🔗 Starting Flow blockchain event listener...');
-    
-    // Load last processed block
-    await this.loadState();
-    
-    this.intervalId = setInterval(() => {
-      this.checkForChallengeEvents();
-    }, 60000);
-    
-    await this.checkForChallengeEvents();
-  }
+    console.log('🔗 Starting Flow blockchain event subscription...');
 
-  async stopListening(): Promise<void> {
-    if (!this.isListening) return;
-    
-    this.isListening = false;
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-    }
-    console.log('🛑 Stopped Flow blockchain event listener');
-  }
-
-  private async loadState(): Promise<void> {
     try {
-      const data = await fs.readFile(this.stateFile, 'utf-8');
-      const state: BlockState = JSON.parse(data);
-      this.lastProcessedBlock = state.lastProcessedBlock;
-      console.log(`📂 Loaded state: last processed block ${this.lastProcessedBlock}`);
+      await this.startEventSubscription();
     } catch (error) {
-      console.log(`📂 No state file found, starting from block ${this.lastProcessedBlock}`);
-      await this.saveState();
+      console.error('❌ Failed to start event subscription:', error);
+      this.isListening = false;
     }
   }
 
-  private async saveState(): Promise<void> {
-    try {
-      await fs.mkdir(path.dirname(this.stateFile), { recursive: true });
-      const state: BlockState = { lastProcessedBlock: this.lastProcessedBlock };
-      await fs.writeFile(this.stateFile, JSON.stringify(state, null, 2));
-    } catch (error) {
-      console.error('❌ Failed to save state:', error);
-    }
-  }
+  private async startEventSubscription(): Promise<void> {
+    const fcl = await import('@onflow/fcl');
+    
+    fcl.config({
+      'accessNode.api': 'https://rest-testnet.onflow.org'
+    });
 
-  async checkForChallengeEvents(): Promise<void> {
-    console.log('🔍 Checking for challenge events...');
+    const eventTypes = [
+      `A.${this.contractAddress}.NocenaChallengeHandler.TriggerDailyChallenge`,
+      `A.${this.contractAddress}.NocenaChallengeHandler.TriggerWeeklyChallenge`,
+      `A.${this.contractAddress}.NocenaChallengeHandler.TriggerMonthlyChallenge`
+    ];
+
+    console.log('📡 Subscribing to challenge events...');
+
+    // Get current block height to start from
+    const currentBlock = await this.getCurrentBlock();
+
     try {
-      const currentBlock = await this.getCurrentBlock();
-      const events = await this.getEventsSinceLastBlock(currentBlock);
-      console.log(`📊 Found ${events.length} events`);
-      
-      for (const event of events) {
-        console.log(`📝 Event: ${event.type} - TX: ${event.txId}`);
-        const eventKey = `${event.txId}-${event.type}`;
-        if (!this.processedEvents.has(eventKey)) {
-          await this.processChallengeEvent(event);
-          this.processedEvents.add(eventKey);
-        } else {
-          console.log(`⏭️ Event ${event.type} from ${event.txId} already processed`);
+      // Create the subscription
+      const subscription = await fcl.send([
+        fcl.subscribeEvents({
+          eventTypes,
+          startHeight: currentBlock,
+          heartbeatInterval: 3000 // 3 second heartbeat
+        })
+      ]);
+
+      console.log('✅ Event subscription created');
+
+      // Use streamConnection to listen for events
+      subscription.streamConnection.on('data', (data: any) => {
+        if (data.events && data.events.length > 0) {
+          console.log(`📊 Received ${data.events.length} events`);
+          
+          data.events.forEach((event: any) => {
+            const challengeEvent = this.parseFlowEvent(event);
+            if (challengeEvent) {
+              this.processChallengeEvent(challengeEvent);
+            }
+          });
         }
-      }
+      });
 
-      // Update last processed block
-      if (currentBlock > this.lastProcessedBlock) {
-        this.lastProcessedBlock = currentBlock;
-        await this.saveState();
-      }
+      subscription.streamConnection.on('error', (error: any) => {
+        console.error('❌ Stream connection error:', error);
+      });
+
+      console.log('✅ Event subscription active');
     } catch (error) {
-      console.error('❌ Error checking for challenge events:', error);
+      console.error('❌ Event subscription setup error:', error);
+      throw error;
     }
   }
 
   private async getCurrentBlock(): Promise<number> {
     try {
-      const { stdout } = await execAsync('flow blocks get latest --network testnet');
-      const blockMatch = stdout.match(/Height\s+(\d+)/);
-      return blockMatch ? parseInt(blockMatch[1]) : this.lastProcessedBlock;
+      const fcl = await import('@onflow/fcl');
+      fcl.config({
+        'accessNode.api': 'https://rest-testnet.onflow.org'
+      });
+      
+      const response = await fcl.send([fcl.getBlock(true)]);
+      const latestBlock = await fcl.decode(response);
+      return latestBlock.height;
     } catch (error) {
       console.error('❌ Failed to get current block:', error);
-      return this.lastProcessedBlock;
+      return 0;
     }
   }
 
-  private async getEventsSinceLastBlock(currentBlock: number): Promise<ChallengeEvent[]> {
-    const startBlock = this.lastProcessedBlock;
-    const endBlock = Math.min(currentBlock, startBlock + 100); // Limit range to avoid timeouts
-    
-    const command = `flow events get A.${this.contractAddress}.NocenaChallengeHandler.TriggerDailyChallenge A.${this.contractAddress}.NocenaChallengeHandler.TriggerWeeklyChallenge A.${this.contractAddress}.NocenaChallengeHandler.TriggerMonthlyChallenge --network testnet --start ${startBlock} --end ${endBlock}`;
-    
-    console.log(`🔧 Checking blocks ${startBlock} to ${endBlock}`);
-    
+  private parseFlowEvent(event: any): ChallengeEvent | null {
     try {
-      const { stdout } = await execAsync(command);
-      return this.parseEventOutput(stdout);
+      const eventType = event.type.split('.').pop();
+      
+      if (eventType?.includes('TriggerDailyChallenge')) {
+        return { type: 'daily', blockHeight: event.blockHeight, data: event.data };
+      } else if (eventType?.includes('TriggerWeeklyChallenge')) {
+        return { type: 'weekly', blockHeight: event.blockHeight, data: event.data };
+      } else if (eventType?.includes('TriggerMonthlyChallenge')) {
+        return { type: 'monthly', blockHeight: event.blockHeight, data: event.data };
+      }
+      
+      return null;
     } catch (error) {
-      console.error('Flow CLI error:', error);
-      return [];
+      console.error('❌ Failed to parse event:', error);
+      return null;
     }
-  }
-
-  private parseEventOutput(output: string): ChallengeEvent[] {
-    const events: ChallengeEvent[] = [];
-    const lines = output.split('\n');
-    
-    let currentEvent: Partial<ChallengeEvent> | null = null;
-    let currentBlockHeight: string | undefined;
-    
-    for (const line of lines) {
-      if (line.includes('Events Block #')) {
-        currentBlockHeight = line.match(/Events Block #(\d+):/)?.[1];
-      }
-      
-      if (line.includes('Type\tA.')) {
-        if (line.includes('TriggerDailyChallenge')) {
-          currentEvent = { type: 'daily', blockHeight: currentBlockHeight };
-        } else if (line.includes('TriggerWeeklyChallenge')) {
-          currentEvent = { type: 'weekly', blockHeight: currentBlockHeight };
-        } else if (line.includes('TriggerMonthlyChallenge')) {
-          currentEvent = { type: 'monthly', blockHeight: currentBlockHeight };
-        }
-      }
-      
-      if (line.includes('Tx ID') && currentEvent) {
-        const txId = line.split('\t')[1]?.trim();
-        if (txId) {
-          currentEvent.txId = txId;
-          events.push(currentEvent as ChallengeEvent);
-          currentEvent = null;
-        }
-      }
-    }
-    
-    return events;
   }
 
   private async processChallengeEvent(event: ChallengeEvent): Promise<void> {
-    console.log(`🎯 Processing ${event.type} challenge event (TX: ${event.txId})`);
+    const eventKey = `${event.blockHeight}-${event.type}`;
     
+    if (this.processedEvents.has(eventKey)) {
+      return;
+    }
+
     try {
       await this.triggerChallengeGeneration(event.type);
+      console.log(`✅ ${event.type} challenge generated`);
       
       // Enable public challenge button for weekly events
       if (event.type === 'weekly') {
         await this.enablePublicChallengeButton();
       }
       
-      console.log(`✅ ${event.type} challenge generated successfully`);
+      this.processedEvents.add(eventKey);
     } catch (error) {
-      console.error(`❌ Failed to generate ${event.type} challenge:`, error);
+      console.error(`❌ Failed to process ${event.type} challenge:`, error);
     }
   }
 
-  private async enablePublicChallengeButton(): Promise<void> {
-    console.log('🔘 Enabling public challenge button for all users...');
-    
+  private async triggerChallengeGeneration(challengeType: 'daily' | 'weekly' | 'monthly'): Promise<void> {
     try {
-      const currentWeekId = this.getCurrentWeekId();
+      // Import and run the challenge generation script directly
+      const scriptPath = path.join(__dirname, `../scripts/generate${challengeType.charAt(0).toUpperCase() + challengeType.slice(1)}Challenge.ts`);
+      const module = await import(scriptPath);
       
-      // Clear old user challenges from database (all non-system challenges)
-      const { data } = await graphqlClient.mutate<DeleteChallengeResult>({
-        mutation: DELETE_OLD_CHALLENGES
-      });
+      // Call the correct function name
+      const functionName = `generate${challengeType.charAt(0).toUpperCase() + challengeType.slice(1)}Challenge`;
+      const generateFunction = module[functionName];
       
-      const deletedCount = data?.deletePublicChallenge?.numUids || 0;
-      console.log(`🧹 Cleared ${deletedCount} old user challenges`);
-      
-      // Store the weekly event timestamp for frontend to check
-      const buttonStateFile = path.join(__dirname, '../data/button-state.json');
-      const buttonState = {
-        enabled: true,
-        lastWeeklyEvent: new Date().toISOString(),
-        weekId: currentWeekId
-      };
-      
-      await fs.writeFile(buttonStateFile, JSON.stringify(buttonState, null, 2));
-      console.log('✅ Public challenge button enabled for all users');
-    } catch (error) {
-      console.error('❌ Failed to enable public challenge button:', error);
-    }
-  }
-
-  private getCurrentWeekId(): string {
-    const now = new Date();
-    const monday = new Date(now);
-    monday.setUTCDate(now.getUTCDate() - (now.getUTCDay() + 6) % 7);
-    monday.setUTCHours(0, 0, 0, 0);
-    return monday.toISOString().split('T')[0]; // Returns "2025-11-04"
-  }
-
-  private async triggerChallengeGeneration(challengeType: string): Promise<void> {
-    console.log(`🚀 Generating ${challengeType} challenge...`);
-    
-    const command = `pnpm tsx src/scripts/generate${challengeType.charAt(0).toUpperCase() + challengeType.slice(1)}Challenge.ts`;
-    
-    try {
-      const { stdout, stderr } = await execAsync(command, {
-        cwd: '/Users/cadenpiper/Code/Nocena/nocena-monorepo/apps/backend'
-      });
-      
-      if (stderr) {
-        console.error(`stderr for ${challengeType}:`, stderr);
+      if (typeof generateFunction === 'function') {
+        await generateFunction();
+      } else {
+        throw new Error(`Function ${functionName} not found in module`);
       }
-      
-      console.log(`${challengeType} challenge output:`, stdout);
-      console.log(`📝 ${challengeType} challenge created successfully`);
     } catch (error) {
       console.error(`Failed to run ${challengeType} challenge script:`, error);
       throw error;
     }
+  }
+
+  private async enablePublicChallengeButton(): Promise<void> {
+    try {
+      // Mark all existing active public challenges as inactive (hides from map only)
+      const UPDATE_PUBLIC_CHALLENGES = gql`
+        mutation {
+          updatePublicChallenge(
+            input: {
+              filter: { isActive: true },
+              set: { isActive: false }
+            }
+          ) {
+            numUids
+          }
+        }
+      `;
+
+      const result = await this.apolloClient.mutate({
+        mutation: UPDATE_PUBLIC_CHALLENGES,
+      });
+
+      const updatedCount = result.data?.updatePublicChallenge?.numUids || 0;
+      console.log(`🗺️ Weekly cycle: hidden ${updatedCount} challenges from map, button enabled`);
+      
+      // Enable button for users to generate new challenges
+      const buttonStateFile = path.join(__dirname, '../data/button-state.json');
+      const buttonState = {
+        enabled: true
+      };
+      
+      await fs.mkdir(path.dirname(buttonStateFile), { recursive: true });
+      await fs.writeFile(buttonStateFile, JSON.stringify(buttonState, null, 2));
+    } catch (error) {
+      console.error('❌ Failed to enable challenge button:', error);
+    }
+  }
+
+  stopListening(): void {
+    if (!this.isListening) return;
+    
+    this.isListening = false;
+    console.log('🛑 Flow event listener stopped');
   }
 }
