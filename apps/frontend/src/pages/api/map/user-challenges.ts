@@ -4,10 +4,7 @@ import { gql } from '@apollo/client';
 
 const GET_USER_WEEKLY_CHALLENGES = gql`
   query GetUserWeeklyChallenges($creatorId: String!) {
-    queryPublicChallenge(filter: { 
-      creatorLensAccountId: { eq: $creatorId },
-      isActive: true 
-    }) {
+    queryPublicChallenge(filter: { creatorLensAccountId: { eq: $creatorId }, isActive: true }) {
       id
       title
       description
