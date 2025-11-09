@@ -16,7 +16,7 @@ interface AIChallengeInput {
   year?: number;
 }
 
-const DGRAPH_ENDPOINT = process.env.DGRAPH_ENDPOINT || process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
+const DGRAPH_ENDPOINT = process.env.DGRAPH_ENDPOINT || process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT;
 
 export async function createAIChallenge(challengeData: AIChallengeInput): Promise<boolean> {
   if (!DGRAPH_ENDPOINT) {
