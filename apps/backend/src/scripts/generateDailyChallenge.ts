@@ -17,12 +17,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const DGRAPH_ENDPOINT = process.env.DGRAPH_ENDPOINT || process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT || '';
+const DGRAPH_ENDPOINT = process.env.DGRAPH_ENDPOINT || process.env.NEXT_PUBLIC_DGRAPH_ENDPOINT;
 
-async function generateDailyChallenge() {
+export async function generateDailyChallenge() {
   try {
-    console.log('🚀 Generating daily challenge...');
-    
     const randomChallenge = dailyChallenges[Math.floor(Math.random() * dailyChallenges.length)];
     
     const completion = await openai.chat.completions.create({
@@ -71,15 +69,11 @@ async function generateDailyChallenge() {
       year: now.getFullYear()
     };
 
-    console.log('✅ Daily challenge generated');
-    console.log('🏷️ Title:', challengeData.title);
-    console.log('📝 Description:', challengeData.description);
-    
     if (DGRAPH_ENDPOINT) {
       const success = await createAIChallenge(challengeData);
       
       if (success) {
-        console.log('💾 Challenge saved to database');
+        // Challenge saved successfully
       } else {
         throw new Error('Failed to save challenge to database');
       }
