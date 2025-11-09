@@ -12,6 +12,7 @@
   "dependencies": {
     "@apollo/client": "^3.12.11",
     "@nocena/indexer": "workspace:*",
+    "@onflow/fcl": "^1.19.0",
     "axios": "^1.7.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
