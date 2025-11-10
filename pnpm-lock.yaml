@@ -29,12 +29,6 @@ importers:
       '@onflow/fcl':
         specifier: ^1.19.0
         version: 1.20.2(@types/react@19.2.2)(bufferutil@4.0.9)(google-protobuf@3.21.4)(jiti@1.21.7)(postcss@8.5.6)(react@19.2.0)(tsx@4.20.6)(typescript@5.9.3)(utf-8-validate@5.0.10)(yaml@2.8.1)(zod@4.1.12)
-      '@onflow/sdk':
-        specifier: ^1.11.1
-        version: 1.11.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@onflow/types':
-        specifier: ^1.4.1
-        version: 1.4.2
       axios:
         specifier: ^1.7.9
         version: 1.12.2
@@ -3001,9 +2995,6 @@ packages:
   '@onflow/config@1.6.1':
     resolution: {integrity: sha512-5mhvVtQCVuG1ppLw3bOG4nfAWNTtXLRtw60h10DhZ/lOOwEs6Fm4tIHRQV0TTCGZTrU7kV/voRFIOk7PgiiGPg==}
 
-  '@onflow/config@1.6.2':
-    resolution: {integrity: sha512-N+GZEaxOV7kEPn+SdpvhSbjzgicMh+bkSyDbiuQP/QQzlFgAlMTdRKcvZI+bf4a1bBgiTQcyCDhnOoc67kjLzQ==}
-
   '@onflow/fcl-core@1.21.2':
     resolution: {integrity: sha512-dYjBty7bObxs/vzK3xRlzlKB9ah6MBJz3jG5i2jbbiy3U/8IxO/7TdCL/986c6m40r90ukO7waxiQv2niNVOqQ==}
 
@@ -3024,26 +3015,14 @@ packages:
   '@onflow/sdk@1.10.2':
     resolution: {integrity: sha512-JlGBGiqLB9qndGaawTowpNq6n6FC0kRrNuzO5tlgR/8/ialkVZNKIE6kctHNuEVJzD7tjOwiEVcv++6yKr/9QQ==}
 
-  '@onflow/sdk@1.11.1':
-    resolution: {integrity: sha512-dMC11mMxmubIVaR2vKmmBxAIVEiAnGSglQyyUN8NfVvDkJkTvWDVsfQwR8CpZbnGTOxHxFph4qX61QbRUm8PHQ==}
-
   '@onflow/transport-http@1.13.2':
     resolution: {integrity: sha512-zJ4gq+z2hVhN/ExYiUel+6DHxkgW8O6dYzbZzA4FGqvVPz72E1zRl4ZH2T+rHKNyzMjhPFdegAqejHw7hUYg+Q==}
-
-  '@onflow/transport-http@1.14.0':
-    resolution: {integrity: sha512-vjlyW88qF/hOKYcCW9SzVJ9/MoIAumW0qRqYqv9jfp9JmmKe/n+VTqZzSpsF64i0F8KAOnH+tblF9K2xlD298g==}
 
   '@onflow/typedefs@1.7.1':
     resolution: {integrity: sha512-yH/JO4A1yHz894mHAJmtPg791gTe+TwiV/97T3hnrw0POBrQjiv56hIUsyycBB+J32RKjXMlv4YV/rUErXPdDQ==}
 
-  '@onflow/typedefs@1.8.0':
-    resolution: {integrity: sha512-OvyLFGtXkotf0WaqkLW0xPV4DCeY86v1H0qR+ZxR07nh++XIIgOg1unkvVrx2IIY/x5tr8rDGsPA21X344pnjg==}
-
   '@onflow/types@1.4.2':
     resolution: {integrity: sha512-pxXIex6DnOm3zRz0rSX/CaNTmmCQXXosAXiq97CzCDRTOBch558KTyEwaQToMa1z4VH3e6G1/An8Ipi+qXNC5Q==}
-
-  '@onflow/types@1.5.0':
-    resolution: {integrity: sha512-GvesRIqP8vHvBPGYO2YntrqFWIsOPBGgia9cpghZcyiWJbxuA8qRcdsVrWM5h7I4iEiLHEhgvEIUENeAeHJx+g==}
 
   '@onflow/util-actor@1.3.5':
     resolution: {integrity: sha512-PHzV9MS22dzODegcDsq9nSo9rg2XdEfTs7yXSRK3NCVbfspuqHi/Ay58a7bI6GYUpC3smtnhn4/Nv30FHG0OCw==}
@@ -15610,15 +15589,6 @@ snapshots:
     transitivePeerDependencies:
       - '@onflow/util-config'
 
-  '@onflow/config@1.6.2':
-    dependencies:
-      '@babel/runtime': 7.28.4
-      '@onflow/util-actor': 1.3.5
-      '@onflow/util-invariant': 1.2.5
-      '@onflow/util-logger': 1.3.4
-    transitivePeerDependencies:
-      - '@onflow/util-config'
-
   '@onflow/fcl-core@1.21.2(bufferutil@4.0.9)(google-protobuf@3.21.4)(utf-8-validate@5.0.10)':
     dependencies:
       '@babel/runtime': 7.28.4
@@ -15780,49 +15750,7 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  '@onflow/sdk@1.11.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@babel/runtime': 7.28.4
-      '@onflow/config': 1.6.2
-      '@onflow/rlp': 1.2.4
-      '@onflow/transport-http': 1.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@onflow/typedefs': 1.8.0
-      '@onflow/types': 1.5.0
-      '@onflow/util-actor': 1.3.5
-      '@onflow/util-address': 1.2.4
-      '@onflow/util-invariant': 1.2.5
-      '@onflow/util-logger': 1.3.4
-      '@onflow/util-template': 1.2.4
-      deepmerge: 4.3.1
-      events: 3.3.0
-      sha3: 2.1.4
-      uuid: 9.0.1
-    transitivePeerDependencies:
-      - '@onflow/util-config'
-      - bufferutil
-      - encoding
-      - utf-8-validate
-
   '@onflow/transport-http@1.13.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@babel/runtime': 7.28.4
-      '@onflow/util-address': 1.2.4
-      '@onflow/util-invariant': 1.2.5
-      '@onflow/util-logger': 1.3.4
-      '@onflow/util-template': 1.2.4
-      abort-controller: 3.0.0
-      buffer: 6.0.3
-      cross-fetch: 4.1.0
-      events: 3.3.0
-      isomorphic-ws: 5.0.0(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      ws: 8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-    transitivePeerDependencies:
-      - '@onflow/util-config'
-      - bufferutil
-      - encoding
-      - utf-8-validate
-
-  '@onflow/transport-http@1.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       '@babel/runtime': 7.28.4
       '@onflow/util-address': 1.2.4
@@ -15845,18 +15773,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.28.4
 
-  '@onflow/typedefs@1.8.0':
-    dependencies:
-      '@babel/runtime': 7.28.4
-
   '@onflow/types@1.4.2':
-    dependencies:
-      '@babel/runtime': 7.28.4
-      '@onflow/util-logger': 1.3.4
-    transitivePeerDependencies:
-      - '@onflow/util-config'
-
-  '@onflow/types@1.5.0':
     dependencies:
       '@babel/runtime': 7.28.4
       '@onflow/util-logger': 1.3.4
