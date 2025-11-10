@@ -27,7 +27,7 @@ import usePollTransactionStatus from '../../hooks/usePollTransactionStatus';
 import { uploadImageFile } from 'src/helpers/accountPictureUtils';
 import LoadingSpinner from '@components/ui/LoadingSpinner';
 import PrimaryButton from '@components/ui/PrimaryButton';
-import CompletionsSection from '@pages/profile/components/completions/CompletionsSection';
+import CompletionsSection from '@components/Profile/completions/CompletionsSection';
 import { useUserCompletionsCalendar } from '../../lib/graphql/features/challenge-completion/hook/useUserCompletionsCalendar';
 
 const defaultProfilePic = '/images/profile.png';

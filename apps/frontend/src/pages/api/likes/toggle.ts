@@ -50,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           });
 
           const completionOwnerId = completionData?.getChallengeCompletion?.userLensAccountId;
-          
+
           // Skip reward if user is liking their own post
           if (completionOwnerId === userId) {
             console.log('⚠️ Skipping reward - user liked their own post');
@@ -58,17 +58,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Get completion owner's Lens account data to get their wallet address
             const lensAccountData = await getLensAccountByAddress(completionOwnerId);
             const ownerWallet = lensAccountData?.account?.owner;
-            
+
             if (ownerWallet) {
               console.log('🎉 Processing like reward for post owner wallet:', ownerWallet);
               const service = new SocialRewardsService(relayerPrivateKey);
               const txHash = await service.processLike(ownerWallet, completionId);
               console.log('✅ Like reward minted to post owner:', txHash);
-              
+
               rewardInfo = {
                 success: true,
                 txHash,
-                message: 'Like reward minted successfully! +2 NCT earned'
+                message: 'Like reward minted successfully! +2 NCT earned',
               };
             } else {
               console.log('⚠️ No wallet found for post owner Lens account:', completionOwnerId);
@@ -85,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       isLiked: result.isLiked,
       newLikeCount: result.newLikeCount,
       message: result.isLiked ? 'Post liked' : 'Post unliked',
-      reward: rewardInfo
+      reward: rewardInfo,
     });
   } catch (error) {
     console.error('API: Error toggling like:', error);

@@ -2,14 +2,14 @@
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
-import { ChallengeCompletion } from '../../../../lib/graphql/features/challenge-completion/types';
-import { ChallengeCompletionSlide } from '@pages/profile/components/completions/ChallengeCompletionSlide';
-import { NavigationButtons } from '@pages/profile/components/completions/NavigationButtons';
+import { ChallengeCompletion } from 'src/lib/graphql/features/challenge-completion/types';
+import { ChallengeCompletionSlide } from './ChallengeCompletionSlide';
+import { NavigationButtons } from './NavigationButtons';
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { getCompletionsWithChallenge } from '../../../../lib/graphql/features/challenge-completion/utils';
+import { getCompletionsWithChallenge } from 'src/lib/graphql/features/challenge-completion/utils';
 
 interface CompletedChallengesSwiperProps {
   completions: ChallengeCompletion[];

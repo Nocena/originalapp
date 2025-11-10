@@ -23,20 +23,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const service = new SocialRewardsService(relayerPrivateKey);
     const txHash = await service.processLike(userAddress, completionId);
-    
+
     console.log('✅ Like reward minted:', txHash);
 
     return res.status(200).json({
       success: true,
       txHash,
-      message: 'Like reward minted successfully! +2 NCT earned'
+      message: 'Like reward minted successfully! +2 NCT earned',
     });
-
   } catch (error) {
     console.error('Like reward error:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }

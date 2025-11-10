@@ -3,7 +3,7 @@
   "version": "1.2.1",
   "private": true,
   "scripts": {
-    "build": "pnpm run format:fix && pnpm run lint:fix && next build 2>&1 | grep -v -E '(An error occurred.*apollo|account undefined|PERF.*Inbox)' || true",
+    "build": "pnpm run format:fix && pnpm run lint:fix && next build",
     "build:fast": "next build",
     "setup-https": "node setup-https.js",
     "dev": "next dev",

@@ -3,8 +3,8 @@ import { MessageSquare, Star } from 'lucide-react';
 import { PlayButton } from './PlayButton';
 import { HoverOverlay } from './HoverOverlay';
 import { CreatorAvatar } from './CreatorAvatar';
-import { ChallengeCompletion } from '../../../../lib/graphql/features/challenge-completion/types';
-import getAvatar from '../../../../helpers/getAvatar';
+import { ChallengeCompletion } from 'src/lib/graphql/features/challenge-completion/types';
+import getAvatar from 'src/helpers/getAvatar';
 
 interface ChallengeSlideProps {
   completion: ChallengeCompletion;

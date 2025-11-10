@@ -1,12 +1,12 @@
 import React from 'react';
-import { useUserSimilarChallengeCompletions } from '../../../../lib/graphql/features/challenge-completion/hook/useUserSimilarChallengeCompletions';
-import { ChallengeCompletion } from '../../../../lib/graphql/features/challenge-completion/types';
+import { useUserSimilarChallengeCompletions } from 'src/lib/graphql/features/challenge-completion/hook/useUserSimilarChallengeCompletions';
+import { ChallengeCompletion } from 'src/lib/graphql/features/challenge-completion/types';
 import { SkeletonSlide } from './SkeletonSlide';
 import { Trophy } from 'lucide-react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { CompletedChallengesSwiper } from '@pages/profile/components/completions/CompletedChallengesSwiper';
-import { SimilarCompletionEmptyState } from '@pages/profile/components/completions/SimilarCompletionEmptyState';
+import { useAuth } from 'src/contexts/AuthContext';
+import { CompletedChallengesSwiper } from './CompletedChallengesSwiper';
+import { SimilarCompletionEmptyState } from './SimilarCompletionEmptyState';
 
 interface SimilarChallengeCompletionsPartProps {
   userID: string;

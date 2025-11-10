@@ -31,20 +31,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const service = new SocialRewardsService(relayerPrivateKey);
     const txHash = await service.processFollow(followedUserWallet, followedAccountAddress);
-    
+
     console.log('✅ Follow reward minted:', txHash);
 
     return res.status(200).json({
       success: true,
       txHash,
-      message: 'Follow reward minted successfully! +10 NCT earned'
+      message: 'Follow reward minted successfully! +10 NCT earned',
     });
-
   } catch (error) {
     console.error('Follow reward error:', error);
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }

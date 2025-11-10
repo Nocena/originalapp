@@ -15,7 +15,7 @@ import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import getAvatar from '../../helpers/getAvatar';
 import { useLensFollowActions } from '../../hooks/useLensFollowActions';
 import { useNoceniteBalanceFormatted } from '../../hooks/useNoceniteBalance';
-import CompletionsSection from '@pages/profile/components/completions/CompletionsSection';
+import CompletionsSection from '@components/Profile/completions/CompletionsSection';
 import { useUserCompletionsCalendar } from '../../lib/graphql/features/challenge-completion/hook/useUserCompletionsCalendar';
 
 const defaultProfilePic = '/images/profile.png';

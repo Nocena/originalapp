@@ -26,18 +26,18 @@ export const useLensFollowActions = () => {
 
   const onCompleted = useCallback(() => {
     updateCache();
-    
+
     // Process social reward for follow
     if (followeringAccount?.address) {
       fetch('/api/social-rewards/follow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ followedAccountAddress: followeringAccount.address }),
-      }).catch(error => {
+      }).catch((error) => {
         console.error('Failed to process follow reward:', error);
       });
     }
-    
+
     setFolloweringAccount(null);
   }, [updateCache, followeringAccount]);
 

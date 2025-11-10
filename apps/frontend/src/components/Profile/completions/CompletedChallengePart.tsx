@@ -1,11 +1,11 @@
 import React from 'react';
-import { ChallengeCompletion } from '../../../../lib/graphql/features/challenge-completion/types';
+import { ChallengeCompletion } from 'src/lib/graphql/features/challenge-completion/types';
 import { SkeletonSlide } from './SkeletonSlide';
 import { Trophy } from 'lucide-react';
 import { useRouter } from 'next/router';
-import { ChallengeCompletionEmptyState } from '@pages/profile/components/completions/ChallengeCompletionEmptyState';
-import { useAuth } from '../../../../contexts/AuthContext';
-import { CompletedChallengesSwiper } from '@pages/profile/components/completions/CompletedChallengesSwiper';
+import { ChallengeCompletionEmptyState } from './ChallengeCompletionEmptyState';
+import { useAuth } from 'src/contexts/AuthContext';
+import { CompletedChallengesSwiper } from './CompletedChallengesSwiper';
 
 interface CompletedChallengePartProps {
   userID: string;

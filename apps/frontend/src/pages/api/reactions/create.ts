@@ -95,7 +95,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return emojiMap[type] || '😊';
     };
 
-    const responseData = {
+    const responseData: {
+      success: boolean;
+      reactionId: string;
+      selfieCID: string;
+      selfieUrl: string;
+      reactionType: string;
+      emoji: string;
+      message: string;
+      reward?: {
+        success: boolean;
+        txHash: string;
+        message: string;
+      } | null;
+    } = {
       success: true,
       reactionId,
       selfieCID,
@@ -103,6 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       reactionType,
       emoji: getEmojiForReactionType(reactionType),
       message: 'RealMoji reaction created successfully',
+      reward: null,
     };
 
     // Mint social reward for reaction
@@ -118,7 +132,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
         const completionOwnerId = completionData?.getChallengeCompletion?.userLensAccountId;
-        
+
         // Skip reward if user is reacting to their own post
         if (completionOwnerId === userId) {
           console.log('⚠️ Skipping reward - user reacted to their own post');
@@ -126,17 +140,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           // Get completion owner's Lens account data to get their wallet address
           const lensAccountData = await getLensAccountByAddress(completionOwnerId);
           const ownerWallet = lensAccountData?.account?.owner;
-          
+
           if (ownerWallet) {
             console.log('🎉 Processing reaction reward for post owner wallet:', ownerWallet);
             const service = new SocialRewardsService(relayerPrivateKey);
             const txHash = await service.processReaction(ownerWallet, completionId);
             console.log('✅ Reaction reward minted to post owner:', txHash);
-            
+
             rewardInfo = {
               success: true,
               txHash,
-              message: 'Reaction reward minted successfully! +5 NCT earned'
+              message: 'Reaction reward minted successfully! +5 NCT earned',
             };
             responseData.reward = rewardInfo;
           } else {

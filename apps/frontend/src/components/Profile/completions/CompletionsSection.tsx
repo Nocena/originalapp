@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import CompletedChallengePart from '@pages/profile/components/completions/CompletedChallengePart';
-import SimilarChallengeCompletionsPart from '@pages/profile/components/completions/SimilarChallengeCompletionsPart';
-import { useUserChallengeCompletions } from '../../../../lib/graphql/features/challenge-completion/hook/useUserChallengeCompletions';
+import CompletedChallengePart from './CompletedChallengePart';
+import SimilarChallengeCompletionsPart from './SimilarChallengeCompletionsPart';
+import { useUserChallengeCompletions } from 'src/lib/graphql/features/challenge-completion/hook/useUserChallengeCompletions';
 
 interface CompletionsSectionProps {
   userID: string;
