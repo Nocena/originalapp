@@ -23,12 +23,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       rewardAmount,
       creatorId,
       creatorUsername,
+      isSponsored,
+      sponsorMetadata,
     }: CreatePrivateChallengeRequest & {
       creatorId: string;
       creatorUsername: string;
     } = req.body;
 
-    // Basic validation
+    // Handle sponsored challenges
+    if (isSponsored && sponsorMetadata) {
+      const challengeId = await createPrivateChallenge(
+        creatorId,
+        'sponsored', // Special recipient for sponsored challenges
+        `${sponsorMetadata.sponsorName}: ${name}`,
+        `Sponsored by ${sponsorMetadata.sponsorName} - ${sponsorMetadata.sponsorDescription}\n\n${description}`,
+        rewardAmount || 100,
+        1 // 1 day expiration for sponsored challenges
+      );
+
+      return res.status(200).json({
+        success: true,
+        challengeId,
+        message: 'Sponsored challenge created successfully',
+      });
+    }
+
+    // Basic validation for regular private challenges
     if (!recipientId || !name || !description || !rewardAmount || !creatorId || !creatorUsername) {
       console.error('❌ Missing required fields');
       return res.status(400).json({ error: 'Missing required fields' });

@@ -19,6 +19,8 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import ThematicContainer from '../../components/ui/ThematicContainer';
+import SponsoredChallenges from './components/SponsoredChallenges';
+import SponsorForm from './components/SponsorForm';
 import {
   fetchFollowingsCompletions,
   fetchLatestUserCompletion,
@@ -36,6 +38,8 @@ const HomeView = () => {
   const [followerCompletions, setFollowerCompletions] = useState<BasicCompletionType[]>([]);
   const [isFetchingCompletions, setIsFetchingCompletions] = useState(false);
   const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
+  const [showSponsorForm, setShowSponsorForm] = useState(false);
+  const [sponsoredChallenges, setSponsoredChallenges] = useState([]);
 
   // Challenge state
   const [currentChallenge, setCurrentChallenge] = useState<AIChallenge | null>(null);
@@ -170,6 +174,72 @@ const HomeView = () => {
       toast.error('Error sending private challenge');
     }
   };
+
+  // Handle sponsor form submission
+  const handleSponsorFormSubmit = async (formData: any) => {
+    try {
+      console.log('Creating sponsored challenge:', formData);
+      
+      const response = await fetch('/api/private-challenge/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId: 'sponsored', // Special recipient for sponsored challenges
+          recipientWalletAddress: 'sponsored',
+          name: formData.challengeTitle,
+          description: formData.challengeDescription,
+          rewardAmount: 100, // Default reward for sponsored challenges
+          creatorId: currentLensAccount?.address,
+          creatorUsername: currentLensAccount?.username?.localName || 'Anonymous',
+          isSponsored: true,
+          sponsorMetadata: {
+            sponsorName: formData.sponsorName,
+            sponsorDescription: formData.description,
+          },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success('Sponsored challenge created successfully!');
+        setShowSponsorForm(false);
+        // Refresh sponsored challenges list
+        fetchSponsoredChallenges();
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Failed to create sponsored challenge');
+      }
+    } catch (error) {
+      console.error('Error creating sponsored challenge:', error);
+      toast.error('Failed to create sponsored challenge');
+    }
+  };
+
+  const handleSponsoredChallengeClick = (challenge: any) => {
+    // TODO: Implement sponsored challenge participation
+    console.log('Starting sponsored challenge:', challenge);
+    toast.success(`Starting challenge: ${challenge.challengeTitle}`);
+  };
+
+  // Fetch sponsored challenges from API
+  const fetchSponsoredChallenges = async () => {
+    try {
+      const response = await fetch('/api/private-challenge/sponsored');
+      if (response.ok) {
+        const data = await response.json();
+        setSponsoredChallenges(data.challenges || []);
+      } else {
+        console.error('Failed to fetch sponsored challenges');
+      }
+    } catch (error) {
+      console.error('Error fetching sponsored challenges:', error);
+    }
+  };
+
+  // Fetch sponsored challenges on component mount
+  useEffect(() => {
+    fetchSponsoredChallenges();
+  }, []);
 
   const handleCompleteChallenge = async (type: string, frequency: string) => {
     if (!currentLensAccount) {
@@ -317,6 +387,42 @@ const HomeView = () => {
                 </button>
               </div>
             </ThematicContainer>
+
+            {/* Create Sponsored Challenge Section */}
+            <div className="mt-4">
+              <ThematicContainer
+                asButton={false}
+                glassmorphic={true}
+                color="nocenaGreen"
+                rounded="xl"
+                className="p-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-1">Create Sponsored Challenge</h3>
+                    <p className="text-gray-300 text-sm">
+                      Create branded challenges for all users with Flow token rewards!
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowSponsorForm(true)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Create Challenge
+                  </button>
+                </div>
+              </ThematicContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Sponsor Form Modal */}
+        {showSponsorForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <SponsorForm
+              onSubmit={handleSponsorFormSubmit}
+              onCancel={() => setShowSponsorForm(false)}
+            />
           </div>
         )}
 
@@ -370,6 +476,14 @@ const HomeView = () => {
                 />
               </div>
             )}
+
+            {/* Sponsored Challenges Section */}
+            <div className="mt-8">
+              <SponsoredChallenges
+                challenges={sponsoredChallenges}
+                onChallengeClick={handleSponsoredChallengeClick}
+              />
+            </div>
           </>
         )}
       </div>
