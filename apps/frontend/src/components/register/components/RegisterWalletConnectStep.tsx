@@ -5,7 +5,7 @@ import { ConnectButton, useActiveAccount } from 'thirdweb/react';
 import ThematicContainer from '../../ui/ThematicContainer';
 import PrimaryButton from '../../ui/PrimaryButton';
 import { client, chain } from '../../../lib/thirdweb';
-import { inAppWallet, createWallet } from 'thirdweb/wallets';
+import { wallets } from '../../../lib/thirdweb/wallets';
 
 interface RegisterWalletConnectStepProps {
   onWalletConnected: () => void;
@@ -17,18 +17,6 @@ const RegisterWalletConnectStep: React.FC<RegisterWalletConnectStepProps> = ({
   const account = useActiveAccount();
   const [isCheckingWallet, setIsCheckingWallet] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
-
-  const wallets = [
-    inAppWallet({
-      auth: {
-        options: ['google', 'apple', 'facebook', 'discord', 'telegram', 'x', 'email', 'phone'],
-      },
-    }),
-    createWallet('io.metamask'),
-    createWallet('com.coinbase.wallet'),
-    createWallet('walletConnect'),
-    createWallet('com.trustwallet.app'),
-  ];
 
   const checkWalletExists = async (walletAddress: string): Promise<boolean> => {
     try {

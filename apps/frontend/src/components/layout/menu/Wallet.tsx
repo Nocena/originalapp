@@ -80,7 +80,6 @@ const WalletMenu: React.FC<WalletMenuProps> = ({ onBack }) => {
             <ConnectButton
               client={client}
               chain={flowChain}
-              wallets={wallets}
               theme="dark"
               connectModal={{
                 title: 'Connect to Nocena',
