@@ -2,6 +2,7 @@
  * Sponsored Challenges API
  * 
  * Fetches all sponsored challenges (private challenges with targetUserId = 'sponsored')
+ * that the current user hasn't completed yet
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -14,8 +15,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'userId parameter is required' });
+  }
+
   try {
-    const query = `
+    // First, get all active sponsored challenges
+    const challengesQuery = `
       query GetSponsoredChallenges {
         queryPrivateChallenge(filter: { 
           and: [
@@ -34,27 +42,65 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     `;
 
-    const response = await axios.post(
-      DGRAPH_ENDPOINT,
-      { query },
-      { headers: { 'Content-Type': 'application/json' } }
-    );
+    // Then, get all challenge completions by this user for private challenges
+    const completionsQuery = `
+      query GetUserPrivateChallengeCompletions($userId: String!) {
+        queryChallengeCompletion(
+          filter: {
+            and: [
+              { userLensAccountId: { eq: $userId } }
+              { privateChallengeId: { has: privateChallengeId } }
+            ]
+          }
+        ) {
+          privateChallengeId
+        }
+      }
+    `;
 
-    if (response.data.errors) {
-      console.error('Dgraph query error:', response.data.errors);
+    const [challengesResponse, completionsResponse] = await Promise.all([
+      axios.post(
+        DGRAPH_ENDPOINT,
+        { query: challengesQuery },
+        { headers: { 'Content-Type': 'application/json' } }
+      ),
+      axios.post(
+        DGRAPH_ENDPOINT,
+        { 
+          query: completionsQuery,
+          variables: { userId: userId as string }
+        },
+        { headers: { 'Content-Type': 'application/json' } }
+      )
+    ]);
+
+    if (challengesResponse.data.errors) {
+      console.error('Dgraph challenges query error:', challengesResponse.data.errors);
       return res.status(500).json({ error: 'Database query failed' });
     }
 
-    const privateChallenges = response.data.data?.queryPrivateChallenge || [];
+    if (completionsResponse.data.errors) {
+      console.error('Dgraph completions query error:', completionsResponse.data.errors);
+      // Don't fail if completions query fails, just show all challenges
+    }
+
+    const allChallenges = challengesResponse.data.data?.queryPrivateChallenge || [];
+    const completedChallengeIds = new Set(
+      (completionsResponse.data.data?.queryChallengeCompletion || [])
+        .map((c: any) => c.privateChallengeId)
+        .filter(Boolean)
+    );
     
-    // Filter out expired challenges
+    // Filter out expired challenges and challenges the user has completed
     const now = new Date();
-    const activeChallenges = privateChallenges.filter((challenge: any) => {
-      return new Date(challenge.expiresAt) > now;
+    const availableChallenges = allChallenges.filter((challenge: any) => {
+      const isNotExpired = new Date(challenge.expiresAt) > now;
+      const isNotCompleted = !completedChallengeIds.has(challenge.id);
+      return isNotExpired && isNotCompleted;
     });
     
     // Transform to match expected sponsored challenge format
-    const sponsoredChallenges = activeChallenges.map((challenge: any) => {
+    const sponsoredChallenges = availableChallenges.map((challenge: any) => {
       // Extract sponsor name from title (format: "SponsorName: Challenge Title")
       const titleParts = challenge.title.split(': ');
       const sponsorName = titleParts.length > 1 ? titleParts[0] : 'Unknown Sponsor';
@@ -68,6 +114,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         reward: `${challenge.reward} FLOW tokens`,
         createdAt: challenge.createdAt,
         expiresAt: challenge.expiresAt,
+        creatorLensAccountId: challenge.creatorLensAccountId,
       };
     });
 
