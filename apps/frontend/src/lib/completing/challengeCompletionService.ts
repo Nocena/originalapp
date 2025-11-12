@@ -12,8 +12,8 @@ export interface CompletionData {
     title: string;
     description: string;
     reward: number;
-    type: 'AI' | 'PRIVATE' | 'PUBLIC';
-    frequency?: 'daily' | 'weekly' | 'monthly';
+    type: 'AI' | 'PRIVATE' | 'PUBLIC' | 'SPONSORED';
+    frequency?: 'daily' | 'weekly' | 'monthly' | 'sponsored';
     challengeId?: string;
     creatorWalletAddress?: string;
   };
@@ -89,6 +89,15 @@ export async function completeChallengeWorkflow(
             recipientReward: challenge.reward,
             creatorReward: creatorReward,
             ipfsHash: challenge.challengeId, // Use unique challengeId for testing
+          };
+        } else if (challenge.type === 'SPONSORED' && challenge.challengeId) {
+          // Sponsored challenges - mint NCT tokens to user (use public challenge type)
+          mintPayload = {
+            userAddress: userWalletAddress,
+            challengeType: 'PUBLIC',
+            challengeId: challenge.challengeId,
+            recipientReward: challenge.reward,
+            ipfsHash: challenge.challengeId,
           };
         } else {
           // Skip token minting for other challenge types or missing data
@@ -169,6 +178,54 @@ export async function completeChallengeWorkflow(
             }
           }
 
+          // Mark sponsored challenge as completed if applicable
+          if (challenge.type === 'SPONSORED' && challenge.challengeId) {
+            try {
+              console.log('🏁 Marking sponsored challenge as completed...');
+
+              // Create media data structure from completion data
+              const mediaData = {
+                type: 'sponsored-completion',
+                data: completionData?.description || 'Sponsored challenge completed',
+                videoCID: '', // Will be populated after upload
+                selfieCID: '', // Will be populated after upload
+                previewCID: '',
+              };
+
+              const completeResponse = await fetch('/api/private-challenge/complete', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  challengeId: challenge.challengeId,
+                  userId: userId,
+                  mediaData: mediaData,
+                }),
+              });
+
+              if (!completeResponse.ok) {
+                console.error(
+                  '❌ Sponsored challenge API response not ok:',
+                  completeResponse.status,
+                  completeResponse.statusText
+                );
+              } else {
+                const completeResult = await completeResponse.json();
+                if (completeResult.success) {
+                  console.log('✅ Sponsored challenge marked as completed');
+                } else {
+                  console.error(
+                    '❌ Failed to mark sponsored challenge as completed:',
+                    completeResult.error
+                  );
+                }
+              }
+            } catch (error) {
+              console.error('❌ Error marking sponsored challenge as completed:', error);
+            }
+          }
+
           // Trigger challenge replacement for PUBLIC challenges
           if (challenge.type === 'PUBLIC' && challenge.challengeId) {
             try {
@@ -227,9 +284,10 @@ export async function completeChallengeWorkflow(
 
                   const timestamp = Date.now();
                   console.log('💾 Creating completion record...');
+                  const completionType = challenge.type === 'SPONSORED' ? 'private' : challenge.type.toLowerCase();
                   completionId = await createChallengeCompletion(
                     userId,
-                    challenge.type.toLowerCase() as 'private' | 'public' | 'ai',
+                    completionType as 'private' | 'public' | 'ai',
                     JSON.stringify({
                       videoCID,
                       selfieCID,
