@@ -19,6 +19,7 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import ThematicContainer from '../../components/ui/ThematicContainer';
+import { createPublicChallenge } from '../../lib/graphql/features/public-challenge';
 import SponsoredChallenges from './components/SponsoredChallenges';
 import SponsorForm from './components/SponsorForm';
 import {
@@ -180,36 +181,53 @@ const HomeView = () => {
     try {
       console.log('Creating sponsored challenge:', formData);
       
-      const response = await fetch('/api/private-challenge/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          recipientId: 'sponsored', // Special recipient for sponsored challenges
-          recipientWalletAddress: 'sponsored',
-          name: formData.challengeTitle,
-          description: formData.challengeDescription,
-          rewardAmount: 100, // Default reward for sponsored challenges
-          creatorId: currentLensAccount?.address,
-          creatorUsername: currentLensAccount?.username?.localName || 'Anonymous',
-          isSponsored: true,
-          sponsorMetadata: {
-            sponsorName: formData.sponsorName,
-            sponsorDescription: formData.description,
-          },
-        }),
-      });
+      if (formData.challengeType === 'public') {
+        // Create public sponsored challenge with location
+        const challengeId = await createPublicChallenge(
+          currentLensAccount?.address,
+          `${formData.sponsorName}: ${formData.challengeTitle}`,
+          formData.challengeDescription,
+          100, // Default reward for sponsored challenges
+          formData.location?.lat,
+          formData.location?.lng,
+          50 // Default participants for sponsored challenges
+        );
 
-      if (response.ok) {
-        const data = await response.json();
-        toast.success('Sponsored challenge created successfully!');
+        toast.success('Location-based sponsored challenge created successfully!');
         setShowSponsorForm(false);
-        // Refresh sponsored challenges list with a small delay
-        setTimeout(() => {
-          fetchSponsoredChallenges();
-        }, 500);
       } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || 'Failed to create sponsored challenge');
+        // Create private sponsored challenge (existing logic)
+        const response = await fetch('/api/private-challenge/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientId: 'sponsored', // Special recipient for sponsored challenges
+            recipientWalletAddress: 'sponsored',
+            name: formData.challengeTitle,
+            description: formData.challengeDescription,
+            rewardAmount: 100, // Default reward for sponsored challenges
+            creatorId: currentLensAccount?.address,
+            creatorUsername: currentLensAccount?.username?.localName || 'Anonymous',
+            isSponsored: true,
+            sponsorMetadata: {
+              sponsorName: formData.sponsorName,
+              sponsorDescription: formData.description,
+            },
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          toast.success('Brand sponsored challenge created successfully!');
+          setShowSponsorForm(false);
+          // Refresh sponsored challenges list with a small delay
+          setTimeout(() => {
+            fetchSponsoredChallenges();
+          }, 500);
+        } else {
+          const errorData = await response.json();
+          toast.error(errorData.error || 'Failed to create sponsored challenge');
+        }
       }
     } catch (error) {
       console.error('Error creating sponsored challenge:', error);

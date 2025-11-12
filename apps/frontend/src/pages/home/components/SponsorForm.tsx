@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PrimaryButton from '../../../components/ui/PrimaryButton';
+import { toast } from 'react-hot-toast';
 
 interface SponsorFormData {
   sponsorName: string;
@@ -23,9 +24,58 @@ const SponsorForm: React.FC<SponsorFormProps> = ({ onSubmit, onCancel }) => {
     challengeDescription: '',
     challengeType: 'private',
   });
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationObtained, setLocationObtained] = useState(false);
+
+  // Get user location when public challenge type is selected
+  useEffect(() => {
+    if (formData.challengeType === 'public' && !formData.location) {
+      getCurrentLocation();
+    }
+  }, [formData.challengeType]);
+
+  const getCurrentLocation = async () => {
+    setLocationLoading(true);
+    try {
+      if (!navigator.geolocation) {
+        throw new Error('Geolocation is not supported by this browser');
+      }
+
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes
+        });
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        location: {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        }
+      }));
+      
+      setLocationObtained(true);
+      toast.success('Location obtained successfully!');
+    } catch (error) {
+      console.error('Error getting location:', error);
+      toast.error('Unable to get your location. Please enable location services.');
+    } finally {
+      setLocationLoading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate location for public challenges
+    if (formData.challengeType === 'public' && !formData.location) {
+      toast.error('Location is required for map challenges. Please enable location services.');
+      return;
+    }
+    
     onSubmit(formData);
   };
 
@@ -98,6 +148,33 @@ const SponsorForm: React.FC<SponsorFormProps> = ({ onSubmit, onCancel }) => {
               <option value="public">Location Challenge (Map)</option>
             </select>
           </div>
+
+          {/* Location Status for Public Challenges */}
+          {formData.challengeType === 'public' && (
+            <div className="bg-gray-700 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Location Status:</span>
+                {locationLoading ? (
+                  <span className="text-yellow-400 text-sm">Getting location...</span>
+                ) : locationObtained ? (
+                  <span className="text-green-400 text-sm">✓ Location obtained</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={getCurrentLocation}
+                    className="text-blue-400 text-sm hover:text-blue-300"
+                  >
+                    Get Location
+                  </button>
+                )}
+              </div>
+              {formData.location && (
+                <div className="text-xs text-gray-400 mt-1">
+                  Lat: {formData.location.lat.toFixed(6)}, Lng: {formData.location.lng.toFixed(6)}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex space-x-3 pt-4">
             <button

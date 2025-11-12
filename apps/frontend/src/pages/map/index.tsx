@@ -61,6 +61,7 @@ const MapView = () => {
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);
   const [initialLocationSet, setInitialLocationSet] = useState(false);
   const [buttonEnabled, setButtonEnabled] = useState(false); // Disabled by default
+  const [hasGeneratedWeekly, setHasGeneratedWeekly] = useState(false);
 
   const handleZoomIn = () => {
     if (!mapInstanceRef.current) return;
@@ -94,7 +95,12 @@ const MapView = () => {
     console.log('🎯 User address:', currentLensAccount.address);
 
     try {
-      // Generate challenges with user as creator
+      // Get current sponsored challenges to preserve them
+      const sponsoredResponse = await fetch(`/api/map/sponsored-challenges?userAddress=${currentLensAccount.address}`);
+      const sponsoredData = await sponsoredResponse.json();
+      const sponsoredChallenges = sponsoredData.challenges || [];
+
+      // Generate new weekly challenges
       const newChallenges = await generateRandomChallenges(
         userLocation.latitude,
         userLocation.longitude,
@@ -105,7 +111,9 @@ const MapView = () => {
       console.log(`✅ Generated ${newChallenges.length} weekly challenges`);
       console.log('🔍 Sample challenge:', newChallenges[0]);
 
-      setChallenges(newChallenges);
+      // Combine new weekly challenges with existing sponsored challenges
+      const allChallenges = [...newChallenges, ...sponsoredChallenges];
+      setChallenges(allChallenges);
       setButtonEnabled(false); // Disable button after use
       setSelectedPin(null);
 
@@ -267,19 +275,33 @@ const MapView = () => {
       if (!currentLensAccount?.address) return;
 
       try {
-        // Load existing user challenges first
-        const challengesResponse = await fetch(
-          `/api/map/user-challenges?userAddress=${currentLensAccount.address}`
-        );
+        // Load existing user challenges and sponsored challenges in parallel
+        const [challengesResponse, sponsoredResponse] = await Promise.all([
+          fetch(`/api/map/user-challenges?userAddress=${currentLensAccount.address}`),
+          fetch(`/api/map/sponsored-challenges?userAddress=${currentLensAccount.address}`)
+        ]);
+        
         const challengeData = await challengesResponse.json();
+        const sponsoredData = await sponsoredResponse.json();
+
+        // Combine user challenges and sponsored challenges
+        const allChallenges = [
+          ...(challengeData.challenges || []),
+          ...(sponsoredData.challenges || [])
+        ];
 
         if (challengeData.hasGenerated) {
           // User already generated challenges this week - load them and disable button
-          console.log('📦 Loading existing weekly challenges');
-          setChallenges(challengeData.challenges);
+          console.log('📦 Loading existing weekly challenges + sponsored challenges');
+          setChallenges(allChallenges);
           setButtonEnabled(false);
+          setHasGeneratedWeekly(true);
         } else {
-          // User hasn't generated yet - check if weekly event allows it
+          // User hasn't generated yet - show sponsored challenges and check if weekly event allows generation
+          console.log('📦 Loading sponsored challenges');
+          setChallenges(sponsoredData.challenges || []);
+          setHasGeneratedWeekly(false);
+          
           const buttonResponse = await fetch('/api/map/button-state');
           const buttonState = await buttonResponse.json();
 
@@ -484,7 +506,7 @@ const MapView = () => {
       />
 
       {/* Challenge Generation Prompt */}
-      {buttonEnabled && challenges.length === 0 && (
+      {buttonEnabled && !hasGeneratedWeekly && (
         <div className="absolute right-24 z-[200]" style={{ bottom: '168px' }}>
           <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg shadow-lg animate-pulse">
             <div className="flex items-center space-x-2">

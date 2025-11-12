@@ -38,6 +38,8 @@ const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
   const [description, setDescription] = useState('');
   const [reward, setReward] = useState(10); // Default to 10 NOCENIX
   const [participants, setParticipants] = useState<ParticipantCount>(10); // Default to 10 participants
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   // Dropdown toggles
   const [isRewardDropdownOpen, setIsRewardDropdownOpen] = useState(false);
@@ -50,6 +52,42 @@ const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
 
   // Calculate total cost for public challenges only
   const totalCost = mode === 'public' ? reward * participants : reward;
+
+  // Get user's current location for public challenges
+  useEffect(() => {
+    if (mode === 'public' && !lat && !lng) {
+      getCurrentLocation();
+    }
+  }, [mode, lat, lng]);
+
+  const getCurrentLocation = async () => {
+    setLocationLoading(true);
+    try {
+      if (!navigator.geolocation) {
+        throw new Error('Geolocation is not supported by this browser');
+      }
+
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000, // 5 minutes
+        });
+      });
+
+      setUserLocation({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      });
+      
+      toast.success('Location obtained successfully!');
+    } catch (error) {
+      console.error('Error getting location:', error);
+      toast.error('Unable to get your location. Please enable location services.');
+    } finally {
+      setLocationLoading(false);
+    }
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
