@@ -1,77 +1,104 @@
-// pages/api/leaderboard.ts
-import { getLeaderboard, getBlockchainLeaderboard } from '../../lib/graphql';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { lensApolloClient } from '../../pages/_app';
+import { AccountsBulkDocument, AccountsBulkQuery, AccountsBulkQueryVariables } from '@nocena/indexer';
 
-export default async function handler(req: any, res: any) {
-  console.log('🔥 API /leaderboard called with method:', req.method);
-  console.log('🔥 Query params:', req.query);
+const CONTRACTS = {
+  Nocenite: '0x3FdB92C4974a94E0e867E17e370d79DA6201edc8',
+};
 
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const { limit = 50, source = 'blockchain' } = req.query;
+
   try {
-    const {
-      period = 'all-time',
-      limit = 50,
-      source = 'database',
-      userAddress,
-      username,
-    } = req.query;
-    console.log(
-      '🔥 Parsed params - period:',
-      period,
-      'limit:',
-      limit,
-      'source:',
-      source,
-      'userAddress:',
-      userAddress,
-      'username:',
-      username
+    // Get top NCT holders from Flow testnet Blockscout
+    const response = await fetch(
+      `https://evm-testnet.flowscan.io/api?module=token&action=getTokenHolders&contractaddress=${CONTRACTS.Nocenite}&page=1&offset=${limit}`
     );
 
-    const limitNum = parseInt(limit);
-    if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
-      return res.status(400).json({ message: 'Invalid limit. Must be between 1 and 100' });
+    if (!response.ok) {
+      throw new Error(`Blockscout API error: ${response.status}`);
     }
 
-    let leaderboard;
+    const data = await response.json();
 
-    if (source === 'blockchain') {
-      console.log(
-        '🔥 Calling getBlockchainLeaderboard with user address:',
-        userAddress,
-        'username:',
-        username
-      );
-      try {
-        leaderboard = await getBlockchainLeaderboard(limitNum);
-        console.log('🔥 getBlockchainLeaderboard returned:', leaderboard?.length || 0, 'items');
-      } catch (error) {
-        console.error('🔥 Error in getBlockchainLeaderboard:', error);
-        leaderboard = [];
+    if (data.status !== '1' || !data.result) {
+      throw new Error('Invalid Blockscout API response');
+    }
+
+    const holders = data.result;
+
+    // Extract wallet addresses for Lens account lookup
+    const walletAddresses = holders.map((holder: any) => holder.address);
+    console.log('🔍 Wallet addresses:', walletAddresses);
+
+    // Query Lens accounts by owner addresses (wallet holding tokens)
+    let lensAccounts: any[] = [];
+    try {
+      console.log('📡 Querying Lens accounts by ownedBy...');
+      const { data: lensData } = await lensApolloClient.query<
+        AccountsBulkQuery,
+        AccountsBulkQueryVariables
+      >({
+        query: AccountsBulkDocument,
+        variables: {
+          request: {
+            ownedBy: walletAddresses, // Query by owner (wallet holding tokens)
+          },
+        },
+      });
+
+      lensAccounts = lensData?.accountsBulk || [];
+      console.log('✅ Found', lensAccounts.length, 'Lens accounts');
+      console.log('📋 Lens accounts:', JSON.stringify(lensAccounts, null, 2));
+    } catch (error) {
+      console.error('❌ Error fetching Lens accounts:', error);
+    }
+
+    // Create a map of owner address (wallet) -> Lens account
+    const lensAccountMap = new Map();
+    lensAccounts.forEach((account: any) => {
+      if (account.owner) {
+        lensAccountMap.set(account.owner.toLowerCase(), account);
+        console.log('📍 Mapped wallet', account.owner, 'to username', account.username?.localName);
       }
-    } else {
-      console.log('🔥 Calling regular getLeaderboard...');
-      leaderboard = await getLeaderboard(period, limitNum);
-    }
+    });
 
-    console.log('🔥 Final leaderboard length:', leaderboard?.length || 0);
+    // Process holders and match with Lens accounts
+    const leaderboardEntries = holders.map((holder: any, index: number) => {
+      const balanceInTokens = Number(holder.value) / Math.pow(10, 18);
+      const lensAccount = lensAccountMap.get(holder.address.toLowerCase());
 
-    res.status(200).json({
+      return {
+        rank: index + 1,
+        userId: lensAccount?.username?.localName || holder.address,
+        username: lensAccount?.metadata?.name || 
+                 lensAccount?.username?.value || 
+                 `${holder.address.slice(0, 6)}...${holder.address.slice(-4)}`,
+        profilePicture: lensAccount?.metadata?.picture || '/images/profile.png',
+        currentPeriodTokens: parseFloat(balanceInTokens.toFixed(1)),
+        allTimeTokens: parseFloat(balanceInTokens.toFixed(1)),
+        todayTokens: 0,
+        weekTokens: 0,
+        monthTokens: 0,
+        lastUpdate: new Date().toISOString(),
+        ownerAddress: holder.address,
+      };
+    });
+
+    return res.status(200).json({
       success: true,
-      source,
-      period: source === 'blockchain' ? 'blockchain' : period,
-      limit: limitNum,
-      leaderboard,
-      timestamp: new Date().toISOString(),
+      leaderboard: leaderboardEntries,
     });
   } catch (error) {
-    console.error('🔥 Leaderboard API error:', error);
-    res.status(500).json({
+    console.error('Error fetching leaderboard:', error);
+    return res.status(500).json({ 
       success: false,
-      message: 'Failed to fetch leaderboard',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: 'Failed to fetch leaderboard data',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }

@@ -199,25 +199,23 @@ export async function resetTimeBasedEarnings(
 
 export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[]> => {
   try {
-    // Get top NCT holders from Flow testnet Blockscout
-    const response = await fetch(
-      `https://evm-testnet.flowscan.io/api?module=token&action=getTokenHolders&contractaddress=${CONTRACTS.Nocenite}&page=1&offset=${limit}`
-    );
+    // Use server-side API to avoid CORS issues
+    const response = await fetch(`/api/leaderboard?limit=${limit}`);
 
     if (!response.ok) {
-      throw new Error(`Blockscout API error: ${response.status}`);
+      throw new Error(`Leaderboard API error: ${response.status}`);
     }
 
     const data = await response.json();
 
-    if (data.status !== '1' || !data.result) {
-      throw new Error('Invalid Blockscout API response');
+    if (!data.success || !data.data) {
+      throw new Error('Invalid leaderboard API response');
     }
 
-    const holders = data.result;
+    const holders = data.data;
 
     // Extract wallet addresses for bulk Lens account lookup
-    const walletAddresses = holders.map((holder: any) => holder.address);
+    const walletAddresses = holders.map((holder: any) => holder.ownerAddress);
 
     // Query Lens accounts by owner addresses in bulk
     let lensAccounts: any[] = [];
@@ -248,25 +246,17 @@ export const getBlockchainLeaderboard = async (limit: number = 50): Promise<any[
     });
 
     // Process holders and match with Lens accounts
-    const leaderboardEntries = holders.map((holder: any, index: number) => {
-      const balanceInTokens = Number(holder.value) / Math.pow(10, 18);
-      const lensAccount = lensAccountMap.get(holder.address.toLowerCase());
+    const leaderboardEntries = holders.map((holder: any) => {
+      const lensAccount = lensAccountMap.get(holder.ownerAddress.toLowerCase());
 
       return {
-        rank: index + 1,
-        userId: lensAccount?.username?.localName || holder.address, // Use Lens username for routing
+        ...holder,
+        userId: lensAccount?.username?.localName || holder.ownerAddress, // Use Lens username for routing
         username:
           lensAccount?.metadata?.name ||
           lensAccount?.username?.value ||
-          `${holder.address.slice(0, 6)}...${holder.address.slice(-4)}`,
+          `${holder.ownerAddress.slice(0, 6)}...${holder.ownerAddress.slice(-4)}`,
         profilePicture: lensAccount?.metadata?.picture || '/images/profile.png',
-        currentPeriodTokens: parseFloat(balanceInTokens.toFixed(1)),
-        allTimeTokens: parseFloat(balanceInTokens.toFixed(1)),
-        todayTokens: 0,
-        weekTokens: 0,
-        monthTokens: 0,
-        lastUpdate: new Date().toISOString(),
-        ownerAddress: holder.address,
       };
     });
 
