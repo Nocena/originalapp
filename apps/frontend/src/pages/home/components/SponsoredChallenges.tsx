@@ -7,32 +7,33 @@ interface SponsoredChallenge {
   challengeTitle: string;
   challengeDescription: string;
   reward: string;
+  creatorLensAccountId?: string;
 }
 
 interface SponsoredChallengesProps {
   challenges: SponsoredChallenge[];
   onChallengeClick: (challenge: SponsoredChallenge) => void;
+  currentUserAddress?: string;
 }
 
 const SponsoredChallenges: React.FC<SponsoredChallengesProps> = ({ 
   challenges, 
-  onChallengeClick 
+  onChallengeClick,
+  currentUserAddress 
 }) => {
   if (challenges.length === 0) {
     return (
-      <div className="mb-8">
+      <div className="mb-8 flex flex-col items-center">
         <h2 className="text-xl font-bold text-white mb-4">Sponsored Challenges</h2>
-        <ThematicContainer glassmorphic={true} className="p-6 text-center">
-          <p className="text-gray-400">No sponsored challenges available</p>
-        </ThematicContainer>
+        <p className="text-gray-400 text-sm">No sponsored challenges available</p>
       </div>
     );
   }
 
   return (
-    <div className="mb-8">
-      <h2 className="text-xl font-bold text-white mb-4">Sponsored Challenges</h2>
-      <div className="grid gap-4">
+    <div className="mb-8 flex flex-col items-center">
+      <h2 className="text-xl font-bold text-white mb-6">Sponsored Challenges</h2>
+      <div className="w-full max-w-xl grid gap-4">
         {challenges.map((challenge) => (
           <ThematicContainer
             key={challenge.id}
@@ -60,12 +61,14 @@ const SponsoredChallenges: React.FC<SponsoredChallengesProps> = ({
                   <span className="text-green-400 font-semibold">
                     Reward: {challenge.reward.replace('FLOW', 'NCT')}
                   </span>
-                  <button 
-                    onClick={() => onChallengeClick(challenge)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Start Challenge
-                  </button>
+                  {challenge.creatorLensAccountId !== currentUserAddress && (
+                    <button 
+                      onClick={() => onChallengeClick(challenge)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Start Challenge
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

@@ -203,8 +203,10 @@ const HomeView = () => {
         const data = await response.json();
         toast.success('Sponsored challenge created successfully!');
         setShowSponsorForm(false);
-        // Refresh sponsored challenges list
-        fetchSponsoredChallenges();
+        // Refresh sponsored challenges list with a small delay
+        setTimeout(() => {
+          fetchSponsoredChallenges();
+        }, 500);
       } else {
         const errorData = await response.json();
         toast.error(errorData.error || 'Failed to create sponsored challenge');
@@ -215,31 +217,68 @@ const HomeView = () => {
     }
   };
 
-  const handleSponsoredChallengeClick = (challenge: any) => {
-    // TODO: Implement sponsored challenge participation
-    console.log('Starting sponsored challenge:', challenge);
-    toast.success(`Starting challenge: ${challenge.challengeTitle}`);
+  const handleSponsoredChallengeClick = async (challenge: any) => {
+    if (!currentLensAccount) {
+      toast.error('Please login to participate in challenges!');
+      router.push('/login');
+      return;
+    }
+
+    try {
+      console.log('Starting sponsored challenge:', challenge);
+      
+      // Navigate to completion page with sponsored challenge data
+      router.push({
+        pathname: '/completing',
+        query: {
+          challengeId: challenge.id,
+          type: 'sponsored',
+          frequency: 'sponsored',
+          title: challenge.challengeTitle,
+          description: challenge.challengeDescription,
+          reward: 100, // NCT tokens
+          visibility: 'public',
+          sponsorName: challenge.companyName,
+        },
+      });
+    } catch (error) {
+      console.error('Error starting sponsored challenge:', error);
+      toast.error('Failed to start challenge');
+    }
   };
 
   // Fetch sponsored challenges from API
   const fetchSponsoredChallenges = async () => {
+    if (!currentLensAccount?.address) {
+      console.log('No current lens account address available');
+      return;
+    }
+    
+    console.log('Fetching sponsored challenges for user:', currentLensAccount.address);
+    
     try {
-      const response = await fetch('/api/private-challenge/sponsored');
+      const response = await fetch(`/api/private-challenge/sponsored?userId=${currentLensAccount.address}`);
+      console.log('Sponsored challenges API response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Sponsored challenges data:', data);
         setSponsoredChallenges(data.challenges || []);
       } else {
-        console.error('Failed to fetch sponsored challenges');
+        const errorData = await response.text();
+        console.error('Failed to fetch sponsored challenges:', errorData);
       }
     } catch (error) {
       console.error('Error fetching sponsored challenges:', error);
     }
   };
 
-  // Fetch sponsored challenges on component mount
+  // Fetch sponsored challenges when user is available
   useEffect(() => {
-    fetchSponsoredChallenges();
-  }, []);
+    if (currentLensAccount?.address) {
+      fetchSponsoredChallenges();
+    }
+  }, [currentLensAccount?.address]);
 
   const handleCompleteChallenge = async (type: string, frequency: string) => {
     if (!currentLensAccount) {
@@ -352,7 +391,7 @@ const HomeView = () => {
   }
 
   return (
-    <div className="text-white p-4 min-h-screen mt-20">
+    <div className="text-white p-4 min-h-screen mt-20 pb-32">
       <div className="max-w-4xl mx-auto">
         {/* Private Challenge Creator Modal */}
         {showPrivateChallengeCreator && (
@@ -482,6 +521,7 @@ const HomeView = () => {
               <SponsoredChallenges
                 challenges={sponsoredChallenges}
                 onChallengeClick={handleSponsoredChallengeClick}
+                currentUserAddress={currentLensAccount?.address}
               />
             </div>
           </>

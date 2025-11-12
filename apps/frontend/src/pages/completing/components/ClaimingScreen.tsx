@@ -21,8 +21,8 @@ interface Challenge {
   challengerProfile: string;
   reward: number;
   color: string;
-  type: 'AI' | 'PRIVATE' | 'PUBLIC';
-  frequency?: 'daily' | 'weekly' | 'monthly';
+  type: 'AI' | 'PRIVATE' | 'PUBLIC' | 'SPONSORED';
+  frequency?: 'daily' | 'weekly' | 'monthly' | 'sponsored';
   challengeId?: string;
   creatorWalletAddress?: string;
 }
