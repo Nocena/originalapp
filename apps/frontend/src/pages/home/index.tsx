@@ -40,6 +40,8 @@ const HomeView = () => {
   const [isFetchingCompletions, setIsFetchingCompletions] = useState(false);
   const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
   const [showSponsorForm, setShowSponsorForm] = useState(false);
+  const [sponsorFormLoading, setSponsorFormLoading] = useState(false);
+  const [privateChallengeLoading, setPrivateChallengeLoading] = useState(false);
   const [sponsoredChallenges, setSponsoredChallenges] = useState([]);
 
   // Challenge state
@@ -149,6 +151,7 @@ const HomeView = () => {
 
   // Handle private challenge creation
   const handlePrivateChallengeSubmit = async (challenge: CreatePrivateChallengeRequest) => {
+    setPrivateChallengeLoading(true);
     try {
       const response = await fetch('/api/private-challenge/create', {
         method: 'POST',
@@ -173,11 +176,14 @@ const HomeView = () => {
     } catch (error) {
       console.error('Error sending private challenge:', error);
       toast.error('Error sending private challenge');
+    } finally {
+      setPrivateChallengeLoading(false);
     }
   };
 
   // Handle sponsor form submission
   const handleSponsorFormSubmit = async (formData: any) => {
+    setSponsorFormLoading(true);
     try {
       console.log('Creating sponsored challenge:', formData);
       
@@ -218,7 +224,7 @@ const HomeView = () => {
 
         if (response.ok) {
           const data = await response.json();
-          toast.success('Brand sponsored challenge created successfully!');
+          toast.success('Sponsored challenge created successfully!');
           setShowSponsorForm(false);
           // Refresh sponsored challenges list with a small delay
           setTimeout(() => {
@@ -232,6 +238,8 @@ const HomeView = () => {
     } catch (error) {
       console.error('Error creating sponsored challenge:', error);
       toast.error('Failed to create sponsored challenge');
+    } finally {
+      setSponsorFormLoading(false);
     }
   };
 
@@ -416,6 +424,7 @@ const HomeView = () => {
           <PrivateChallengeCreator
             onClose={() => setShowPrivateChallengeCreator(false)}
             onSubmit={handlePrivateChallengeSubmit}
+            loading={privateChallengeLoading}
           />
         )}
 
@@ -444,32 +453,6 @@ const HomeView = () => {
                 </button>
               </div>
             </ThematicContainer>
-
-            {/* Create Sponsored Challenge Section */}
-            <div className="mt-4">
-              <ThematicContainer
-                asButton={false}
-                glassmorphic={true}
-                color="nocenaGreen"
-                rounded="xl"
-                className="p-4"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-1">Create Sponsored Challenge</h3>
-                    <p className="text-gray-300 text-sm">
-                      Create branded challenges for all users with Flow token rewards!
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowSponsorForm(true)}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Create Challenge
-                  </button>
-                </div>
-              </ThematicContainer>
-            </div>
           </div>
         )}
 
@@ -479,6 +462,7 @@ const HomeView = () => {
             <SponsorForm
               onSubmit={handleSponsorFormSubmit}
               onCancel={() => setShowSponsorForm(false)}
+              loading={sponsorFormLoading}
             />
           </div>
         )}
@@ -539,6 +523,7 @@ const HomeView = () => {
               <SponsoredChallenges
                 challenges={sponsoredChallenges}
                 onChallengeClick={handleSponsoredChallengeClick}
+                onCreateClick={() => setShowSponsorForm(true)}
                 currentUserAddress={currentLensAccount?.address}
               />
             </div>

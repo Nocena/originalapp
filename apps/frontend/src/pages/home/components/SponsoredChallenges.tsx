@@ -13,18 +13,47 @@ interface SponsoredChallenge {
 interface SponsoredChallengesProps {
   challenges: SponsoredChallenge[];
   onChallengeClick: (challenge: SponsoredChallenge) => void;
+  onCreateClick: () => void;
   currentUserAddress?: string;
 }
 
 const SponsoredChallenges: React.FC<SponsoredChallengesProps> = ({ 
   challenges, 
   onChallengeClick,
+  onCreateClick,
   currentUserAddress 
 }) => {
   if (challenges.length === 0) {
     return (
       <div className="mb-8 flex flex-col items-center">
-        <h2 className="text-xl font-bold text-white mb-4">Sponsored Challenges</h2>
+        <h2 className="text-xl font-bold text-white mb-6">Sponsored Challenges</h2>
+        
+        {/* Sponsor a Challenge Section */}
+        <div className="w-full max-w-xl mb-4">
+          <ThematicContainer
+            asButton={false}
+            glassmorphic={true}
+            color="nocenaGreen"
+            rounded="xl"
+            className="p-4"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-1">Sponsor a Challenge</h3>
+                <p className="text-gray-300 text-sm">
+                  Create sponsored challenges for all users!
+                </p>
+              </div>
+              <button
+                onClick={onCreateClick}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Create Challenge
+              </button>
+            </div>
+          </ThematicContainer>
+        </div>
+
         <p className="text-gray-400 text-sm">No sponsored challenges available</p>
       </div>
     );
@@ -33,6 +62,33 @@ const SponsoredChallenges: React.FC<SponsoredChallengesProps> = ({
   return (
     <div className="mb-8 flex flex-col items-center">
       <h2 className="text-xl font-bold text-white mb-6">Sponsored Challenges</h2>
+      
+      {/* Sponsor a Challenge Section */}
+      <div className="w-full max-w-xl mb-4">
+        <ThematicContainer
+          asButton={false}
+          glassmorphic={true}
+          color="nocenaGreen"
+          rounded="xl"
+          className="p-4"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-1">Sponsor a Challenge</h3>
+              <p className="text-gray-300 text-sm">
+                Create sponsored challenges for all users!
+              </p>
+            </div>
+            <button
+              onClick={onCreateClick}
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Create Challenge
+            </button>
+          </div>
+        </ThematicContainer>
+      </div>
+
       <div className="w-full max-w-xl grid gap-4">
         {challenges.map((challenge) => (
           <ThematicContainer
