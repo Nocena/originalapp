@@ -14,10 +14,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { limit = 50, source = 'blockchain' } = req.query;
 
   try {
+    // Add timeout to external API call
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
     // Get top NCT holders from Flow testnet Blockscout
     const response = await fetch(
-      `https://evm-testnet.flowscan.io/api?module=token&action=getTokenHolders&contractaddress=${CONTRACTS.Nocenite}&page=1&offset=${limit}`
+      `https://evm-testnet.flowscan.io/api?module=token&action=getTokenHolders&contractaddress=${CONTRACTS.Nocenite}&page=1&offset=${limit}`,
+      { 
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Nocena-App/1.0'
+        }
+      }
     );
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`Blockscout API error: ${response.status}`);
@@ -31,15 +43,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const holders = data.result;
 
-    // Extract wallet addresses for Lens account lookup
-    const walletAddresses = holders.map((holder: any) => holder.address);
+    // Extract wallet addresses for Lens account lookup (limit to prevent timeout)
+    const walletAddresses = holders.slice(0, 10).map((holder: any) => holder.address);
     console.log('🔍 Wallet addresses:', walletAddresses);
 
     // Query Lens accounts by owner addresses (wallet holding tokens)
     let lensAccounts: any[] = [];
     try {
       console.log('📡 Querying Lens accounts by ownedBy...');
-      const { data: lensData } = await lensApolloClient.query<
+      
+      // Add timeout to Lens query
+      const lensPromise = lensApolloClient.query<
         AccountsBulkQuery,
         AccountsBulkQueryVariables
       >({
@@ -49,13 +63,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ownedBy: walletAddresses, // Query by owner (wallet holding tokens)
           },
         },
+        fetchPolicy: 'network-only',
+        errorPolicy: 'all'
       });
 
-      lensAccounts = lensData?.accountsBulk || [];
+      // Race against timeout
+      const lensResult = await Promise.race([
+        lensPromise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Lens query timeout')), 10000)
+        )
+      ]);
+
+      lensAccounts = (lensResult as any)?.data?.accountsBulk || [];
       console.log('✅ Found', lensAccounts.length, 'Lens accounts');
-      console.log('📋 Lens accounts:', JSON.stringify(lensAccounts, null, 2));
     } catch (error) {
-      console.error('❌ Error fetching Lens accounts:', error);
+      console.error('❌ Error fetching Lens accounts (continuing without):', error);
+      // Continue without Lens data rather than failing completely
     }
 
     // Create a map of owner address (wallet) -> Lens account
@@ -95,6 +119,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
+    
+    // Handle specific timeout errors
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        return res.status(504).json({ 
+          success: false,
+          error: 'Request timeout - external service took too long to respond',
+          details: 'Blockscout API timeout'
+        });
+      }
+      
+      if (error.message.includes('timeout')) {
+        return res.status(504).json({ 
+          success: false,
+          error: 'Request timeout',
+          details: error.message
+        });
+      }
+    }
+    
     return res.status(500).json({ 
       success: false,
       error: 'Failed to fetch leaderboard data',
