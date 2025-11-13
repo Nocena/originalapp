@@ -1,18 +1,36 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { lensApolloClient } from '../../pages/_app';
 import { AccountsBulkDocument, AccountsBulkQuery, AccountsBulkQueryVariables } from '@nocena/indexer';
+import graphqlClient from '../../lib/graphql/client';
+import { gql } from '@apollo/client';
 
 const CONTRACTS = {
   Nocenite: '0x3FdB92C4974a94E0e867E17e370d79DA6201edc8',
 };
+
+const GET_COMPLETION_STATS = gql`
+  query GetCompletionStats($startDate: DateTime!) {
+    queryChallengeCompletion(filter: { completionDate: { gt: $startDate } }) {
+      userLensAccountId
+      completionDate
+      challengeType
+    }
+  }
+`;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { limit = 50, source = 'blockchain' } = req.query;
+  const { limit = 50, source = 'blockchain', period = 'all' } = req.query;
 
+  // Handle completion-based leaderboard
+  if (source === 'completions') {
+    return handleCompletionLeaderboard(req, res, period as string, parseInt(limit as string));
+  }
+
+  // Existing token-based leaderboard logic
   try {
     // Add timeout to external API call
     const controller = new AbortController();
@@ -142,6 +160,142 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ 
       success: false,
       error: 'Failed to fetch leaderboard data',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+}
+
+async function handleCompletionLeaderboard(req: NextApiRequest, res: NextApiResponse, period: string, limit: number) {
+  try {
+    // Calculate start date based on period
+    const now = new Date();
+    let startDate: Date;
+    
+    switch (period) {
+      case 'daily':
+        startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        break;
+      case 'weekly':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'monthly':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date('2020-01-01'); // All time
+    }
+
+    // Get completions for the period
+    const { data } = await graphqlClient.query({
+      query: GET_COMPLETION_STATS,
+      variables: { startDate: startDate.toISOString() },
+      fetchPolicy: 'network-only',
+    });
+
+    const completions = data?.queryChallengeCompletion || [];
+
+    // Group completions by user
+    const userCompletions = new Map<string, number>();
+    completions.forEach((completion: any) => {
+      const userId = completion.userLensAccountId;
+      userCompletions.set(userId, (userCompletions.get(userId) || 0) + 1);
+    });
+
+    // Convert to array and sort by completion count
+    const sortedUsers = Array.from(userCompletions.entries())
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, limit);
+
+    // Get Lens account data for top users
+    const topUserAddresses = sortedUsers.map(([address]) => address);
+    let lensAccounts: any[] = [];
+    
+    if (topUserAddresses.length > 0) {
+      try {
+        // Try both ownedBy (wallet addresses) and direct address lookup
+        const [ownedByResult, addressResult] = await Promise.all([
+          Promise.race([
+            lensApolloClient.query<AccountsBulkQuery, AccountsBulkQueryVariables>({
+              query: AccountsBulkDocument,
+              variables: {
+                request: { ownedBy: topUserAddresses },
+              },
+              fetchPolicy: 'network-only',
+            }),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Lens ownedBy query timeout')), 5000)
+            )
+          ]).catch(() => ({ data: { accountsBulk: [] } })),
+          
+          Promise.race([
+            lensApolloClient.query<AccountsBulkQuery, AccountsBulkQueryVariables>({
+              query: AccountsBulkDocument,
+              variables: {
+                request: { addresses: topUserAddresses },
+              },
+              fetchPolicy: 'network-only',
+            }),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Lens address query timeout')), 5000)
+            )
+          ]).catch(() => ({ data: { accountsBulk: [] } }))
+        ]);
+        
+        const ownedByAccounts = (ownedByResult as any)?.data?.accountsBulk || [];
+        const addressAccounts = (addressResult as any)?.data?.accountsBulk || [];
+        
+        // Combine both results
+        lensAccounts = [...ownedByAccounts, ...addressAccounts];
+        console.log('✅ Found', lensAccounts.length, 'Lens accounts');
+      } catch (error) {
+        console.error('Error fetching Lens accounts:', error);
+      }
+    }
+
+    // Create lens account map - map by both owner and address
+    const lensAccountMap = new Map();
+    lensAccounts.forEach((account: any) => {
+      if (account.owner) {
+        lensAccountMap.set(account.owner.toLowerCase(), account);
+      }
+      if (account.address) {
+        lensAccountMap.set(account.address.toLowerCase(), account);
+      }
+    });
+
+    // Build leaderboard entries
+    const leaderboardEntries = sortedUsers.map(([userAddress, completionCount], index) => {
+      const lensAccount = lensAccountMap.get(userAddress.toLowerCase());
+      
+      return {
+        rank: index + 1,
+        userId: lensAccount?.username?.localName || userAddress,
+        username: lensAccount?.metadata?.name || 
+                 lensAccount?.username?.value || 
+                 `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`,
+        profilePicture: lensAccount?.metadata?.picture || '/images/profile.png',
+        currentPeriodTokens: completionCount,
+        allTimeTokens: completionCount,
+        todayTokens: completionCount,
+        weekTokens: completionCount,
+        monthTokens: completionCount,
+        lastUpdate: new Date().toISOString(),
+        ownerAddress: userAddress,
+        completionCount,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      leaderboard: leaderboardEntries,
+      period,
+      type: 'completions',
+    });
+  } catch (error) {
+    console.error('Error fetching completion leaderboard:', error);
+    return res.status(500).json({ 
+      success: false,
+      error: 'Failed to fetch completion leaderboard',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
   }

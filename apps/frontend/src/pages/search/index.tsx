@@ -30,6 +30,8 @@ function SearchView() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
+  const [leaderboardType, setLeaderboardType] = useState<'tokens' | 'completions'>('tokens');
+  const [timePeriod, setTimePeriod] = useState<'all' | 'weekly' | 'monthly'>('all');
   const [lastRefreshTime, setLastRefreshTime] = useState(0);
   const { currentLensAccount } = useAuth();
   const activeAccount = useActiveAccount(); // Get actual connected wallet
@@ -41,16 +43,22 @@ function SearchView() {
     try {
       console.log('🔍 Fetching leaderboard...');
 
-      // Build URL with actual connected wallet address if available
-      let url = '/api/leaderboard?source=blockchain&limit=25';
-      if (activeAccount?.address) {
-        url += `&userAddress=${activeAccount.address}`;
-        if (currentLensAccount?.username?.localName) {
-          url += `&username=${encodeURIComponent(currentLensAccount.username.localName)}`;
+      // Build URL based on leaderboard type
+      let url = `/api/leaderboard?limit=25`;
+      
+      if (leaderboardType === 'completions') {
+        url += `&source=completions&period=${timePeriod}`;
+      } else {
+        url += `&source=blockchain`;
+        if (activeAccount?.address) {
+          url += `&userAddress=${activeAccount.address}`;
+          if (currentLensAccount?.username?.localName) {
+            url += `&username=${encodeURIComponent(currentLensAccount.username.localName)}`;
+          }
+          console.log('👤 Including connected wallet address:', activeAccount.address);
+        } else if (currentLensAccount?.address) {
+          url += `&userAddress=${currentLensAccount.address}`;
         }
-        console.log('👤 Including connected wallet address:', activeAccount.address);
-      } else if (currentLensAccount?.address) {
-        url += `&userAddress=${currentLensAccount.address}`;
         if (currentLensAccount?.username?.localName) {
           url += `&username=${encodeURIComponent(currentLensAccount.username.localName)}`;
         }
@@ -78,7 +86,7 @@ function SearchView() {
       console.error('❌ Fetch error:', error);
       return [];
     }
-  }, []);
+  }, [leaderboardType, timePeriod, activeAccount?.address, currentLensAccount?.address, currentLensAccount?.username?.localName]);
 
   // Refresh leaderboard - simplified
   const refreshLeaderboard = useCallback(
@@ -149,6 +157,13 @@ function SearchView() {
 
     refreshLeaderboard(true); // Force refresh on page load
   }, [isPageVisible]);
+
+  // Refresh when leaderboard type or time period changes
+  useEffect(() => {
+    if (!isPageVisible) return;
+    
+    refreshLeaderboard(true);
+  }, [leaderboardType, timePeriod, isPageVisible]);
 
   // Handle user selection from search - SearchBox will handle its own dropdown
   const handleUserSelect = useCallback(
@@ -265,10 +280,18 @@ function SearchView() {
 
           {/* Token Count */}
           <div className="flex items-center justify-center mb-2">
-            <Image src="/nocenix.ico" alt="Nocenix" width={16} height={16} />
-            <span className="text-xs font-semibold ml-1 text-white">
-              {item.currentPeriodTokens.toLocaleString()}
-            </span>
+            {leaderboardType === 'tokens' ? (
+              <>
+                <Image src="/nocenix.ico" alt="Nocenix" width={16} height={16} />
+                <span className="text-xs font-semibold ml-1 text-white">
+                  {item.currentPeriodTokens.toLocaleString()}
+                </span>
+              </>
+            ) : (
+              <span className="text-xs font-semibold text-white">
+                {item.currentPeriodTokens} challenges
+              </span>
+            )}
           </div>
 
           {/* Podium Base */}
@@ -345,10 +368,18 @@ function SearchView() {
 
                 {/* Token display */}
                 <div className="flex items-center mt-1">
-                  <Image src="/nocenix.ico" alt="Nocenix" width={16} height={16} />
-                  <span className="text-sm font-medium text-gray-300 ml-1">
-                    {item.currentPeriodTokens.toLocaleString()}
-                  </span>
+                  {leaderboardType === 'tokens' ? (
+                    <>
+                      <Image src="/nocenix.ico" alt="Nocenix" width={16} height={16} />
+                      <span className="text-sm font-medium text-gray-300 ml-1">
+                        {item.currentPeriodTokens.toLocaleString()}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-sm font-medium text-gray-300">
+                      {item.currentPeriodTokens} challenges
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -367,8 +398,74 @@ function SearchView() {
 
         {/* Title */}
         <div className="w-full max-w-md mt-6 mb-4">
-          <p className="text-center text-sm text-gray-400 mt-1">Top NCT Holders</p>
+          <p className="text-center text-sm text-gray-400 mt-1">
+            {leaderboardType === 'tokens' ? 'Top NCT Holders' : 'Top Challenge Completers'}
+          </p>
         </div>
+
+        {/* Leaderboard Type Toggle */}
+        <div className="w-full max-w-md mb-4">
+          <div className="flex bg-gray-800 rounded-lg p-1">
+            <button
+              onClick={() => setLeaderboardType('tokens')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                leaderboardType === 'tokens'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Token Balance
+            </button>
+            <button
+              onClick={() => setLeaderboardType('completions')}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                leaderboardType === 'completions'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Completions
+            </button>
+          </div>
+        </div>
+
+        {/* Time Period Toggle (only for completions) */}
+        {leaderboardType === 'completions' && (
+          <div className="w-full max-w-md mb-4">
+            <div className="flex bg-gray-800 rounded-lg p-1">
+              <button
+                onClick={() => setTimePeriod('all')}
+                className={`flex-1 py-2 px-2 rounded-md text-xs font-medium transition-colors ${
+                  timePeriod === 'all'
+                    ? 'bg-green-600 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                All Time
+              </button>
+              <button
+                onClick={() => setTimePeriod('monthly')}
+                className={`flex-1 py-2 px-2 rounded-md text-xs font-medium transition-colors ${
+                  timePeriod === 'monthly'
+                    ? 'bg-green-600 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setTimePeriod('weekly')}
+                className={`flex-1 py-2 px-2 rounded-md text-xs font-medium transition-colors ${
+                  timePeriod === 'weekly'
+                    ? 'bg-green-600 text-white'
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Weekly
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Leaderboard */}
         <div className="w-full max-w-md mb-28">
