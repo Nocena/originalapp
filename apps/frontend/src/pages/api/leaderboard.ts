@@ -12,6 +12,10 @@ const CONTRACTS = {
   Nocenite: '0x3FdB92C4974a94E0e867E17e370d79DA6201edc8',
 };
 
+// In-memory cache
+let cache: { data: any; timestamp: number } | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 const GET_COMPLETION_STATS = gql`
   query GetCompletionStats($startDate: DateTime!) {
     queryChallengeCompletion(filter: { completionDate: { gt: $startDate } }) {
@@ -28,6 +32,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { limit = 50, source = 'blockchain', period = 'all' } = req.query;
+
+  // Return cached data immediately if available
+  if (cache && Date.now() - cache.timestamp < CACHE_DURATION) {
+    return res.status(200).json(cache.data);
+  }
 
   // Handle completion-based leaderboard
   if (source === 'completions') {
@@ -133,10 +142,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       };
     });
 
-    return res.status(200).json({
+    // Cache the successful result
+    const result = {
       success: true,
       leaderboard: leaderboardEntries,
-    });
+    };
+    
+    cache = {
+      data: result,
+      timestamp: Date.now()
+    };
+
+    return res.status(200).json(result);
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
 
