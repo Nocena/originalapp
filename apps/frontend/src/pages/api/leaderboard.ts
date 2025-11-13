@@ -147,10 +147,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success: true,
       leaderboard: leaderboardEntries,
     };
-    
+
     cache = {
       data: result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     return res.status(200).json(result);

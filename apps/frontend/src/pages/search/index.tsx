@@ -47,15 +47,18 @@ function SearchView() {
         console.log('📊 Storage usage:', {
           used: storageEstimate?.usage,
           quota: storageEstimate?.quota,
-          percentage: storageEstimate?.usage && storageEstimate?.quota ? 
-            (storageEstimate.usage / storageEstimate.quota * 100).toFixed(1) + '%' : 'unknown'
+          percentage:
+            storageEstimate?.usage && storageEstimate?.quota
+              ? ((storageEstimate.usage / storageEstimate.quota) * 100).toFixed(1) + '%'
+              : 'unknown',
         });
-        
+
         console.log('🗄️ LocalStorage keys:', Object.keys(localStorage).length);
-        console.log('🔑 Large localStorage items:', 
+        console.log(
+          '🔑 Large localStorage items:',
           Object.keys(localStorage)
-            .map(key => ({ key, size: localStorage.getItem(key)?.length || 0 }))
-            .filter(item => item.size > 10000)
+            .map((key) => ({ key, size: localStorage.getItem(key)?.length || 0 }))
+            .filter((item) => item.size > 10000)
             .sort((a, b) => b.size - a.size)
             .slice(0, 5)
         );
@@ -146,7 +149,7 @@ function SearchView() {
         } catch (error) {
           console.warn('Failed to cache leaderboard data:', error);
           // Clear storage if quota exceeded
-          if (error.name === 'QuotaExceededError') {
+          if (error instanceof Error && error.name === 'QuotaExceededError') {
             try {
               localStorage.clear();
             } catch (clearError) {

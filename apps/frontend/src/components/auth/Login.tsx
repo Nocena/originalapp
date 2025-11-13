@@ -21,9 +21,7 @@ import SingleAccount from '../Account/SingleAccount';
 import { Loader } from '@components/ui';
 import AuthMessage from '@components/auth/AuthMessage';
 import AccountNotFound from '@components/auth/AccountNotFound';
-import {
-  useAvailableNocenaLensAccounts,
-} from '../../lib/graphql/features/challenge-completion/hook/useAvailableNocenaLensAccounts';
+import { useAvailableNocenaLensAccounts } from '../../lib/graphql/features/challenge-completion/hook/useAvailableNocenaLensAccounts';
 
 const Login = () => {
   const [hasAccounts, setHasAccounts] = useState(true);
@@ -58,8 +56,8 @@ const Login = () => {
   const lastLogin = data?.lastLoggedInAccount;
   const remainingAccounts = lastLogin
     ? allAccounts
-      .filter(({ account }) => account.address !== lastLogin.address)
-      .map(({ account }) => account)
+        .filter(({ account }) => account.address !== lastLogin.address)
+        .map(({ account }) => account)
     : allAccounts.map(({ account }) => account);
 
   const accounts = useMemo(() => {
@@ -74,7 +72,7 @@ const Login = () => {
     if (!thirdWebAccount) return;
 
     const isManager = allAccounts.some(
-      ({ account: a, __typename }) => __typename === 'AccountManaged' && a.address === account,
+      ({ account: a, __typename }) => __typename === 'AccountManaged' && a.address === account
     );
 
     const meta = { app: IS_MAINNET ? NOCENA_APP : undefined, account };
@@ -120,7 +118,7 @@ const Login = () => {
 
   useEffect(() => {
     if (availableNocenaLensAccounts.length > 0) {
-      handleSign(availableNocenaLensAccounts[0].address)
+      handleSign(availableNocenaLensAccounts[0].address);
     }
   }, [availableNocenaLensAccounts]);
 
@@ -138,8 +136,9 @@ const Login = () => {
           <Card className="w-full dark:divide-gray-700" forceRounded>
             <Loader className="my-4" message="Loading accounts managed by you..." small />
           </Card>
-        ) : availableNocenaLensAccounts.length <= 0 && <AccountNotFound />
-        }
+        ) : (
+          availableNocenaLensAccounts.length <= 0 && <AccountNotFound />
+        )}
       </div>
     </div>
   );
