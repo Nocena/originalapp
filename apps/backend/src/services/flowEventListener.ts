@@ -2,6 +2,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import { ApolloClient, InMemoryCache, gql, createHttpLink } from '@apollo/client';
 import dotenv from 'dotenv';
+import { generateDailyChallenge } from '../scripts/generateDailyChallenge';
+import { generateWeeklyChallenge } from '../scripts/generateWeeklyChallenge';
+import { generateMonthlyChallenge } from '../scripts/generateMonthlyChallenge';
 
 // Load environment variables from backend directory
 dotenv.config({ path: path.join(__dirname, '../../.env.local') });
@@ -164,21 +167,19 @@ export class FlowEventListener {
 
   private async triggerChallengeGeneration(challengeType: 'daily' | 'weekly' | 'monthly'): Promise<void> {
     try {
-      // Import and run the challenge generation script directly
-      const scriptPath = path.join(__dirname, `../scripts/generate${challengeType.charAt(0).toUpperCase() + challengeType.slice(1)}Challenge.ts`);
-      const module = await import(scriptPath);
-      
-      // Call the correct function name
-      const functionName = `generate${challengeType.charAt(0).toUpperCase() + challengeType.slice(1)}Challenge`;
-      const generateFunction = module[functionName];
-      
-      if (typeof generateFunction === 'function') {
-        await generateFunction();
-      } else {
-        throw new Error(`Function ${functionName} not found in module`);
+      switch (challengeType) {
+        case 'daily':
+          await generateDailyChallenge();
+          break;
+        case 'weekly':
+          await generateWeeklyChallenge();
+          break;
+        case 'monthly':
+          await generateMonthlyChallenge();
+          break;
       }
     } catch (error) {
-      console.error(`Failed to run ${challengeType} challenge script:`, error);
+      console.error(`Failed to generate ${challengeType} challenge:`, error);
       throw error;
     }
   }

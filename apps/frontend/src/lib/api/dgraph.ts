@@ -1433,11 +1433,11 @@ export async function fetchUserCompletions(
     let filterConditions = ['{ completionDate: { between: { min: $startDate, max: $endDate } } }'];
 
     if (challengeType === 'ai') {
-      filterConditions.push('{ has: aiChallenge }');
+      filterConditions.push('{ aiChallenge: { id: { regexp: "/.*/" } } }');
     } else if (challengeType === 'private') {
-      filterConditions.push('{ has: privateChallenge }');
+      filterConditions.push('{ privateChallenge: { id: { regexp: "/.*/" } } }');
     } else if (challengeType === 'public') {
-      filterConditions.push('{ has: publicChallenge }');
+      filterConditions.push('{ publicChallenge: { id: { regexp: "/.*/" } } }');
     }
 
     const filterString =
@@ -1590,7 +1590,7 @@ export async function fetchFollowerCompletions(
               filter: { 
                 and: [
                   { completionDate: { between: { min: $startDate, max: $endDate } } },
-                  { has: aiChallenge },
+                  { aiChallenge: { id: { regexp: "/.*/" } } },
                   { challengeType: { eq: "ai" } }
                 ]
               }
@@ -3240,9 +3240,9 @@ export const fetchChallengeCompletionsWithLikesAndReactions = async (
     if (challengeId) {
       challengeFilter = `filter: { 
         or: [
-          { and: [{ has: publicChallenge }, { publicChallenge: { id: { eq: $challengeId } } }] },
-          { and: [{ has: privateChallenge }, { privateChallenge: { id: { eq: $challengeId } } }] },
-          { and: [{ has: aiChallenge }, { aiChallenge: { id: { eq: $challengeId } } }] }
+          { and: [{ publicChallenge: { id: { regexp: "/.*/" } } }, { publicChallenge: { id: { eq: $challengeId } } }] },
+          { and: [{ privateChallenge: { id: { regexp: "/.*/" } } }, { privateChallenge: { id: { eq: $challengeId } } }] },
+          { and: [{ aiChallenge: { id: { regexp: "/.*/" } } }, { aiChallenge: { id: { eq: $challengeId } } }] }
         ]
       },`;
     }

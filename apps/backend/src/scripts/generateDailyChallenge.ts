@@ -73,7 +73,7 @@ export async function generateDailyChallenge() {
       const success = await createAIChallenge(challengeData);
       
       if (success) {
-        // Challenge saved successfully
+        console.log('✅ Daily challenge created successfully');
       } else {
         throw new Error('Failed to save challenge to database');
       }
@@ -84,5 +84,3 @@ export async function generateDailyChallenge() {
     throw error;
   }
 }
-
-generateDailyChallenge().catch(console.error);
