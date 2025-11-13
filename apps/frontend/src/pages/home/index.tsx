@@ -19,6 +19,9 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import PrivateChallengeCreator from '../../components/PrivateChallengeCreator';
 import ThematicContainer from '../../components/ui/ThematicContainer';
+import { createPublicChallenge } from '../../lib/graphql/features/public-challenge';
+import SponsoredChallenges from './components/SponsoredChallenges';
+import SponsorForm from './components/SponsorForm';
 import {
   fetchFollowingsCompletions,
   fetchLatestUserCompletion,
@@ -36,6 +39,10 @@ const HomeView = () => {
   const [followerCompletions, setFollowerCompletions] = useState<BasicCompletionType[]>([]);
   const [isFetchingCompletions, setIsFetchingCompletions] = useState(false);
   const [showPrivateChallengeCreator, setShowPrivateChallengeCreator] = useState(false);
+  const [showSponsorForm, setShowSponsorForm] = useState(false);
+  const [sponsorFormLoading, setSponsorFormLoading] = useState(false);
+  const [privateChallengeLoading, setPrivateChallengeLoading] = useState(false);
+  const [sponsoredChallenges, setSponsoredChallenges] = useState([]);
 
   // Challenge state
   const [currentChallenge, setCurrentChallenge] = useState<AIChallenge | null>(null);
@@ -144,6 +151,7 @@ const HomeView = () => {
 
   // Handle private challenge creation
   const handlePrivateChallengeSubmit = async (challenge: CreatePrivateChallengeRequest) => {
+    setPrivateChallengeLoading(true);
     try {
       const response = await fetch('/api/private-challenge/create', {
         method: 'POST',
@@ -168,8 +176,137 @@ const HomeView = () => {
     } catch (error) {
       console.error('Error sending private challenge:', error);
       toast.error('Error sending private challenge');
+    } finally {
+      setPrivateChallengeLoading(false);
     }
   };
+
+  // Handle sponsor form submission
+  const handleSponsorFormSubmit = async (formData: any) => {
+    setSponsorFormLoading(true);
+    try {
+      console.log('Creating sponsored challenge:', formData);
+
+      if (formData.challengeType === 'public') {
+        // Create public sponsored challenge with location
+        const challengeId = await createPublicChallenge(
+          currentLensAccount?.address,
+          `${formData.sponsorName}: ${formData.challengeTitle}`,
+          formData.challengeDescription,
+          100, // Default reward for sponsored challenges
+          formData.location?.lat,
+          formData.location?.lng,
+          50 // Default participants for sponsored challenges
+        );
+
+        toast.success('Location-based sponsored challenge created successfully!');
+        setShowSponsorForm(false);
+      } else {
+        // Create private sponsored challenge (existing logic)
+        const response = await fetch('/api/private-challenge/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientId: 'sponsored', // Special recipient for sponsored challenges
+            recipientWalletAddress: 'sponsored',
+            name: formData.challengeTitle,
+            description: formData.challengeDescription,
+            rewardAmount: 100, // Default reward for sponsored challenges
+            creatorId: currentLensAccount?.address,
+            creatorUsername: currentLensAccount?.username?.localName || 'Anonymous',
+            isSponsored: true,
+            sponsorMetadata: {
+              sponsorName: formData.sponsorName,
+              sponsorDescription: formData.description,
+            },
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          toast.success('Sponsored challenge created successfully!');
+          setShowSponsorForm(false);
+          // Refresh sponsored challenges list with a small delay
+          setTimeout(() => {
+            fetchSponsoredChallenges();
+          }, 500);
+        } else {
+          const errorData = await response.json();
+          toast.error(errorData.error || 'Failed to create sponsored challenge');
+        }
+      }
+    } catch (error) {
+      console.error('Error creating sponsored challenge:', error);
+      toast.error('Failed to create sponsored challenge');
+    } finally {
+      setSponsorFormLoading(false);
+    }
+  };
+
+  const handleSponsoredChallengeClick = async (challenge: any) => {
+    if (!currentLensAccount) {
+      toast.error('Please login to participate in challenges!');
+      router.push('/login');
+      return;
+    }
+
+    try {
+      console.log('Starting sponsored challenge:', challenge);
+
+      // Navigate to completion page with sponsored challenge data
+      router.push({
+        pathname: '/completing',
+        query: {
+          challengeId: challenge.id,
+          type: 'sponsored',
+          frequency: 'sponsored',
+          title: challenge.challengeTitle,
+          description: challenge.challengeDescription,
+          reward: 100, // NCT tokens
+          visibility: 'public',
+          sponsorName: challenge.companyName,
+        },
+      });
+    } catch (error) {
+      console.error('Error starting sponsored challenge:', error);
+      toast.error('Failed to start challenge');
+    }
+  };
+
+  // Fetch sponsored challenges from API
+  const fetchSponsoredChallenges = async () => {
+    if (!currentLensAccount?.address) {
+      console.log('No current lens account address available');
+      return;
+    }
+
+    console.log('Fetching sponsored challenges for user:', currentLensAccount.address);
+
+    try {
+      const response = await fetch(
+        `/api/private-challenge/sponsored?userId=${currentLensAccount.address}`
+      );
+      console.log('Sponsored challenges API response status:', response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Sponsored challenges data:', data);
+        setSponsoredChallenges(data.challenges || []);
+      } else {
+        const errorData = await response.text();
+        console.error('Failed to fetch sponsored challenges:', errorData);
+      }
+    } catch (error) {
+      console.error('Error fetching sponsored challenges:', error);
+    }
+  };
+
+  // Fetch sponsored challenges when user is available
+  useEffect(() => {
+    if (currentLensAccount?.address) {
+      fetchSponsoredChallenges();
+    }
+  }, [currentLensAccount?.address]);
 
   const handleCompleteChallenge = async (type: string, frequency: string) => {
     if (!currentLensAccount) {
@@ -282,13 +419,14 @@ const HomeView = () => {
   }
 
   return (
-    <div className="text-white p-4 min-h-screen mt-20">
+    <div className="text-white p-4 min-h-screen mt-20 pb-32">
       <div className="max-w-4xl mx-auto">
         {/* Private Challenge Creator Modal */}
         {showPrivateChallengeCreator && (
           <PrivateChallengeCreator
             onClose={() => setShowPrivateChallengeCreator(false)}
             onSubmit={handlePrivateChallengeSubmit}
+            loading={privateChallengeLoading}
           />
         )}
 
@@ -317,6 +455,17 @@ const HomeView = () => {
                 </button>
               </div>
             </ThematicContainer>
+          </div>
+        )}
+
+        {/* Sponsor Form Modal */}
+        {showSponsorForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <SponsorForm
+              onSubmit={handleSponsorFormSubmit}
+              onCancel={() => setShowSponsorForm(false)}
+              loading={sponsorFormLoading}
+            />
           </div>
         )}
 
@@ -370,6 +519,16 @@ const HomeView = () => {
                 />
               </div>
             )}
+
+            {/* Sponsored Challenges Section */}
+            <div className="mt-8">
+              <SponsoredChallenges
+                challenges={sponsoredChallenges}
+                onChallengeClick={handleSponsoredChallengeClick}
+                onCreateClick={() => setShowSponsorForm(true)}
+                currentUserAddress={currentLensAccount?.address}
+              />
+            </div>
           </>
         )}
       </div>

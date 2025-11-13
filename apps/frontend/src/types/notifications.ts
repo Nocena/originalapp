@@ -56,6 +56,12 @@ export interface CreatePrivateChallengeRequest {
   description: string;
   rewardAmount: number;
   selectedUser?: any;
+  // Sponsor fields
+  isSponsored?: boolean;
+  sponsorMetadata?: {
+    sponsorName: string;
+    sponsorDescription: string;
+  };
 }
 
 export interface PrivateChallengeResponse {

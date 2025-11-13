@@ -22,8 +22,8 @@ interface Challenge {
   challengerProfile: string;
   reward: number;
   color: string;
-  type: 'AI' | 'PRIVATE' | 'PUBLIC';
-  frequency?: 'daily' | 'weekly' | 'monthly';
+  type: 'AI' | 'PRIVATE' | 'PUBLIC' | 'SPONSORED';
+  frequency?: 'daily' | 'weekly' | 'monthly' | 'sponsored';
   challengeId?: string;
   creatorWalletAddress?: string;
 }
@@ -64,8 +64,16 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
   backgroundTasksRef.current = backgroundTasks;
 
   useEffect(() => {
-    const { type, frequency, title, description, reward, challengeId, creatorWalletAddress } =
-      router.query;
+    const {
+      type,
+      frequency,
+      title,
+      description,
+      reward,
+      challengeId,
+      creatorWalletAddress,
+      sponsorName,
+    } = router.query;
 
     if (title && description && reward) {
       let challengeData: Challenge;
@@ -97,6 +105,18 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
           color: 'nocenaPink',
           type: 'AI',
           frequency: frequency as 'daily' | 'weekly' | 'monthly',
+        };
+      } else if (type === 'sponsored') {
+        challengeData = {
+          title: title as string,
+          description: description as string,
+          challengerName: (sponsorName as string) || 'Sponsor',
+          challengerProfile: '/images/sponsor.png',
+          reward: parseInt(reward as string),
+          color: 'nocenaGreen',
+          type: 'SPONSORED',
+          frequency: 'sponsored',
+          challengeId: challengeId as string,
         };
       } else if (type === 'PRIVATE') {
         challengeData = {
@@ -283,7 +303,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
     };
   }, [currentStep]);
 
-  const getChallengeTypeInfo = (challengeType: 'AI' | 'PRIVATE' | 'PUBLIC') => {
+  const getChallengeTypeInfo = (challengeType: 'AI' | 'PRIVATE' | 'PUBLIC' | 'SPONSORED') => {
     switch (challengeType) {
       case 'AI':
         return {
@@ -302,6 +322,12 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
           badge: 'Public Challenge',
           subtitle: 'Location-based verification required',
           action: 'Begin Protocol',
+        };
+      case 'SPONSORED':
+        return {
+          badge: 'Sponsored Challenge',
+          subtitle: 'Brand partnership verification protocol',
+          action: 'Start Challenge',
         };
     }
   };

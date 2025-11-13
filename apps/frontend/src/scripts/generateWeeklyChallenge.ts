@@ -515,6 +515,197 @@ const sendPushNotifications = async (challenge: WeeklyAIChallenge): Promise<void
   }
 };
 
+// Function to deactivate old sponsored challenges
+export const deactivateOldSponsoredChallenges = async (): Promise<boolean> => {
+  if (!DGRAPH_ENDPOINT) {
+    console.error('DGRAPH_ENDPOINT is not configured');
+    return false;
+  }
+
+  try {
+    console.log('🧹 Deactivating old sponsored challenges...');
+
+    // Calculate cutoff date (7 days ago)
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 7);
+    const cutoffISO = cutoffDate.toISOString();
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (process.env.NEXT_PUBLIC_DGRAPH_API_KEY) {
+      headers['X-Auth-Token'] = process.env.NEXT_PUBLIC_DGRAPH_API_KEY;
+    }
+
+    // 1. Handle PUBLIC sponsored challenges (map challenges with colon in title)
+    const publicQuery = `
+      query GetOldPublicSponsoredChallenges($cutoffDate: DateTime!) {
+        queryPublicChallenge(filter: { 
+          and: [
+            { isActive: true },
+            { createdAt: { lt: $cutoffDate } }
+          ]
+        }) {
+          id
+          title
+          createdAt
+        }
+      }
+    `;
+
+    const publicQueryResponse = await axios.post(
+      DGRAPH_ENDPOINT,
+      {
+        query: publicQuery,
+        variables: { cutoffDate: cutoffISO },
+      },
+      { headers }
+    );
+
+    if (publicQueryResponse.data.errors) {
+      console.error('❌ Public query errors:', publicQueryResponse.data.errors);
+      return false;
+    }
+
+    const oldPublicChallenges = publicQueryResponse.data?.data?.queryPublicChallenge || [];
+    const oldPublicSponsoredChallenges = oldPublicChallenges.filter((c: any) =>
+      c.title.includes(':')
+    );
+
+    console.log(
+      `📊 Found ${oldPublicSponsoredChallenges.length} old public sponsored challenges to deactivate`
+    );
+
+    // 2. Handle PRIVATE sponsored challenges (home page challenges)
+    const privateQuery = `
+      query GetOldPrivateSponsoredChallenges($cutoffDate: DateTime!) {
+        queryPrivateChallenge(filter: { 
+          and: [
+            { isActive: true },
+            { targetLensAccountId: { eq: "sponsored" } },
+            { createdAt: { lt: $cutoffDate } }
+          ]
+        }) {
+          id
+          title
+          createdAt
+        }
+      }
+    `;
+
+    const privateQueryResponse = await axios.post(
+      DGRAPH_ENDPOINT,
+      {
+        query: privateQuery,
+        variables: { cutoffDate: cutoffISO },
+      },
+      { headers }
+    );
+
+    if (privateQueryResponse.data.errors) {
+      console.error('❌ Private query errors:', privateQueryResponse.data.errors);
+      return false;
+    }
+
+    const oldPrivateSponsoredChallenges =
+      privateQueryResponse.data?.data?.queryPrivateChallenge || [];
+
+    console.log(
+      `📊 Found ${oldPrivateSponsoredChallenges.length} old private sponsored challenges to deactivate`
+    );
+
+    // 3. Deactivate public sponsored challenges
+    if (oldPublicSponsoredChallenges.length > 0) {
+      const publicMutation = `
+        mutation DeactivatePublicChallenges($ids: [ID!]!) {
+          updatePublicChallenge(input: {
+            filter: { id: $ids },
+            set: { isActive: false }
+          }) {
+            publicChallenge {
+              id
+              title
+              isActive
+            }
+          }
+        }
+      `;
+
+      const publicChallengeIds = oldPublicSponsoredChallenges.map((c: any) => c.id);
+
+      const publicMutationResponse = await axios.post(
+        DGRAPH_ENDPOINT,
+        {
+          query: publicMutation,
+          variables: { ids: publicChallengeIds },
+        },
+        { headers }
+      );
+
+      if (publicMutationResponse.data.errors) {
+        console.error('❌ Public mutation errors:', publicMutationResponse.data.errors);
+        return false;
+      }
+
+      const deactivatedPublic =
+        publicMutationResponse.data?.data?.updatePublicChallenge?.publicChallenge || [];
+      console.log(
+        `✅ Successfully deactivated ${deactivatedPublic.length} old public sponsored challenges`
+      );
+    }
+
+    // 4. Deactivate private sponsored challenges
+    if (oldPrivateSponsoredChallenges.length > 0) {
+      const privateMutation = `
+        mutation DeactivatePrivateChallenges($ids: [ID!]!) {
+          updatePrivateChallenge(input: {
+            filter: { id: $ids },
+            set: { isActive: false }
+          }) {
+            privateChallenge {
+              id
+              title
+              isActive
+            }
+          }
+        }
+      `;
+
+      const privateChallengeIds = oldPrivateSponsoredChallenges.map((c: any) => c.id);
+
+      const privateMutationResponse = await axios.post(
+        DGRAPH_ENDPOINT,
+        {
+          query: privateMutation,
+          variables: { ids: privateChallengeIds },
+        },
+        { headers }
+      );
+
+      if (privateMutationResponse.data.errors) {
+        console.error('❌ Private mutation errors:', privateMutationResponse.data.errors);
+        return false;
+      }
+
+      const deactivatedPrivate =
+        privateMutationResponse.data?.data?.updatePrivateChallenge?.privateChallenge || [];
+      console.log(
+        `✅ Successfully deactivated ${deactivatedPrivate.length} old private sponsored challenges`
+      );
+    }
+
+    if (oldPublicSponsoredChallenges.length === 0 && oldPrivateSponsoredChallenges.length === 0) {
+      console.log('✅ No old sponsored challenges to deactivate');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('❌ Error deactivating old sponsored challenges:', error);
+    return false;
+  }
+};
+
 // Function to save the weekly challenge to Dgraph database
 export const saveWeeklyChallengeToDatabase = async (
   challenge: WeeklyAIChallenge
@@ -604,6 +795,16 @@ async function main() {
     } catch (error) {
       console.error('❌ Failed to reset weekly earnings:', error);
       console.log('⚠️ Continuing with challenge generation despite earnings reset failure...\n');
+    }
+
+    // Step 1.5: Deactivate old sponsored challenges
+    console.log('🧹 Cleaning up old sponsored challenges...');
+    try {
+      await deactivateOldSponsoredChallenges();
+      console.log('✅ Old sponsored challenges cleanup completed!\n');
+    } catch (error) {
+      console.error('❌ Failed to cleanup old sponsored challenges:', error);
+      console.log('⚠️ Continuing with challenge generation despite cleanup failure...\n');
     }
 
     // Step 2: Generate and process the weekly challenge
