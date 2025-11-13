@@ -33,7 +33,7 @@ const ChallengeMarker: React.FC<ChallengeMarkerProps> = ({
     const defaultColors = ['#FD4EF5', '#10CAFF', '#ffffff'];
     const defaultStrokeColors = ['#FD4EF5', '#10CAFF', '#ffffff'];
     const colorIndex = index % 3;
-    
+
     const markerColor = challenge.color || defaultColors[colorIndex];
     const strokeColor = challenge.color || defaultStrokeColors[colorIndex];
 

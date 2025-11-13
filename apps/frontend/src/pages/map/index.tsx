@@ -96,7 +96,9 @@ const MapView = () => {
 
     try {
       // Get current sponsored challenges to preserve them
-      const sponsoredResponse = await fetch(`/api/map/sponsored-challenges?userAddress=${currentLensAccount.address}`);
+      const sponsoredResponse = await fetch(
+        `/api/map/sponsored-challenges?userAddress=${currentLensAccount.address}`
+      );
       const sponsoredData = await sponsoredResponse.json();
       const sponsoredChallenges = sponsoredData.challenges || [];
 
@@ -278,16 +280,16 @@ const MapView = () => {
         // Load existing user challenges and sponsored challenges in parallel
         const [challengesResponse, sponsoredResponse] = await Promise.all([
           fetch(`/api/map/user-challenges?userAddress=${currentLensAccount.address}`),
-          fetch(`/api/map/sponsored-challenges?userAddress=${currentLensAccount.address}`)
+          fetch(`/api/map/sponsored-challenges?userAddress=${currentLensAccount.address}`),
         ]);
-        
+
         const challengeData = await challengesResponse.json();
         const sponsoredData = await sponsoredResponse.json();
 
         // Combine user challenges and sponsored challenges
         const allChallenges = [
           ...(challengeData.challenges || []),
-          ...(sponsoredData.challenges || [])
+          ...(sponsoredData.challenges || []),
         ];
 
         if (challengeData.hasGenerated) {
@@ -301,7 +303,7 @@ const MapView = () => {
           console.log('📦 Loading sponsored challenges');
           setChallenges(sponsoredData.challenges || []);
           setHasGeneratedWeekly(false);
-          
+
           const buttonResponse = await fetch('/api/map/button-state');
           const buttonState = await buttonResponse.json();
 

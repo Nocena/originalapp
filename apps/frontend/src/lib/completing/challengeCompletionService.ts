@@ -284,7 +284,8 @@ export async function completeChallengeWorkflow(
 
                   const timestamp = Date.now();
                   console.log('💾 Creating completion record...');
-                  const completionType = challenge.type === 'SPONSORED' ? 'private' : challenge.type.toLowerCase();
+                  const completionType =
+                    challenge.type === 'SPONSORED' ? 'private' : challenge.type.toLowerCase();
                   completionId = await createChallengeCompletion(
                     userId,
                     completionType as 'private' | 'public' | 'ai',

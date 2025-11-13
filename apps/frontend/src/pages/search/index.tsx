@@ -45,7 +45,7 @@ function SearchView() {
 
       // Build URL based on leaderboard type
       let url = `/api/leaderboard?limit=25`;
-      
+
       if (leaderboardType === 'completions') {
         url += `&source=completions&period=${timePeriod}`;
       } else {
@@ -62,7 +62,7 @@ function SearchView() {
         if (currentLensAccount?.username?.localName) {
           url += `&username=${encodeURIComponent(currentLensAccount.username.localName)}`;
         }
-        console.log('👤 Including Lens account address:', currentLensAccount.address);
+        console.log('👤 Including Lens account address:', currentLensAccount?.address);
       }
 
       const response = await fetch(url);
@@ -86,7 +86,13 @@ function SearchView() {
       console.error('❌ Fetch error:', error);
       return [];
     }
-  }, [leaderboardType, timePeriod, activeAccount?.address, currentLensAccount?.address, currentLensAccount?.username?.localName]);
+  }, [
+    leaderboardType,
+    timePeriod,
+    activeAccount?.address,
+    currentLensAccount?.address,
+    currentLensAccount?.username?.localName,
+  ]);
 
   // Refresh leaderboard - simplified
   const refreshLeaderboard = useCallback(
@@ -161,7 +167,7 @@ function SearchView() {
   // Refresh when leaderboard type or time period changes
   useEffect(() => {
     if (!isPageVisible) return;
-    
+
     refreshLeaderboard(true);
   }, [leaderboardType, timePeriod, isPageVisible]);
 

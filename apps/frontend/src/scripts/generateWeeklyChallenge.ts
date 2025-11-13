@@ -569,9 +569,13 @@ export const deactivateOldSponsoredChallenges = async (): Promise<boolean> => {
     }
 
     const oldPublicChallenges = publicQueryResponse.data?.data?.queryPublicChallenge || [];
-    const oldPublicSponsoredChallenges = oldPublicChallenges.filter((c: any) => c.title.includes(':'));
+    const oldPublicSponsoredChallenges = oldPublicChallenges.filter((c: any) =>
+      c.title.includes(':')
+    );
 
-    console.log(`📊 Found ${oldPublicSponsoredChallenges.length} old public sponsored challenges to deactivate`);
+    console.log(
+      `📊 Found ${oldPublicSponsoredChallenges.length} old public sponsored challenges to deactivate`
+    );
 
     // 2. Handle PRIVATE sponsored challenges (home page challenges)
     const privateQuery = `
@@ -604,9 +608,12 @@ export const deactivateOldSponsoredChallenges = async (): Promise<boolean> => {
       return false;
     }
 
-    const oldPrivateSponsoredChallenges = privateQueryResponse.data?.data?.queryPrivateChallenge || [];
+    const oldPrivateSponsoredChallenges =
+      privateQueryResponse.data?.data?.queryPrivateChallenge || [];
 
-    console.log(`📊 Found ${oldPrivateSponsoredChallenges.length} old private sponsored challenges to deactivate`);
+    console.log(
+      `📊 Found ${oldPrivateSponsoredChallenges.length} old private sponsored challenges to deactivate`
+    );
 
     // 3. Deactivate public sponsored challenges
     if (oldPublicSponsoredChallenges.length > 0) {
@@ -641,8 +648,11 @@ export const deactivateOldSponsoredChallenges = async (): Promise<boolean> => {
         return false;
       }
 
-      const deactivatedPublic = publicMutationResponse.data?.data?.updatePublicChallenge?.publicChallenge || [];
-      console.log(`✅ Successfully deactivated ${deactivatedPublic.length} old public sponsored challenges`);
+      const deactivatedPublic =
+        publicMutationResponse.data?.data?.updatePublicChallenge?.publicChallenge || [];
+      console.log(
+        `✅ Successfully deactivated ${deactivatedPublic.length} old public sponsored challenges`
+      );
     }
 
     // 4. Deactivate private sponsored challenges
@@ -678,8 +688,11 @@ export const deactivateOldSponsoredChallenges = async (): Promise<boolean> => {
         return false;
       }
 
-      const deactivatedPrivate = privateMutationResponse.data?.data?.updatePrivateChallenge?.privateChallenge || [];
-      console.log(`✅ Successfully deactivated ${deactivatedPrivate.length} old private sponsored challenges`);
+      const deactivatedPrivate =
+        privateMutationResponse.data?.data?.updatePrivateChallenge?.privateChallenge || [];
+      console.log(
+        `✅ Successfully deactivated ${deactivatedPrivate.length} old private sponsored challenges`
+      );
     }
 
     if (oldPublicSponsoredChallenges.length === 0 && oldPrivateSponsoredChallenges.length === 0) {

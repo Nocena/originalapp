@@ -12,7 +12,7 @@ interface Challenge {
   challengerProfile: string;
   reward: number;
   color: string;
-  type: 'AI' | 'PRIVATE' | 'PUBLIC';
+  type: 'AI' | 'PRIVATE' | 'PUBLIC' | 'SPONSORED';
 }
 
 interface SelfieScreenProps {

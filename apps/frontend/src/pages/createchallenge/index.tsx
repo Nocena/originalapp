@@ -38,7 +38,9 @@ const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
   const [description, setDescription] = useState('');
   const [reward, setReward] = useState(10); // Default to 10 NOCENIX
   const [participants, setParticipants] = useState<ParticipantCount>(10); // Default to 10 participants
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
+    null
+  );
   const [locationLoading, setLocationLoading] = useState(false);
 
   // Dropdown toggles
@@ -79,7 +81,7 @@ const CreateChallengeView: React.FC<CreateChallengeViewProps> = ({
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
       });
-      
+
       toast.success('Location obtained successfully!');
     } catch (error) {
       console.error('Error getting location:', error);

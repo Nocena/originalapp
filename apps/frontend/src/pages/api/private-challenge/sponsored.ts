@@ -1,6 +1,6 @@
 /**
  * Sponsored Challenges API
- * 
+ *
  * Fetches all sponsored challenges (private challenges with targetUserId = 'sponsored')
  * that the current user hasn't completed yet
  */
@@ -66,12 +66,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ),
       axios.post(
         DGRAPH_ENDPOINT,
-        { 
+        {
           query: completionsQuery,
-          variables: { userId: userId as string }
+          variables: { userId: userId as string },
         },
         { headers: { 'Content-Type': 'application/json' } }
-      )
+      ),
     ]);
 
     if (challengesResponse.data.errors) {
@@ -90,7 +90,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .map((c: any) => c.privateChallengeId)
         .filter(Boolean)
     );
-    
+
     // Filter out expired challenges and challenges the user has completed
     const now = new Date();
     const availableChallenges = allChallenges.filter((challenge: any) => {
@@ -98,14 +98,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const isNotCompleted = !completedChallengeIds.has(challenge.id);
       return isNotExpired && isNotCompleted;
     });
-    
+
     // Transform to match expected sponsored challenge format
     const sponsoredChallenges = availableChallenges.map((challenge: any) => {
       // Extract sponsor name from title (format: "SponsorName: Challenge Title")
       const titleParts = challenge.title.split(': ');
       const sponsorName = titleParts.length > 1 ? titleParts[0] : 'Unknown Sponsor';
-      const challengeTitle = titleParts.length > 1 ? titleParts.slice(1).join(': ') : challenge.title;
-      
+      const challengeTitle =
+        titleParts.length > 1 ? titleParts.slice(1).join(': ') : challenge.title;
+
       return {
         id: challenge.id,
         companyName: sponsorName,

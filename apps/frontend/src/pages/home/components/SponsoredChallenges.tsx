@@ -17,32 +17,30 @@ interface SponsoredChallengesProps {
   currentUserAddress?: string;
 }
 
-const SponsoredChallenges: React.FC<SponsoredChallengesProps> = ({ 
-  challenges, 
+const SponsoredChallenges: React.FC<SponsoredChallengesProps> = ({
+  challenges,
   onChallengeClick,
   onCreateClick,
-  currentUserAddress 
+  currentUserAddress,
 }) => {
   if (challenges.length === 0) {
     return (
       <div className="mb-8 flex flex-col items-center">
         <h2 className="text-xl font-bold text-white mb-6">Sponsored Challenges</h2>
-        
+
         {/* Sponsor a Challenge Section */}
         <div className="w-full max-w-xl mb-4">
           <ThematicContainer
             asButton={false}
             glassmorphic={true}
-            color="nocenaGreen"
+            color="nocenaBlue"
             rounded="xl"
             className="p-4"
           >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">Sponsor a Challenge</h3>
-                <p className="text-gray-300 text-sm">
-                  Create sponsored challenges for all users!
-                </p>
+                <p className="text-gray-300 text-sm">Create sponsored challenges for all users!</p>
               </div>
               <button
                 onClick={onCreateClick}
@@ -62,22 +60,20 @@ const SponsoredChallenges: React.FC<SponsoredChallengesProps> = ({
   return (
     <div className="mb-8 flex flex-col items-center">
       <h2 className="text-xl font-bold text-white mb-6">Sponsored Challenges</h2>
-      
+
       {/* Sponsor a Challenge Section */}
       <div className="w-full max-w-xl mb-4">
         <ThematicContainer
           asButton={false}
           glassmorphic={true}
-          color="nocenaGreen"
+          color="nocenaBlue"
           rounded="xl"
           className="p-4"
         >
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-white mb-1">Sponsor a Challenge</h3>
-              <p className="text-gray-300 text-sm">
-                Create sponsored challenges for all users!
-              </p>
+              <p className="text-gray-300 text-sm">Create sponsored challenges for all users!</p>
             </div>
             <button
               onClick={onCreateClick}
@@ -110,15 +106,13 @@ const SponsoredChallenges: React.FC<SponsoredChallengesProps> = ({
                 <h3 className="text-lg font-semibold text-white mb-2">
                   {challenge.challengeTitle}
                 </h3>
-                <p className="text-gray-300 text-sm mb-3">
-                  {challenge.challengeDescription}
-                </p>
+                <p className="text-gray-300 text-sm mb-3">{challenge.challengeDescription}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-green-400 font-semibold">
                     Reward: {challenge.reward.replace('FLOW', 'NCT')}
                   </span>
                   {challenge.creatorLensAccountId !== currentUserAddress && (
-                    <button 
+                    <button
                       onClick={() => onChallengeClick(challenge)}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                     >

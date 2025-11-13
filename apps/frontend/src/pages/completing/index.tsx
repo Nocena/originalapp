@@ -64,8 +64,16 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
   backgroundTasksRef.current = backgroundTasks;
 
   useEffect(() => {
-    const { type, frequency, title, description, reward, challengeId, creatorWalletAddress, sponsorName } =
-      router.query;
+    const {
+      type,
+      frequency,
+      title,
+      description,
+      reward,
+      challengeId,
+      creatorWalletAddress,
+      sponsorName,
+    } = router.query;
 
     if (title && description && reward) {
       let challengeData: Challenge;
@@ -102,7 +110,7 @@ const CompletingViewContent: React.FC<CompletingViewProps> = ({ onBack }) => {
         challengeData = {
           title: title as string,
           description: description as string,
-          challengerName: sponsorName as string || 'Sponsor',
+          challengerName: (sponsorName as string) || 'Sponsor',
           challengerProfile: '/images/sponsor.png',
           reward: parseInt(reward as string),
           color: 'nocenaGreen',

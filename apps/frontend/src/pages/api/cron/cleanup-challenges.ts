@@ -98,7 +98,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const deactivated = mutationResponse.data?.data?.updatePublicChallenge?.publicChallenge || [];
-    
+
     console.log(`✅ Successfully deactivated ${deactivated.length} old challenges`);
 
     return res.status(200).json({
@@ -106,7 +106,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       cleaned: deactivated.length,
       cutoffDate: cutoffISO,
     });
-
   } catch (error) {
     console.error('❌ Error in challenge cleanup:', error);
     return res.status(500).json({

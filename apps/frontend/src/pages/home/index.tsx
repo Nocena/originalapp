@@ -186,7 +186,7 @@ const HomeView = () => {
     setSponsorFormLoading(true);
     try {
       console.log('Creating sponsored challenge:', formData);
-      
+
       if (formData.challengeType === 'public') {
         // Create public sponsored challenge with location
         const challengeId = await createPublicChallenge(
@@ -252,7 +252,7 @@ const HomeView = () => {
 
     try {
       console.log('Starting sponsored challenge:', challenge);
-      
+
       // Navigate to completion page with sponsored challenge data
       router.push({
         pathname: '/completing',
@@ -279,13 +279,15 @@ const HomeView = () => {
       console.log('No current lens account address available');
       return;
     }
-    
+
     console.log('Fetching sponsored challenges for user:', currentLensAccount.address);
-    
+
     try {
-      const response = await fetch(`/api/private-challenge/sponsored?userId=${currentLensAccount.address}`);
+      const response = await fetch(
+        `/api/private-challenge/sponsored?userId=${currentLensAccount.address}`
+      );
       console.log('Sponsored challenges API response status:', response.status);
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('Sponsored challenges data:', data);
