@@ -85,5 +85,3 @@ export async function generateWeeklyChallenge() {
     throw error;
   }
 }
-
-generateWeeklyChallenge().catch(console.error);

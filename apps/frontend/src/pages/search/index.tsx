@@ -41,6 +41,31 @@ function SearchView() {
   // Fetch Top NCT Holders leaderboard
   const fetchLeaderboard = useCallback(async (): Promise<LeaderboardUser[]> => {
     try {
+      // Storage diagnostics
+      try {
+        const storageEstimate = await navigator.storage?.estimate?.();
+        console.log('📊 Storage usage:', {
+          used: storageEstimate?.usage,
+          quota: storageEstimate?.quota,
+          percentage:
+            storageEstimate?.usage && storageEstimate?.quota
+              ? ((storageEstimate.usage / storageEstimate.quota) * 100).toFixed(1) + '%'
+              : 'unknown',
+        });
+
+        console.log('🗄️ LocalStorage keys:', Object.keys(localStorage).length);
+        console.log(
+          '🔑 Large localStorage items:',
+          Object.keys(localStorage)
+            .map((key) => ({ key, size: localStorage.getItem(key)?.length || 0 }))
+            .filter((item) => item.size > 10000)
+            .sort((a, b) => b.size - a.size)
+            .slice(0, 5)
+        );
+      } catch (diagError) {
+        console.warn('Storage diagnostics failed:', diagError);
+      }
+
       console.log('🔍 Fetching leaderboard...');
 
       // Build URL based on leaderboard type
@@ -122,7 +147,15 @@ function SearchView() {
             })
           );
         } catch (error) {
-          // Silent fail for localStorage
+          console.warn('Failed to cache leaderboard data:', error);
+          // Clear storage if quota exceeded
+          if (error instanceof Error && error.name === 'QuotaExceededError') {
+            try {
+              localStorage.clear();
+            } catch (clearError) {
+              console.warn('Failed to clear localStorage:', clearError);
+            }
+          }
         }
       } catch (error) {
         // Silent fail for refresh

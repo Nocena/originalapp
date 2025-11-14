@@ -79,5 +79,3 @@ export async function generateMonthlyChallenge() {
     throw error;
   }
 }
-
-generateMonthlyChallenge().catch(console.error);
